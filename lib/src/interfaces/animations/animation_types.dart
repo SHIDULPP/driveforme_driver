@@ -1,5 +1,5 @@
-/// Enum defining all available animation types for the application
-enum AnimationType {
+/// Page/widget entrance animations (not [AnimationType] from pin_code_fields).
+enum AppAnimationType {
   /// Fade in/out animation
   fadeIn,
 

@@ -24,51 +24,51 @@ class AnimationUtils {
   }
 
   /// Get default duration for animation type
-  static Duration getDefaultDuration(AnimationType type) {
+  static Duration getDefaultDuration(AppAnimationType type) {
     return switch (type) {
-      AnimationType.fadeIn ||
-      AnimationType.pulse ||
-      AnimationType.shimmer =>
+      AppAnimationType.fadeIn ||
+      AppAnimationType.pulse ||
+      AppAnimationType.shimmer =>
         AnimationDuration.normal.value,
-      AnimationType.slideInFromLeft ||
-      AnimationType.slideInFromRight ||
-      AnimationType.slideInFromTop ||
-      AnimationType.slideInFromBottom =>
+      AppAnimationType.slideInFromLeft ||
+      AppAnimationType.slideInFromRight ||
+      AppAnimationType.slideInFromTop ||
+      AppAnimationType.slideInFromBottom =>
         AnimationDuration.normal.value,
-      AnimationType.scaleUp || AnimationType.scaleDown => AnimationDuration.fast.value,
-      AnimationType.bounce || AnimationType.elastic => AnimationDuration.slow.value,
-      AnimationType.rotate => AnimationDuration.normal.value,
-      AnimationType.fadeSlideInFromLeft ||
-      AnimationType.fadeSlideInFromRight ||
-      AnimationType.fadeSlideInFromTop ||
-      AnimationType.fadeSlideInFromBottom =>
+      AppAnimationType.scaleUp || AppAnimationType.scaleDown => AnimationDuration.fast.value,
+      AppAnimationType.bounce || AppAnimationType.elastic => AnimationDuration.slow.value,
+      AppAnimationType.rotate => AnimationDuration.normal.value,
+      AppAnimationType.fadeSlideInFromLeft ||
+      AppAnimationType.fadeSlideInFromRight ||
+      AppAnimationType.fadeSlideInFromTop ||
+      AppAnimationType.fadeSlideInFromBottom =>
         AnimationDuration.normal.value,
-      AnimationType.fadeScaleUp => AnimationDuration.normal.value,
+      AppAnimationType.fadeScaleUp => AnimationDuration.normal.value,
     };
   }
 
   /// Get default curve for animation type
-  static AnimationCurveType getDefaultCurve(AnimationType type) {
+  static AnimationCurveType getDefaultCurve(AppAnimationType type) {
     return switch (type) {
-      AnimationType.fadeIn => AnimationCurveType.easeIn,
-      AnimationType.slideInFromLeft ||
-      AnimationType.slideInFromRight ||
-      AnimationType.slideInFromTop ||
-      AnimationType.slideInFromBottom =>
+      AppAnimationType.fadeIn => AnimationCurveType.easeIn,
+      AppAnimationType.slideInFromLeft ||
+      AppAnimationType.slideInFromRight ||
+      AppAnimationType.slideInFromTop ||
+      AppAnimationType.slideInFromBottom =>
         AnimationCurveType.easeOut,
-      AnimationType.scaleUp => AnimationCurveType.easeOutBack,
-      AnimationType.scaleDown => AnimationCurveType.easeInBack,
-      AnimationType.bounce => AnimationCurveType.bounceOut,
-      AnimationType.elastic => AnimationCurveType.elasticOut,
-      AnimationType.rotate => AnimationCurveType.easeInOut,
-      AnimationType.fadeSlideInFromLeft ||
-      AnimationType.fadeSlideInFromRight ||
-      AnimationType.fadeSlideInFromTop ||
-      AnimationType.fadeSlideInFromBottom =>
+      AppAnimationType.scaleUp => AnimationCurveType.easeOutBack,
+      AppAnimationType.scaleDown => AnimationCurveType.easeInBack,
+      AppAnimationType.bounce => AnimationCurveType.bounceOut,
+      AppAnimationType.elastic => AnimationCurveType.elasticOut,
+      AppAnimationType.rotate => AnimationCurveType.easeInOut,
+      AppAnimationType.fadeSlideInFromLeft ||
+      AppAnimationType.fadeSlideInFromRight ||
+      AppAnimationType.fadeSlideInFromTop ||
+      AppAnimationType.fadeSlideInFromBottom =>
         AnimationCurveType.easeOut,
-      AnimationType.fadeScaleUp => AnimationCurveType.easeOutBack,
-      AnimationType.pulse => AnimationCurveType.easeInOut,
-      AnimationType.shimmer => AnimationCurveType.linear,
+      AppAnimationType.fadeScaleUp => AnimationCurveType.easeOutBack,
+      AppAnimationType.pulse => AnimationCurveType.easeInOut,
+      AppAnimationType.shimmer => AnimationCurveType.linear,
     };
   }
 }

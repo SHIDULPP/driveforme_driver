@@ -5,7 +5,7 @@ import 'animated_widget_wrapper.dart';
 /// Builder for creating staggered animations across multiple children
 class StaggeredAnimationBuilder extends StatelessWidget {
   final List<Widget> children;
-  final AnimationType animationType;
+  final AppAnimationType animationType;
   final AnimationDuration duration;
   final AnimationCurveType curveType;
   final int staggerDelayMilliseconds;
@@ -13,7 +13,7 @@ class StaggeredAnimationBuilder extends StatelessWidget {
 
   const StaggeredAnimationBuilder({
     required this.children,
-    this.animationType = AnimationType.fadeSlideInFromBottom,
+    this.animationType = AppAnimationType.fadeSlideInFromBottom,
     this.duration = AnimationDuration.normal,
     this.curveType = AnimationCurveType.easeOut,
     this.staggerDelayMilliseconds = 100,

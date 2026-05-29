@@ -6,7 +6,7 @@ import 'animated_widget_wrapper.dart';
 extension AnimatedExtension on Widget {
   /// Wrap widget with animation
   Widget animate({
-    required AnimationType animationType,
+    required AppAnimationType animationType,
     AnimationDuration duration = AnimationDuration.normal,
     AnimationCurveType curveType = AnimationCurveType.easeOut,
     int delayMilliseconds = 0,
@@ -28,7 +28,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.fadeIn,
+        animationType: AppAnimationType.fadeIn,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
@@ -39,7 +39,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.slideInFromLeft,
+        animationType: AppAnimationType.slideInFromLeft,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
@@ -50,7 +50,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.slideInFromBottom,
+        animationType: AppAnimationType.slideInFromBottom,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
@@ -61,7 +61,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.scaleUp,
+        animationType: AppAnimationType.scaleUp,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
@@ -72,7 +72,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.fadeScaleUp,
+        animationType: AppAnimationType.fadeScaleUp,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
@@ -83,7 +83,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.fadeSlideInFromLeft,
+        animationType: AppAnimationType.fadeSlideInFromLeft,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
@@ -94,7 +94,7 @@ extension AnimatedExtension on Widget {
     int delayMilliseconds = 0,
   }) =>
       animate(
-        animationType: AnimationType.fadeSlideInFromBottom,
+        animationType: AppAnimationType.fadeSlideInFromBottom,
         duration: duration,
         delayMilliseconds: delayMilliseconds,
       );
