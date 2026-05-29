@@ -503,7 +503,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                 delayMilliseconds: 400,
                 child: primaryButton(
                   label: 'Verify OTP',
-                  buttonHeight: 56,
+                  buttonHeight: MediaQuery.of(context).size.height * 0.065,
                   fontSize: 16,
                   onPressed: isLoading
                       ? null
