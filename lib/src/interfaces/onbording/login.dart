@@ -508,12 +508,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                   onPressed: isLoading
                       ? null
                       : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const RegistrationPage(),
-                            ),
-                          );
+                          Navigator.pushNamed(context, 'GetStarted');
                         },
                   isLoading: isLoading,
                 ),

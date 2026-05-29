@@ -1,3 +1,5 @@
+import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
+import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
 import 'package:flutter/material.dart';
 //router file
@@ -102,11 +104,16 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 500);
       break;
-    // case 'Phone':
-    //   page = PhoneNumberScreen();
-    //   transitionToUse = TransitionType.fade;
-    //   transitionDuration = const Duration(milliseconds: 500);
-    //   break;
+    case 'Phone':
+      page = PhoneNumberScreen();
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 500);
+      break;
+    case 'GetStarted':
+      page = const DriverPartnerLandingPage();
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 500);
+      break;
     // case 'registration':
     //   page = const RegistrationPage();
     //   transitionToUse = TransitionType.slideFromRight;
