@@ -113,7 +113,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
                     buttonColor: kBrandBlue,
                     labelColor: kWhite,
                     onPressed: () {
-                      Navigator.pushNamed(context, 'GetStarted');
+                      Navigator.pushNamed(context, 'registration');
                     },
                   ),
                 ),

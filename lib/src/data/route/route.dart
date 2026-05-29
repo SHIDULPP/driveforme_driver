@@ -1,5 +1,6 @@
 import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
+import 'package:driveforme_driver/src/interfaces/onbording/registration.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
 import 'package:flutter/material.dart';
 //router file
@@ -114,11 +115,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 500);
       break;
-    // case 'registration':
-    //   page = const RegistrationPage();
-    //   transitionToUse = TransitionType.slideFromRight;
-    //   transitionDuration = const Duration(milliseconds: 400);
-    //   break;
+    case 'registration':
+      page = const RegistrationPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
     // case 'navbar':
     //   page = const NavBar();
     //   transitionToUse = TransitionType.fade;

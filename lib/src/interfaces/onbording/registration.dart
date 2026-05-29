@@ -1,7 +1,8 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
-import 'package:driveforme_driver/src/interfaces/animations/animated_widget_wrapper.dart';
-import 'package:driveforme_driver/src/interfaces/animations/animation_types.dart';
+import 'package:driveforme_driver/src/interfaces/animations/index.dart' as anim;
+import 'package:driveforme_driver/src/interfaces/components/dropdown.dart';
+import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,7 +45,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
 
   void _handleSubmit() {
     if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Navigator.of(context).pushAndRemoveUntil(
+      //   // MaterialPageRoute(builder: (context) => const NavBar()),
+      //   // (route) => false,
+      // );
     }
   }
 
@@ -71,9 +75,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       ),
 
                       // ── Title ──────────────────────────────────────────
-                      AnimatedWidgetWrapper(
-                        animationType: AppAnimationType.fadeSlideInFromLeft,
-                        duration: AnimationDuration.normal,
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromLeft,
+                        duration: anim.AnimationDuration.normal,
                         child: Text(
                           'Create Account',
                           style: const TextStyle(
@@ -85,9 +90,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      AnimatedWidgetWrapper(
-                        animationType: AppAnimationType.fadeSlideInFromLeft,
-                        duration: AnimationDuration.normal,
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromLeft,
+                        duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 80,
                         child: const Text(
                           "Let's get you started",
@@ -104,19 +110,21 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       // ── Full Name ──────────────────────────────────────
                       const _FieldLabel(label: 'Full Name'),
                       const SizedBox(height: 8),
-                      AnimatedWidgetWrapper(
-                        animationType: AppAnimationType.fadeSlideInFromBottom,
-                        duration: AnimationDuration.normal,
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromBottom,
+                        duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 150,
-                        child: TextFormField(
+                        child: InputField(
+                          type: CustomFieldType.text,
+                          hint: 'Enter your full name',
                           controller: _nameController,
                           focusNode: _nameFocus,
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) =>
                               FocusScope.of(context).requestFocus(_emailFocus),
-                          decoration: const InputDecoration(
-                            hintText: 'Enter your full name',
-                          ),
+                          // validator: (v) =>
+                          //     (v == null || v.trim().isEmpty) ? '' : null,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -124,18 +132,24 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       // ── Email ──────────────────────────────────────────
                       const _FieldLabel(label: 'Email'),
                       const SizedBox(height: 8),
-                      AnimatedWidgetWrapper(
-                        animationType: AppAnimationType.fadeSlideInFromBottom,
-                        duration: AnimationDuration.normal,
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromBottom,
+                        duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 200,
-                        child: TextFormField(
+                        child: InputField(
+                          type: CustomFieldType.text,
+                          hint: 'Enter your email',
                           controller: _emailController,
                           focusNode: _emailFocus,
-                          keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter your email',
-                          ),
+                          // validator: (v) {
+                          //   if (v == null || v.trim().isEmpty) return '';
+                          //   final emailRegex = RegExp(
+                          //     r'^[\w\.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$',
+                          //   );
+                          //   return emailRegex.hasMatch(v.trim()) ? null : '';
+                          // },
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -143,15 +157,17 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       // ── Date of Birth ──────────────────────────────────
                       const _FieldLabel(label: 'Date of Birth'),
                       const SizedBox(height: 8),
-                      AnimatedWidgetWrapper(
-                        animationType: AppAnimationType.fadeSlideInFromBottom,
-                        duration: AnimationDuration.normal,
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromBottom,
+                        duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 250,
-                        child: TextFormField(
+                        child: InputField(
+                          type: CustomFieldType.date,
+                          hint: 'DD-MM-YYYY',
                           controller: _dobController,
-                          decoration: const InputDecoration(
-                            hintText: 'DD-MM-YYYY',
-                          ),
+                          // validator: (v) =>
+                          //     (v == null || v.trim().isEmpty) ? '' : null,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -159,9 +175,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       // ── Gender ─────────────────────────────────────────
                       const _FieldLabel(label: 'Gender'),
                       const SizedBox(height: 8),
-                      AnimatedWidgetWrapper(
-                        animationType: AppAnimationType.fadeSlideInFromBottom,
-                        duration: AnimationDuration.normal,
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromBottom,
+                        duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 300,
                         child: FormField<String>(
                           key: _fieldKeys['gender'],
@@ -174,29 +191,19 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                DropdownButtonFormField<String>(
+                                AnimatedDropdown<String>(
+                                  hint: "Select Gender",
                                   value: selectedGender,
-                                  decoration: InputDecoration(
-                                    hintText: 'Select Gender',
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: state.hasError
-                                            ? Colors.red
-                                            : kBorder,
-                                      ),
-                                    ),
-                                  ),
-                                  items: const ['Male', 'Female', 'Other']
-                                      .map(
-                                        (g) => DropdownMenuItem(
-                                          value: g,
-                                          child: Text(g),
-                                        ),
-                                      )
-                                      .toList(),
+                                  items: const ['Male', 'Female', 'Other'],
+                                  itemLabel: (value) => value,
+                                  borderColor: state.hasError
+                                      ? Colors.red
+                                      : null,
                                   onChanged: (v) {
                                     state.didChange(v);
-                                    setState(() => selectedGender = v);
+                                    setState(() {
+                                      selectedGender = v;
+                                    });
                                   },
                                 ),
                                 if (state.hasError)
@@ -228,9 +235,9 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
             // ── Submit button pinned to bottom ──────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
-              child: AnimatedWidgetWrapper(
-                animationType: AppAnimationType.fadeScaleUp,
-                duration: AnimationDuration.normal,
+              child: anim.AnimatedWidgetWrapper(
+                animationType: anim.AppAnimationType.fadeScaleUp,
+                duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 350,
                 child: primaryButton(
                   label: 'Submit',
