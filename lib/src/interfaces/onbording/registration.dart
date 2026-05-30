@@ -1,6 +1,7 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/interfaces/animations/index.dart' as anim;
+import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/dropdown.dart';
 import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
@@ -25,12 +26,14 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
   final _emailFocus = FocusNode();
 
   String? selectedGender;
+  String? selectedLocation;
 
   final Map<String, GlobalKey> _fieldKeys = {
     'name': GlobalKey(),
     'email': GlobalKey(),
     'dob': GlobalKey(), // Added DOB key
     'gender': GlobalKey(),
+    'location': GlobalKey(),
   };
 
   @override
@@ -70,9 +73,11 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.1,
-                      ),
+                      const SizedBox(height: 18),
+
+                      const AppBackButton(),
+
+                      const SizedBox(height: 28),
 
                       // ── Title ──────────────────────────────────────────
                       anim.AnimatedWidgetWrapper(
@@ -80,10 +85,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                             anim.AppAnimationType.fadeSlideInFromLeft,
                         duration: anim.AnimationDuration.normal,
                         child: Text(
-                          'Create Account',
+                          'Personal Details',
                           style: const TextStyle(
                             fontFamily: 'ClashGrotesk',
-                            fontSize: 36,
+                            fontSize: 30,
                             fontWeight: FontWeight.w500,
                             color: kTextColor,
                           ),
@@ -225,6 +230,66 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           },
                         ),
                       ),
+
+                      const SizedBox(height: 20),
+
+                      // ── Location ─────────────────────────────────────────
+                      const _FieldLabel(label: 'Location'),
+                      const SizedBox(height: 8),
+                      anim.AnimatedWidgetWrapper(
+                        animationType:
+                            anim.AppAnimationType.fadeSlideInFromBottom,
+                        duration: anim.AnimationDuration.normal,
+                        delayMilliseconds: 300,
+                        child: FormField<String>(
+                          key: _fieldKeys['location'],
+                          initialValue: selectedLocation,
+                          // validator: (value) =>
+                          //     selectedGender == null || selectedGender!.isEmpty
+                          //     ? "genderIsRequired"
+                          //     : null,
+                          builder: (FormFieldState<String> state) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AnimatedDropdown<String>(
+                                  hint: "Select Location",
+                                  value: selectedGender,
+                                  items: const [
+                                    'Kochi',
+                                    'Kozhikode',
+                                    'Trivandrum',
+                                  ],
+                                  itemLabel: (value) => value,
+                                  borderColor: state.hasError
+                                      ? Colors.red
+                                      : null,
+                                  onChanged: (v) {
+                                    state.didChange(v);
+                                    setState(() {
+                                      selectedGender = v;
+                                    });
+                                  },
+                                ),
+                                if (state.hasError)
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 6,
+                                      left: 12,
+                                    ),
+                                    child: Text(
+                                      state.errorText!,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -240,7 +305,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 350,
                 child: primaryButton(
-                  label: 'Submit',
+                  label: 'Continue',
                   buttonHeight: 56,
                   fontSize: 16,
                   onPressed: isLoading ? null : _handleSubmit,
