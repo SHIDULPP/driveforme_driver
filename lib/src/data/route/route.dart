@@ -1,5 +1,7 @@
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
+import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
+import 'package:driveforme_driver/src/interfaces/onbording/live_photo/take_selfie.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/application_rejected.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/application_under_review.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
@@ -149,6 +151,16 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       page = const DrivingLicenseUploadPage();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'selfieScreen':
+      page = const SelfieScreen();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'takeSelfie':
+      page = const TakeSelfiePage();
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 300);
       break;
     // case 'navbar':
     //   page = const NavBar();

@@ -138,8 +138,14 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                         description: 'Capture a real-time photo',
                         actionLabel: 'Capture Photo',
                         actionIcon: Icons.camera_alt_outlined,
-                        onActionTap: () {
-                          setState(() => _livePhotoCaptured = true);
+                        onActionTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            'selfieScreen',
+                          );
+                          if (result == true && mounted) {
+                            setState(() => _livePhotoCaptured = true);
+                          }
                         },
                       ),
                     ),
