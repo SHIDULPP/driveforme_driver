@@ -80,7 +80,8 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                     const SizedBox(height: 32),
 
                     anim.AnimatedWidgetWrapper(
-                      animationType: anim.AppAnimationType.fadeSlideInFromBottom,
+                      animationType:
+                          anim.AppAnimationType.fadeSlideInFromBottom,
                       duration: anim.AnimationDuration.normal,
                       delayMilliseconds: 180,
                       child: _DocumentUploadCard(
@@ -97,7 +98,8 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                     const SizedBox(height: 16),
 
                     anim.AnimatedWidgetWrapper(
-                      animationType: anim.AppAnimationType.fadeSlideInFromBottom,
+                      animationType:
+                          anim.AppAnimationType.fadeSlideInFromBottom,
                       duration: anim.AnimationDuration.normal,
                       delayMilliseconds: 260,
                       child: _DocumentUploadCard(
@@ -114,7 +116,8 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                     const SizedBox(height: 16),
 
                     anim.AnimatedWidgetWrapper(
-                      animationType: anim.AppAnimationType.fadeSlideInFromBottom,
+                      animationType:
+                          anim.AppAnimationType.fadeSlideInFromBottom,
                       duration: anim.AnimationDuration.normal,
                       delayMilliseconds: 340,
                       child: _DocumentUploadCard(
@@ -146,7 +149,10 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                   fontSize: kSize16,
                   buttonColor: _canContinue ? kBrandBlue : _kContinueDisabled,
                   labelColor: kWhite,
-                  onPressed: _canContinue ? () {} : null,
+                  onPressed: () {
+                    Navigator.pushNamed(context, 'applicationUnderReview');
+                  },
+                  // _canContinue ? () {} : null,
                 ),
               ),
             ),
@@ -195,20 +201,14 @@ class _DocumentUploadCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: _kImageBorder, width: 1.2),
             ),
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.contain,
-            ),
+            child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: kProfileNameB,
-                ),
+                Text(title, style: kProfileNameB),
                 const SizedBox(height: 4),
                 Text(
                   description,
@@ -229,11 +229,7 @@ class _DocumentUploadCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          actionIcon,
-                          size: 16,
-                          color: kBrandBlue,
-                        ),
+                        Icon(actionIcon, size: 16, color: kBrandBlue),
                         const SizedBox(width: 6),
                         Text(
                           actionLabel,
