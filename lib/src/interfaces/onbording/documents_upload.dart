@@ -90,8 +90,14 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                         description: 'Government ID proof',
                         actionLabel: 'Tap to Upload',
                         actionIcon: Icons.file_upload_outlined,
-                        onActionTap: () {
-                          setState(() => _aadhaarUploaded = true);
+                        onActionTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            'aadhaarUpload',
+                          );
+                          if (result == true && mounted) {
+                            setState(() => _aadhaarUploaded = true);
+                          }
                         },
                       ),
                     ),
