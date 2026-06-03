@@ -6,8 +6,23 @@ import 'package:flutter/services.dart';
 /// Background sampled
 const _kApplicationReviewBg = Color(0xFF3690FF);
 
-class ApplicationUnderReviewPage extends StatelessWidget {
+class ApplicationUnderReviewPage extends StatefulWidget {
   const ApplicationUnderReviewPage({super.key});
+
+  @override
+  State<ApplicationUnderReviewPage> createState() =>
+      _ApplicationUnderReviewPageState();
+}
+
+class _ApplicationUnderReviewPageState extends State<ApplicationUnderReviewPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, 'applicationRejected');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

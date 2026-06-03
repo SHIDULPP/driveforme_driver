@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/interfaces/onbording/application_rejected.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/application_under_review.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
@@ -130,6 +131,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
     case 'applicationUnderReview':
       page = const ApplicationUnderReviewPage();
       transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'applicationRejected':
+      page = const ApplicationRejectedPage();
+      transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
     // case 'navbar':
