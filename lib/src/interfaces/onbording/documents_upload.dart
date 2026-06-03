@@ -114,8 +114,14 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                         description: 'Required for driver verification',
                         actionLabel: 'Tap to Upload',
                         actionIcon: Icons.file_upload_outlined,
-                        onActionTap: () {
-                          setState(() => _licenseUploaded = true);
+                        onActionTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            'drivingLicenseUpload',
+                          );
+                          if (result == true && mounted) {
+                            setState(() => _licenseUploaded = true);
+                          }
                         },
                       ),
                     ),

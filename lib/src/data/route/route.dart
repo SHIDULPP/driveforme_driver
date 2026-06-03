@@ -1,4 +1,5 @@
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
+import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/application_rejected.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/application_under_review.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
@@ -141,6 +142,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
     case 'aadhaarUpload':
       page = const AadhaarUploadPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'drivingLicenseUpload':
+      page = const DrivingLicenseUploadPage();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
