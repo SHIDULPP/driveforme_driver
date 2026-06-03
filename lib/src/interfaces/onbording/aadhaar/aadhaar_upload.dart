@@ -1,9 +1,9 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
+import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class AadhaarUploadPage extends StatefulWidget {
   const AadhaarUploadPage({super.key});
@@ -22,10 +22,19 @@ class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
       _aadhaarController.text.replaceAll(RegExp(r'\D'), '').length == 12;
 
   @override
+  void initState() {
+    super.initState();
+    _aadhaarController.addListener(_onAadhaarChanged);
+  }
+
+  @override
   void dispose() {
+    _aadhaarController.removeListener(_onAadhaarChanged);
     _aadhaarController.dispose();
     super.dispose();
   }
+
+  void _onAadhaarChanged() => setState(() {});
 
   void _setImageUploaded() {
     setState(() => _hasImage = true);
@@ -82,45 +91,10 @@ class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
                     const SizedBox(height: 24),
                     Text('Aadhaar Number', style: kTripSubSectionSB),
                     const SizedBox(height: 8),
-                    TextFormField(
+                    InputField(
+                      type: CustomFieldType.number,
+                      hint: 'eg: 3755 1929 0862',
                       controller: _aadhaarController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: const [_AadhaarInputFormatter()],
-                      onChanged: (_) => setState(() {}),
-                      style: kStyle(
-                        kMedium,
-                        kSize16,
-                        color: kTextColor,
-                        height: 1.2,
-                      ),
-                      cursorColor: kBrandBlue,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: kTripDestIconBg,
-                        hintText: 'eg: 3755 1929 0862',
-                        hintStyle: kCaption14R.copyWith(
-                          color: kMutedText,
-                          fontWeight: kMedium,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 16,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(40),
-                          borderSide: const BorderSide(
-                            color: kCardBorder,
-                            width: 1,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(40),
-                          borderSide: const BorderSide(
-                            color: kCardBorder,
-                            width: 1,
-                          ),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -318,35 +292,6 @@ class _UploadActionButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _AadhaarInputFormatter extends TextInputFormatter {
-  const _AadhaarInputFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    if (digits.length > 12) {
-      return oldValue;
-    }
-
-    final buffer = StringBuffer();
-    for (var i = 0; i < digits.length; i++) {
-      if (i > 0 && i % 4 == 0) {
-        buffer.write(' ');
-      }
-      buffer.write(digits[i]);
-    }
-
-    final formatted = buffer.toString();
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
