@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/registration.dart';
@@ -117,6 +118,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
     case 'registration':
       page = const RegistrationPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'documentsUpload':
+      page = const DocumentsUploadPage();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

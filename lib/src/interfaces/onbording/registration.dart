@@ -5,6 +5,7 @@ import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/dropdown.dart';
 import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,10 +49,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
 
   void _handleSubmit() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Navigator.of(context).pushAndRemoveUntil(
-      //   // MaterialPageRoute(builder: (context) => const NavBar()),
-      //   // (route) => false,
-      // );
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const DocumentsUploadPage()),
+        (route) => false,
+      );
     }
   }
 
