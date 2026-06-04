@@ -294,6 +294,7 @@ class _OnlineStatusCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 20),
                 Text(
                   'You are Online',
                   style: kStyle(

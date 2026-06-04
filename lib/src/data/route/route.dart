@@ -1,5 +1,7 @@
 import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/driver_arrived_screen.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/end_trip.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_screen.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
@@ -171,6 +173,16 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
     case 'driverArrived':
       page = const DriverArrivedScreen();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'tripOtp':
+      page = const OtpScreen();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+    case 'endTrip':
+      page = const EndTripScreen();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

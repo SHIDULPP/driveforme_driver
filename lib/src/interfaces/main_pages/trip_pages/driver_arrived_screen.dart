@@ -269,7 +269,9 @@ class _BottomTripPanel extends StatelessWidget {
                   fontSize: kSize16,
                   buttonColor: kTripCtaBlue,
                   labelColor: kWhite,
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(context, 'tripOtp');
+                  },
                 ),
                 const SizedBox(height: 10),
                 Text(
