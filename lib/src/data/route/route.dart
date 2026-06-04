@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
@@ -162,11 +163,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 300);
       break;
-    // case 'navbar':
-    //   page = const NavBar();
-    //   transitionToUse = TransitionType.fade;
-    //   transitionDuration = const Duration(milliseconds: 400);
-    //   break;
+    case 'navBar':
+      page = const NavBar();
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 300);
+      break;
 
     default:
       if (settings?.name?.startsWith('/app') == true) {
@@ -192,9 +193,6 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
           body: Center(child: Text('No path for ${settings?.name}')),
         ),
       );
-  }
-  if (transitionToUse == null) {
-    return MaterialPageRoute(settings: settings, builder: (_) => page!);
   }
   return createRoute(
     page,
