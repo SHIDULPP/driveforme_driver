@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const _kEarningsHeaderBlue = Color(0xFF1A5288);
-const _kEarningsPageBg = Color(0xFFF8FAF5);
 const _kEarningsGold = Color(0xFFC6934B);
 const _kStatValueBlue = Color(0xFF205D91);
-const _kChartBarInactive = Color(0xFFF0EDE6);
-const _kSegmentInactiveBg = Color(0xFFF5F3EE);
+const _kChartBarInactive = Color(0xFFF3F0E8);
+const _kChartAmountMuted = Color(0xFFB8B0A4);
 
 enum _EarningsSection { earnings, transactions }
 
@@ -31,19 +30,19 @@ class _EarningPageState extends State<EarningPage> {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: _kEarningsPageBg,
+        backgroundColor: kScreenBg,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _EarningsHeader(),
+            const _EarningsHeader(),
             _EarningsSegmentedTabs(
               selected: _section,
               onChanged: (value) => setState(() => _section = value),
             ),
             Expanded(
               child: _section == _EarningsSection.earnings
-                  ? _EarningsTabContent()
-                  : _TransactionsPlaceholder(),
+                  ? const _EarningsTabContent()
+                  : const _TransactionsPlaceholder(),
             ),
           ],
         ),
@@ -53,78 +52,86 @@ class _EarningPageState extends State<EarningPage> {
 }
 
 class _EarningsHeader extends StatelessWidget {
+  const _EarningsHeader();
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
 
     return Container(
+      // height: 150,
       color: _kEarningsHeaderBlue,
-      padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 22),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.fromLTRB(20, topPadding + 12, 20, 20),
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Your total Balance',
-                  style: kCaption14R.copyWith(
-                    color: kWhite.withValues(alpha: 0.78),
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '₹ 150',
-                  style: kStyle(
-                    kSemiBold,
-                    kSize30,
-                    color: kWhite,
-                    height: 1.05,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Used to receive ride request',
-                  style: kCaption12R.copyWith(
-                    color: kWhite.withValues(alpha: 0.7),
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Material(
-            color: _kEarningsGold,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              onTap: () {},
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          SizedBox(height: 70),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.add, color: kWhite, size: 18),
-                    const SizedBox(width: 4),
                     Text(
-                      'Add Balance',
+                      'Your total Balance',
+                      style: kCaption14R.copyWith(
+                        color: kWhite.withValues(alpha: 0.75),
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '₹ 150',
                       style: kStyle(
-                        kMedium,
-                        kSize13,
+                        kSemiBold,
+                        kSize30,
                         color: kWhite,
-                        height: 1.1,
+                        height: 1.05,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Used to receive ride request',
+                      style: kCaption12R.copyWith(
+                        color: kWhite.withValues(alpha: 0.65),
+                        height: 1.2,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Material(
+                color: _kEarningsGold,
+                borderRadius: BorderRadius.circular(30),
+                child: InkWell(
+                  onTap: () {},
+                  borderRadius: BorderRadius.circular(30),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add, color: kWhite, size: 16),
+                        const SizedBox(width: 2),
+                        Text(
+                          'Add Balance',
+                          style: kStyle(
+                            kMedium,
+                            kSize12,
+                            color: kWhite,
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -144,25 +151,32 @@ class _EarningsSegmentedTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: _SegmentTab(
-              label: 'Earnings',
-              isSelected: selected == _EarningsSection.earnings,
-              onTap: () => onChanged(_EarningsSection.earnings),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: kWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: kCardBorder),
+        ),
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          children: [
+            Expanded(
+              child: _SegmentTab(
+                label: 'Earnings',
+                isSelected: selected == _EarningsSection.earnings,
+                onTap: () => onChanged(_EarningsSection.earnings),
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _SegmentTab(
-              label: 'Transactions',
-              isSelected: selected == _EarningsSection.transactions,
-              onTap: () => onChanged(_EarningsSection.transactions),
+            Expanded(
+              child: _SegmentTab(
+                label: 'Transactions',
+                isSelected: selected == _EarningsSection.transactions,
+                onTap: () => onChanged(_EarningsSection.transactions),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -185,10 +199,10 @@ class _SegmentTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
-          color: isSelected ? _kEarningsGold : _kSegmentInactiveBg,
-          borderRadius: BorderRadius.circular(10),
+          color: isSelected ? _kEarningsGold : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -206,13 +220,15 @@ class _SegmentTab extends StatelessWidget {
 }
 
 class _EarningsTabContent extends StatelessWidget {
-  static const _barHeights = [0.42, 0.58, 0.48, 0.62, 0.52, 0.55, 0.88];
+  const _EarningsTabContent();
+
+  static const _barHeights = [0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 1.0];
   static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 100),
       children: [
         const Row(
           children: [
@@ -222,25 +238,19 @@ class _EarningsTabContent extends StatelessWidget {
                 label: 'Total Earnings',
               ),
             ),
-            SizedBox(width: 10),
+            SizedBox(width: 8),
             Expanded(
-              child: _StatSummaryCard(
-                value: '20',
-                label: 'Total Trips',
-              ),
+              child: _StatSummaryCard(value: '20', label: 'Total Trips'),
             ),
-            SizedBox(width: 10),
+            SizedBox(width: 8),
             Expanded(
-              child: _StatSummaryCard(
-                value: '4.9',
-                label: 'Rating',
-              ),
+              child: _StatSummaryCard(value: '4.9', label: 'Rating'),
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           decoration: BoxDecoration(
             color: kWhite,
             borderRadius: BorderRadius.circular(16),
@@ -250,6 +260,7 @@ class _EarningsTabContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: RichText(
@@ -265,7 +276,7 @@ class _EarningsTabContent extends StatelessWidget {
                             style: kStyle(
                               kSemiBold,
                               kSize14,
-                              color: _kStatValueBlue,
+                              color: kTextColor,
                               height: 1.3,
                             ),
                           ),
@@ -275,8 +286,8 @@ class _EarningsTabContent extends StatelessWidget {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 10,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: kSearchFieldBg,
@@ -290,7 +301,7 @@ class _EarningsTabContent extends StatelessWidget {
                           'This week',
                           style: kCaption13R.copyWith(color: kTextColor),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 2),
                         const Icon(
                           Icons.keyboard_arrow_down_rounded,
                           size: 18,
@@ -301,23 +312,22 @@ class _EarningsTabContent extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               SizedBox(
-                height: 200,
+                height: 188,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: List.generate(7, (index) {
-                    final isHighlight = index == 6;
                     return Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(
-                          left: index == 0 ? 0 : 4,
-                          right: index == 6 ? 0 : 4,
+                          left: index == 0 ? 0 : 3,
+                          right: index == 6 ? 0 : 3,
                         ),
                         child: _WeeklyBar(
                           heightFactor: _barHeights[index],
                           dayLabel: _dayLabels[index],
-                          isHighlighted: isHighlight,
+                          isHighlighted: index == 6,
                           amountLabel: '₹ 2,035',
                         ),
                       ),
@@ -334,10 +344,7 @@ class _EarningsTabContent extends StatelessWidget {
 }
 
 class _StatSummaryCard extends StatelessWidget {
-  const _StatSummaryCard({
-    required this.value,
-    required this.label,
-  });
+  const _StatSummaryCard({required this.value, required this.label});
 
   final String value;
   final String label;
@@ -345,16 +352,14 @@ class _StatSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
       decoration: BoxDecoration(
         color: kWhite,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _kEarningsGold.withValues(alpha: 0.65),
-          width: 1,
-        ),
+        border: Border.all(color: _kEarningsGold.withValues(alpha: 0.55)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -362,21 +367,18 @@ class _StatSummaryCard extends StatelessWidget {
               value,
               style: kStyle(
                 kSemiBold,
-                kSize18,
+                kSize17,
                 color: _kStatValueBlue,
                 height: 1.1,
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             label,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: kCaption11R.copyWith(
-              color: kTextColor,
-              height: 1.15,
-            ),
+            style: kCaption11R.copyWith(color: kTextColor, height: 1.15),
           ),
         ],
       ),
@@ -397,42 +399,47 @@ class _WeeklyBar extends StatelessWidget {
   final bool isHighlighted;
   final String amountLabel;
 
+  static const _maxBarHeight = 132.0;
+  static const _minBarHeight = 44.0;
+
   @override
   Widget build(BuildContext context) {
-    const maxBarHeight = 120.0;
+    final barHeight =
+        _minBarHeight +
+        (_maxBarHeight - _minBarHeight) * heightFactor.clamp(0.0, 1.0);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        SizedBox(
-          height: 14,
-          child: RotatedBox(
-            quarterTurns: 3,
+        Container(
+          height: barHeight,
+          width: double.infinity,
+          alignment: Alignment.bottomCenter,
+          padding: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: isHighlighted ? _kEarningsGold : _kChartBarInactive,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
             child: Text(
               amountLabel,
               maxLines: 1,
-              style: kCaption11R.copyWith(
-                color: kMutedText.withValues(alpha: 0.65),
-                fontSize: 9,
+              style: kStyle(
+                kRegular,
+                kSize10,
+                color: isHighlighted
+                    ? kWhite.withValues(alpha: 0.9)
+                    : _kChartAmountMuted,
+                height: 1,
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          height: maxBarHeight * heightFactor,
-          decoration: BoxDecoration(
-            color: isHighlighted ? _kEarningsGold : _kChartBarInactive,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           dayLabel,
-          style: kCaption13R.copyWith(
-            color: kTextColor,
-            fontWeight: kMedium,
-          ),
+          style: kCaption13R.copyWith(color: kTextColor, fontWeight: kMedium),
         ),
       ],
     );
@@ -440,6 +447,8 @@ class _WeeklyBar extends StatelessWidget {
 }
 
 class _TransactionsPlaceholder extends StatelessWidget {
+  const _TransactionsPlaceholder();
+
   @override
   Widget build(BuildContext context) {
     return Center(
