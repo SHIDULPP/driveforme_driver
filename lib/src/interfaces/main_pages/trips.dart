@@ -326,7 +326,9 @@ class _OngoingTripCard extends StatelessWidget {
                 color: _kNavigateBlue,
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, 'driverArrived');
+            },
           ),
         ],
       ),

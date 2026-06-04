@@ -1,4 +1,5 @@
 import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/driver_arrived_screen.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
@@ -167,6 +168,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       page = const NavBar();
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 300);
+      break;
+    case 'driverArrived':
+      page = const DriverArrivedScreen();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
       break;
 
     default:
