@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-const _kHomeHeaderBlue = Color(0xFF1E5C8D);
-const _kHomeHeaderButtonBlue = Color(0xFF2A6FA3);
-const _kOnlineCardBg = Color(0xFF1A4F75);
+const _kHomeHeaderBlue = Color(0xFF1A5288);
+const _kHomeHeaderButtonBlue = Color(0xFF2B6A9A);
+const _kOnlineCardBg = Color(0xFF164A72);
 const _kPromoCardBg = Color(0xFFFEFAF2);
+const _kTripSelectedBg = Color(0xFFFFF6EB);
+const _kToggleOrange = Color(0xFFF2994A);
+const _kEarningsBarBlue = Color(0xFF1E5C8D);
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,7 +37,7 @@ class _HomePageState extends State<HomePage> {
           fit: StackFit.expand,
           children: [
             Positioned(
-              top: MediaQuery.sizeOf(context).height * 0.28,
+              top: MediaQuery.sizeOf(context).height * 0.24,
               left: 0,
               right: 0,
               bottom: 0,
@@ -53,17 +56,17 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                     child: Column(
                       children: [
                         const _TodaysEarningsCard(),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         _TripPreferenceCard(
                           isShortTrip: _isShortTrip,
                           onChanged: (isShort) =>
                               setState(() => _isShortTrip = isShort),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         const _PromoBannerCard(),
                       ],
                     ),
@@ -79,10 +82,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({
-    required this.isOnline,
-    required this.onOnlineChanged,
-  });
+  const _HomeHeader({required this.isOnline, required this.onOnlineChanged});
 
   final bool isOnline;
   final ValueChanged<bool> onOnlineChanged;
@@ -95,7 +95,7 @@ class _HomeHeader extends StatelessWidget {
       clipper: _HomeHeaderClipper(),
       child: Container(
         color: _kHomeHeaderBlue,
-        padding: EdgeInsets.fromLTRB(20, topPadding + 12, 20, 28),
+        padding: EdgeInsets.fromLTRB(20, topPadding + 8, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,20 +115,20 @@ class _HomeHeader extends StatelessWidget {
                           height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on,
-                            size: 16,
-                            color: kWhite,
+                            size: 15,
+                            color: kWhite.withValues(alpha: 0.9),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               'Edappally, Lulu Mall',
                               style: kCaption14R.copyWith(
-                                color: kWhite.withValues(alpha: 0.92),
+                                color: kWhite.withValues(alpha: 0.85),
                                 height: 1.2,
                               ),
                             ),
@@ -139,25 +139,22 @@ class _HomeHeader extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  height: 44,
-                  width: 44,
-                  decoration: const BoxDecoration(
-                    color: _kHomeHeaderButtonBlue,
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: _kHomeHeaderButtonBlue.withValues(alpha: 0.85),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.notifications_none_rounded,
                     color: kWhite,
-                    size: 24,
+                    size: 22,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 18),
-            _OnlineStatusCard(
-              isOnline: isOnline,
-              onChanged: onOnlineChanged,
-            ),
+            const SizedBox(height: 16),
+            _OnlineStatusCard(isOnline: isOnline, onChanged: onOnlineChanged),
           ],
         ),
       ),
@@ -171,12 +168,12 @@ class _HomeHeaderClipper extends CustomClipper<Path> {
     final path = Path();
     path.lineTo(0, 0);
     path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height - 24);
+    path.lineTo(size.width, size.height - 28);
     path.quadraticBezierTo(
       size.width * 0.5,
-      size.height + 18,
+      size.height + 22,
       0,
-      size.height - 24,
+      size.height - 28,
     );
     path.close();
     return path;
@@ -187,10 +184,7 @@ class _HomeHeaderClipper extends CustomClipper<Path> {
 }
 
 class _OnlineStatusCard extends StatelessWidget {
-  const _OnlineStatusCard({
-    required this.isOnline,
-    required this.onChanged,
-  });
+  const _OnlineStatusCard({required this.isOnline, required this.onChanged});
 
   final bool isOnline;
   final ValueChanged<bool> onChanged;
@@ -198,10 +192,10 @@ class _OnlineStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: _kOnlineCardBg.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(16),
+        color: _kOnlineCardBg.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
@@ -209,11 +203,11 @@ class _OnlineStatusCard extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(26),
                 child: Image.asset(
                   'assets/pngs/live_photo_image.png',
-                  width: 52,
-                  height: 52,
+                  width: 48,
+                  height: 48,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -221,8 +215,8 @@ class _OnlineStatusCard extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  height: 14,
-                  width: 14,
+                  height: 12,
+                  width: 12,
                   decoration: BoxDecoration(
                     color: isOnline ? kActiveGreen : kMutedText,
                     shape: BoxShape.circle,
@@ -232,16 +226,16 @@ class _OnlineStatusCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'You are Online',
+                  isOnline ? 'You are Online' : 'You are Offline',
                   style: kStyle(
                     kSemiBold,
-                    kSize16,
+                    kSize15,
                     color: kWhite,
                     height: 1.15,
                   ),
@@ -249,21 +243,25 @@ class _OnlineStatusCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'Ready to accept orders',
-                  style: kCaption13R.copyWith(
-                    color: kWhite.withValues(alpha: 0.75),
+                  style: kCaption12R.copyWith(
+                    color: kWhite.withValues(alpha: 0.7),
                     height: 1.2,
                   ),
                 ),
               ],
             ),
           ),
-          Switch(
-            value: isOnline,
-            onChanged: onChanged,
-            activeThumbColor: kWhite,
-            activeTrackColor: kOrange,
-            inactiveThumbColor: kWhite,
-            inactiveTrackColor: kMutedText,
+          Transform.scale(
+            scale: 0.92,
+            child: Switch(
+              value: isOnline,
+              onChanged: onChanged,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              activeThumbColor: kWhite,
+              activeTrackColor: _kToggleOrange,
+              inactiveThumbColor: kWhite,
+              inactiveTrackColor: kMutedText.withValues(alpha: 0.5),
+            ),
           ),
         ],
       ),
@@ -274,7 +272,7 @@ class _OnlineStatusCard extends StatelessWidget {
 class _TodaysEarningsCard extends StatelessWidget {
   const _TodaysEarningsCard();
 
-  static const _barHeights = [0.35, 0.55, 0.42, 0.78, 0.5, 0.68];
+  static const _barHeights = [0.38, 0.58, 0.45, 0.82, 0.52, 0.68, 0.62];
 
   @override
   Widget build(BuildContext context) {
@@ -282,11 +280,11 @@ class _TodaysEarningsCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: kBlack.withValues(alpha: 0.06),
-            blurRadius: 16,
+            color: kBlack.withValues(alpha: 0.07),
+            blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
@@ -297,8 +295,8 @@ class _TodaysEarningsCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                height: 44,
-                width: 44,
+                height: 40,
+                width: 40,
                 decoration: const BoxDecoration(
                   color: kBrandBlue,
                   shape: BoxShape.circle,
@@ -306,29 +304,23 @@ class _TodaysEarningsCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: SvgPicture.asset(
                   'assets/svgs/wallet_icon.svg',
-                  width: 22,
-                  height: 18,
-                  colorFilter: const ColorFilter.mode(
-                    kWhite,
-                    BlendMode.srcIn,
-                  ),
+                  width: 20,
+                  height: 17,
+                  colorFilter: const ColorFilter.mode(kWhite, BlendMode.srcIn),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  "Today's Earnings",
-                  style: kTripSubSectionSB,
-                ),
+                child: Text("Today's Earnings", style: kTripSubSectionSB),
               ),
               const Icon(
                 Icons.chevron_right_rounded,
                 color: kChevronGrey,
-                size: 24,
+                size: 22,
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -349,34 +341,32 @@ class _TodaysEarningsCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
-                        vertical: 5,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: kActiveGreenBg,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        '+ ₹ 235 Bonus',
-                        style: kTripBadgeSB,
-                      ),
+                      child: Text('+ ₹ 235 Bonus', style: kTripBadgeSB),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               SizedBox(
-                height: 56,
-                width: 88,
+                height: 64,
+                width: 96,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: _barHeights
                       .map(
                         (h) => Container(
-                          width: 10,
-                          height: 56 * h,
+                          width: 9,
+                          height: 64 * h,
                           decoration: BoxDecoration(
-                            color: kBrandBlue.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(4),
+                            color: _kEarningsBarBlue,
+                            borderRadius: BorderRadius.circular(3),
                           ),
                         ),
                       )
@@ -406,11 +396,11 @@ class _TripPreferenceCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.06),
-            blurRadius: 16,
+            blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
@@ -419,7 +409,7 @@ class _TripPreferenceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Trip Preference', style: kTripSubSectionSB),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -432,7 +422,7 @@ class _TripPreferenceCard extends StatelessWidget {
                   onTap: () => onChanged(true),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: _TripOptionTile(
                   title: 'Long Trip',
@@ -445,14 +435,11 @@ class _TripPreferenceCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.check_circle,
-                size: 16,
-                color: kActiveGreen,
-              ),
+              const Icon(Icons.check_circle, size: 15, color: kActiveGreen),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -493,10 +480,10 @@ class _TripOptionTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
-          color: kWhite,
-          borderRadius: BorderRadius.circular(14),
+          color: isSelected ? _kTripSelectedBg : kWhite,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? kGoldAccent : kCardBorder,
             width: isSelected ? 1.5 : 1,
@@ -504,13 +491,9 @@ class _TripOptionTile extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 32, color: iconColor),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: kCaption14B,
-              textAlign: TextAlign.center,
-            ),
+            Icon(icon, size: 28, color: iconColor),
+            const SizedBox(height: 6),
+            Text(title, style: kCaption14B, textAlign: TextAlign.center),
             const SizedBox(height: 2),
             Text(
               subtitle,
@@ -533,30 +516,48 @@ class _PromoBannerCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _kPromoCardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: kGoldAccent.withValues(alpha: 0.55)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kGoldAccent.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
-            color: kBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: kBlack.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Stack(
         children: [
           Positioned(
-            right: -8,
+            right: 0,
             bottom: 0,
             top: 0,
-            child: Image.asset(
-              'assets/pngs/car_image.png',
-              fit: BoxFit.contain,
+            width: 130,
+            child: Stack(
               alignment: Alignment.centerRight,
+              children: [
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Image.asset(
+                    'assets/pngs/car_shadow.png',
+                    width: 100,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Image.asset(
+                    'assets/pngs/car_image.png',
+                    fit: BoxFit.contain,
+                    alignment: Alignment.centerRight,
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 120, 16),
+            padding: const EdgeInsets.fromLTRB(16, 14, 118, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -564,7 +565,7 @@ class _PromoBannerCard extends StatelessWidget {
                   'Drive More. Earn More!',
                   style: kCaption14B.copyWith(fontSize: kSize16),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 Text(
                   'Complete 20 trips this week and get 1,000 extra',
                   style: kCaption13R.copyWith(
@@ -572,7 +573,7 @@ class _PromoBannerCard extends StatelessWidget {
                     height: 1.35,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   'Learn more',
                   style: kStyle(
