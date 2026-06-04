@@ -86,9 +86,13 @@ class _EndTripScreenState extends State<EndTripScreen> {
               bottom: MediaQuery.sizeOf(context).height * 0.42,
               child: const _SosButton(),
             ),
-            const Align(
+            Align(
               alignment: Alignment.bottomCenter,
-              child: _EndTripBottomPanel(),
+              child: _EndTripBottomPanel(
+                onEndTrip: () {
+                  Navigator.pushReplacementNamed(context, 'tripCompleted');
+                },
+              ),
             ),
           ],
         ),
@@ -377,7 +381,9 @@ class _SosButton extends StatelessWidget {
 }
 
 class _EndTripBottomPanel extends StatelessWidget {
-  const _EndTripBottomPanel();
+  const _EndTripBottomPanel({required this.onEndTrip});
+
+  final VoidCallback onEndTrip;
 
   @override
   Widget build(BuildContext context) {
@@ -403,6 +409,7 @@ class _EndTripBottomPanel extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPadding + 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const _DestinationTripCard(),
                 const SizedBox(height: 20),
@@ -412,7 +419,7 @@ class _EndTripBottomPanel extends StatelessWidget {
                   fontSize: kSize16,
                   buttonColor: kTripCtaBlue,
                   labelColor: kWhite,
-                  onPressed: () {},
+                  onPressed: onEndTrip,
                 ),
               ],
             ),
