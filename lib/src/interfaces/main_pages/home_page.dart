@@ -4,13 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-const _kHomeHeaderBlue = Color(0xFF1A5288);
-const _kHomeHeaderButtonBlue = Color(0xFF2B6A9A);
+const _kHomeHeaderBlue = Color(0xFF1E518B);
 const _kOnlineCardBg = Color(0xFF164A72);
 const _kPromoCardBg = Color(0xFFFEFAF2);
 const _kTripSelectedBg = Color(0xFFFFF6EB);
-const _kToggleOrange = Color(0xFFF2994A);
+const _kToggleOrange = Color(0xFFE68C3A);
 const _kEarningsBarBlue = Color(0xFF1E5C8D);
+
+/// Content height inside the blue header (greeting + online card + inner padding).
+const _kHeaderContentHeight = 156.0;
+
+/// How far the center of the header curve extends below the content box.
+const _kHeaderCurveDepth = 70.0;
+
+/// Pulls the earnings card up so ~40% sits on the blue header.
+const _kEarningsCardOverlap = 58.0;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,6 +33,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    final headerTotalHeight =
+        topPadding + _kHeaderContentHeight + _kHeaderCurveDepth;
+    final scrollTopPadding = headerTotalHeight - _kEarningsCardOverlap;
+    final mapTop = topPadding + _kHeaderContentHeight - 12;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
@@ -34,10 +48,11 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         backgroundColor: kScreenBg,
         body: Stack(
+          clipBehavior: Clip.none,
           fit: StackFit.expand,
           children: [
             Positioned(
-              top: MediaQuery.sizeOf(context).height * 0.24,
+              top: mapTop,
               left: 0,
               right: 0,
               bottom: 0,
@@ -47,32 +62,35 @@ class _HomePageState extends State<HomePage> {
                 alignment: Alignment.topCenter,
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _HomeHeader(
-                  isOnline: _isOnline,
-                  onOnlineChanged: (value) => setState(() => _isOnline = value),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                    child: Column(
-                      children: [
-                        const _TodaysEarningsCard(),
-                        const SizedBox(height: 12),
-                        _TripPreferenceCard(
-                          isShortTrip: _isShortTrip,
-                          onChanged: (isShort) =>
-                              setState(() => _isShortTrip = isShort),
-                        ),
-                        const SizedBox(height: 12),
-                        const _PromoBannerCard(),
-                      ],
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _HomeHeader(
+                isOnline: _isOnline,
+                onOnlineChanged: (value) => setState(() => _isOnline = value),
+                contentHeight: _kHeaderContentHeight,
+                curveDepth: _kHeaderCurveDepth,
+              ),
+            ),
+            Positioned.fill(
+              child: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                padding: EdgeInsets.fromLTRB(20, scrollTopPadding, 20, 100),
+                child: Column(
+                  children: [
+                    const _TodaysEarningsCard(),
+                    const SizedBox(height: 12),
+                    _TripPreferenceCard(
+                      isShortTrip: _isShortTrip,
+                      onChanged: (isShort) =>
+                          setState(() => _isShortTrip = isShort),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    const _PromoBannerCard(),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -82,105 +100,150 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({required this.isOnline, required this.onOnlineChanged});
+  const _HomeHeader({
+    required this.isOnline,
+    required this.onOnlineChanged,
+    required this.contentHeight,
+    required this.curveDepth,
+  });
 
   final bool isOnline;
   final ValueChanged<bool> onOnlineChanged;
+  final double contentHeight;
+  final double curveDepth;
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
+    final totalHeight = topPadding + contentHeight + curveDepth + 20;
 
-    return ClipPath(
-      clipper: _HomeHeaderClipper(),
-      child: Container(
-        color: _kHomeHeaderBlue,
-        padding: EdgeInsets.fromLTRB(20, topPadding + 8, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return SizedBox(
+      height: totalHeight,
+      child: ClipPath(
+        clipper: _HomeHeaderClipper(curveDepth: curveDepth),
+        child: Container(
+          color: _kHomeHeaderBlue,
+          padding: EdgeInsets.fromLTRB(20, topPadding + 8, 20, curveDepth + 18),
+          child: SizedBox(
+            height: contentHeight,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hii Kumar!',
-                        style: kStyle(
-                          kSemiBold,
-                          kSize22,
-                          color: kWhite,
-                          height: 1.15,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.location_on,
-                            size: 15,
-                            color: kWhite.withValues(alpha: 0.9),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'Edappally, Lulu Mall',
-                              style: kCaption14R.copyWith(
-                                color: kWhite.withValues(alpha: 0.85),
-                                height: 1.2,
-                              ),
+                          Text(
+                            'Hii Kumar!',
+                            style: kStyle(
+                              kSemiBold,
+                              kSize22,
+                              color: kWhite,
+                              height: 1.15,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 15,
+                                color: kWhite.withValues(alpha: 0.9),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  'Edappally, Lulu Mall',
+                                  style: kCaption14R.copyWith(
+                                    color: kWhite.withValues(alpha: 0.85),
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: kWhite.withValues(alpha: 0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        color: kWhite,
+                        size: 22,
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: _kHomeHeaderButtonBlue.withValues(alpha: 0.85),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.notifications_none_rounded,
-                    color: kWhite,
-                    size: 22,
+                const SizedBox(height: 14),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _OnlineStatusCard(
+                      isOnline: isOnline,
+                      onChanged: onOnlineChanged,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            _OnlineStatusCard(isOnline: isOnline, onChanged: onOnlineChanged),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
+/// Bottom edge: sides sit higher; center dips lower (tongue over the map).
 class _HomeHeaderClipper extends CustomClipper<Path> {
+  _HomeHeaderClipper({required this.curveDepth});
+
+  final double curveDepth;
+
   @override
   Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height - 28);
-    path.quadraticBezierTo(
-      size.width * 0.5,
-      size.height + 22,
-      0,
-      size.height - 28,
-    );
-    path.close();
+    final w = size.width;
+    final h = size.height;
+    final sideInset = 0.0;
+    final sideY = h - curveDepth * 0.35;
+    final centerY = h;
+
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(w, 0)
+      ..lineTo(w - sideInset, sideY)
+      ..cubicTo(
+        w * 0.82,
+        sideY + curveDepth * 0.15,
+        w * 0.62,
+        centerY,
+        w * 0.5,
+        centerY,
+      )
+      ..cubicTo(
+        w * 0.38,
+        centerY,
+        w * 0.18,
+        sideY + curveDepth * 0.15,
+        sideInset,
+        sideY,
+      )
+      ..close();
+
     return path;
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(covariant _HomeHeaderClipper oldClipper) =>
+      oldClipper.curveDepth != curveDepth;
 }
 
 class _OnlineStatusCard extends StatelessWidget {
@@ -194,8 +257,8 @@ class _OnlineStatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: _kOnlineCardBg.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(14),
+        color: _kOnlineCardBg.withValues(alpha: 0.68),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
@@ -232,7 +295,7 @@ class _OnlineStatusCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isOnline ? 'You are Online' : 'You are Offline',
+                  'You are Online',
                   style: kStyle(
                     kSemiBold,
                     kSize15,
@@ -276,106 +339,108 @@ class _TodaysEarningsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: kWhite,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: kBlack.withValues(alpha: 0.07),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                height: 40,
-                width: 40,
-                decoration: const BoxDecoration(
-                  color: kBrandBlue,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  'assets/svgs/wallet_icon.svg',
-                  width: 20,
-                  height: 17,
-                  colorFilter: const ColorFilter.mode(kWhite, BlendMode.srcIn),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text("Today's Earnings", style: kTripSubSectionSB),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: kChevronGrey,
-                size: 22,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '₹ 235',
-                      style: kStyle(
-                        kSemiBold,
-                        kSize30,
-                        color: kBrandBlue,
-                        height: 1.05,
-                      ),
+    return Material(
+      color: Colors.transparent,
+      elevation: 6,
+      shadowColor: kBlack.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: kWhite,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  height: 25,
+                  width: 40,
+                  decoration: const BoxDecoration(
+                    color: kBrandBlue,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(
+                    'assets/svgs/wallet_icon.svg',
+                    width: 20,
+                    height: 17,
+                    colorFilter: const ColorFilter.mode(
+                      kWhite,
+                      BlendMode.srcIn,
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: kActiveGreenBg,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text('+ ₹ 235 Bonus', style: kTripBadgeSB),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: 64,
-                width: 96,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: _barHeights
-                      .map(
-                        (h) => Container(
-                          width: 9,
-                          height: 64 * h,
-                          decoration: BoxDecoration(
-                            color: _kEarningsBarBlue,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text("Today's Earnings", style: kTripSubSectionSB),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: kChevronGrey,
+                  size: 22,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '₹ 235',
+                        style: kStyle(
+                          kSemiBold,
+                          kSize30,
+                          color: kBrandBlue,
+                          height: 1.05,
                         ),
-                      )
-                      .toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: kActiveGreenBg,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text('+ ₹ 235 Bonus', style: kTripBadgeSB),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 64,
+                  width: 96,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: _barHeights
+                        .map(
+                          (h) => Container(
+                            width: 9,
+                            height: 64 * h,
+                            decoration: BoxDecoration(
+                              color: _kEarningsBarBlue,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
