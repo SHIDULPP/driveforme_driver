@@ -69,9 +69,7 @@ class _EndTripScreenState extends State<EndTripScreen> {
             Positioned(
               top: topPadding + 8,
               left: 16,
-              child: _MapBackButton(
-                onTap: () => Navigator.maybePop(context),
-              ),
+              child: _MapBackButton(onTap: () => Navigator.maybePop(context)),
             ),
             Positioned(
               top: topPadding + 60,
@@ -291,12 +289,7 @@ class _TripStatusCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             timerText,
-            style: kStyle(
-              kSemiBold,
-              kSize22,
-              color: kWhite,
-              height: 1.05,
-            ),
+            style: kStyle(kSemiBold, kSize22, color: kWhite, height: 1.05),
           ),
         ],
       ),
@@ -327,10 +320,7 @@ class _EarningsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '₹ 235',
-            style: kDriverFoundPriceSB.copyWith(fontSize: kSize20),
-          ),
+          Text('₹ 235', style: kDriverFoundPriceSB.copyWith(fontSize: kSize20)),
           const SizedBox(height: 2),
           Text(
             'earned so far',
@@ -350,40 +340,37 @@ class _SosButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: kWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kSosRed.withValues(alpha: 0.85)),
-        boxShadow: [
-          BoxShadow(
-            color: kBlack.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'SOS',
-            style: kStyle(
-              kBold,
-              kSize16,
-              color: kSosRed,
-              height: 1.1,
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pushNamed('sos_countdown');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: kWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: kSosRed.withValues(alpha: 0.85)),
+          boxShadow: [
+            BoxShadow(
+              color: kBlack.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-          Text(
-            'Emergency',
-            style: kCaption11R.copyWith(
-              color: kSosRed,
-              fontWeight: kMedium,
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'SOS',
+              style: kStyle(kBold, kSize16, color: kSosRed, height: 1.1),
             ),
-          ),
-        ],
+            Text(
+              'Emergency',
+              style: kCaption11R.copyWith(color: kSosRed, fontWeight: kMedium),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -533,10 +520,7 @@ class _DestinationTripCard extends StatelessWidget {
 }
 
 class _TripStatItem extends StatelessWidget {
-  const _TripStatItem({
-    required this.label,
-    required this.value,
-  });
+  const _TripStatItem({required this.label, required this.value});
 
   final String label;
   final String value;

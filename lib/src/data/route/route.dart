@@ -1,4 +1,7 @@
 import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_countdown_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_help_on_way_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_select_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/driver_arrived_screen.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/end_trip.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_screen.dart';
@@ -186,6 +189,41 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
+    case 'sos_countdown':
+      final countdownArgs = settings?.arguments as Map?;
+      page = SosCountdownPage(
+        locationLabel:
+            countdownArgs?['locationLabel'] as String? ??
+            'MG Road, Eranakulam, Kochi, GPS Active',
+        initialSeconds: countdownArgs?['initialSeconds'] as int? ?? 6,
+      );
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'sos_select':
+      final sosArgs = settings?.arguments as Map?;
+      page = SosSelectPage(
+        locationLabel:
+            sosArgs?['locationLabel'] as String? ??
+            'Live location shared . MG road, Erankulam',
+      );
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'sos_help_on_way':
+      final helpArgs = settings?.arguments as Map?;
+      page = SosHelpOnWayPage(
+        referenceNumber:
+            helpArgs?['referenceNumber'] as String? ?? 'SOS - 2014 - 9568',
+        locationLine1:
+            helpArgs?['locationLine1'] as String? ?? 'MG Road, Eranakulam',
+        locationLine2:
+            helpArgs?['locationLine2'] as String? ??
+            'Kochi, Kerala, 9.9312 N, 76.2673 E',
+        supportPhone: helpArgs?['supportPhone'] as String? ?? '+91 6282359916',
+      );
 
     default:
       if (settings?.name?.startsWith('/app') == true) {
