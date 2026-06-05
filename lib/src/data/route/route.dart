@@ -5,10 +5,12 @@ import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_select_page.
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/driver_arrived_screen.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/end_trip.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/cash_collected.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/raise_ticket.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_completed.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_screen.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart'
+    show TripDetailsPage, TripTicketInfo;
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
@@ -205,9 +207,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
     case 'tripDetails':
       final tripDetailsArgs = settings?.arguments as Map?;
-      final tripData = tripDetailsArgs?['trip'] as TripCardData? ??
+      final tripData =
+          tripDetailsArgs?['trip'] as TripCardData? ??
           TripCardData.dummyUpcoming();
-      page = TripDetailsPage(trip: tripData);
+      final ticket = tripDetailsArgs?['ticket'] as TripTicketInfo?;
+      page = TripDetailsPage(trip: tripData, ticket: ticket);
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
@@ -246,6 +250,14 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
             'Kochi, Kerala, 9.9312 N, 76.2673 E',
         supportPhone: helpArgs?['supportPhone'] as String? ?? '+91 6282359916',
       );
+
+    case 'raiseTicket':
+      final ticketArgs = settings?.arguments as Map?;
+      final tripId = ticketArgs?['tripId'] as String? ?? '';
+      page = RaiseTicketPage(tripId: tripId);
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
 
     default:
       if (settings?.name?.startsWith('/app') == true) {

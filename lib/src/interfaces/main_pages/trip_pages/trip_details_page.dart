@@ -19,10 +19,33 @@ const _kInvoiceButtonBg = Color(0xFFE6EEF5);
 const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
 
+class TripTicketInfo {
+  const TripTicketInfo({
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  static const dummy = TripTicketInfo(
+    title: 'Passenger not reachable at pickup',
+    description:
+        'I reached the pickup location but the passenger was not responding '
+        'to calls or messages. I waited for more than 10 minutes. Please '
+        'advise if this should be marked as a no-show.',
+  );
+}
+
 class TripDetailsPage extends StatelessWidget {
-  const TripDetailsPage({super.key, required this.trip});
+  const TripDetailsPage({
+    super.key,
+    required this.trip,
+    this.ticket,
+  });
 
   final TripCardData trip;
+  final TripTicketInfo? ticket;
 
   bool get _showBottomActions =>
       trip.status == TripCardStatus.completed ||
@@ -51,7 +74,13 @@ class TripDetailsPage extends StatelessWidget {
                     20,
                     _showBottomActions ? 16 : 24,
                   ),
-                  children: [_TripDetailsCard(trip: trip)],
+                  children: [
+                    _TripDetailsCard(trip: trip),
+                    if (ticket != null) ...[
+                      const SizedBox(height: 12),
+                      _TripTicketCard(ticket: ticket!),
+                    ],
+                  ],
                 ),
               ),
               if (_showBottomActions) const _TripDetailsBottomActions(),
@@ -675,7 +704,61 @@ class _TripDetailsBottomActions extends StatelessWidget {
               fontSize: kSize16,
               buttonColor: _kNavigateBlue,
               labelColor: kWhite,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushNamed('raiseTicket');
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TripTicketCard extends StatelessWidget {
+  const _TripTicketCard({required this.ticket});
+
+  final TripTicketInfo ticket;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: kBlack.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TICKET',
+            style: kStyle(
+              kMedium,
+              kSize11,
+              color: kMutedText,
+              height: 1.1,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            ticket.title,
+            style: kCaption14B.copyWith(height: 1.3),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            ticket.description,
+            style: kCaption13R.copyWith(
+              color: kTripBodyMuted,
+              height: 1.45,
             ),
           ),
         ],

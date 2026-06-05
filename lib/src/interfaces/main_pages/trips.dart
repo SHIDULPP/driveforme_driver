@@ -1,6 +1,7 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -77,7 +78,10 @@ class _TripsPageState extends State<TripsPage> {
         Navigator.pushNamed(
           context,
           'tripDetails',
-          arguments: {'trip': _tripDataForTab(_selectedTab)},
+          arguments: {
+            'trip': _tripDataForTab(_selectedTab),
+            if (_selectedTab == _TripTab.completed) 'ticket': TripTicketInfo.dummy,
+          },
         );
     }
   }
