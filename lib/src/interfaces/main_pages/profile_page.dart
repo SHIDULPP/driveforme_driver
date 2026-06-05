@@ -164,6 +164,8 @@ void _onMenuTap(BuildContext context, String title) {
   switch (title) {
     case 'Personal Details':
       Navigator.pushNamed(context, 'personalInfo');
+    case 'Documents':
+      Navigator.pushNamed(context, 'documentsPage');
   }
 }
 

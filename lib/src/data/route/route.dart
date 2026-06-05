@@ -21,6 +21,7 @@ import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart
 import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/registration.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/documents_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/personal_info.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -254,6 +255,12 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
 
     case 'personalInfo':
       page = const PersonalInfoPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'documentsPage':
+      page = const DocumentsPage();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
