@@ -160,6 +160,13 @@ class _ProfileSummaryCard extends StatelessWidget {
   }
 }
 
+void _onMenuTap(BuildContext context, String title) {
+  switch (title) {
+    case 'Personal Details':
+      Navigator.pushNamed(context, 'personalInfo');
+  }
+}
+
 class _ProfileMenuCard extends StatelessWidget {
   const _ProfileMenuCard();
 
@@ -184,7 +191,7 @@ class _ProfileMenuCard extends StatelessWidget {
             children: [
               _ProfileMenuTile(
                 title: _kMenuItems[index],
-                onTap: () {},
+                onTap: () => _onMenuTap(context, _kMenuItems[index]),
               ),
               if (!isLast)
                 const Divider(

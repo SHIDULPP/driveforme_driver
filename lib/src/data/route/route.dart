@@ -21,6 +21,7 @@ import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart
 import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/registration.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/personal_info.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
 import 'package:flutter/material.dart';
 //router file
@@ -250,6 +251,12 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
             'Kochi, Kerala, 9.9312 N, 76.2673 E',
         supportPhone: helpArgs?['supportPhone'] as String? ?? '+91 6282359916',
       );
+
+    case 'personalInfo':
+      page = const PersonalInfoPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
 
     case 'raiseTicket':
       final ticketArgs = settings?.arguments as Map?;
