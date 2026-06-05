@@ -25,6 +25,7 @@ import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/docume
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/notifications.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/about_us.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/faq.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/help_and_support.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/refer_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/personal_info.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
@@ -289,6 +290,12 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
 
     case 'faqPage':
       page = const FaqPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'helpAndSupportPage':
+      page = const HelpAndSupportPage();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

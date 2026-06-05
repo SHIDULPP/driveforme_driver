@@ -166,6 +166,8 @@ void _onMenuTap(BuildContext context, String title) {
       Navigator.pushNamed(context, 'personalInfo');
     case 'Documents':
       Navigator.pushNamed(context, 'documentsPage');
+    case 'Help & Support':
+      Navigator.pushNamed(context, 'helpAndSupportPage');
     case 'Notifications':
       Navigator.pushNamed(context, 'notificationsPage');
     case 'Refer & Earn':
