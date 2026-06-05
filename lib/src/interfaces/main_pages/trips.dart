@@ -61,12 +61,25 @@ class _TripsPageState extends State<TripsPage> {
       children: [
         TripCard(
           data: tripData,
-          onButtonPressed: _selectedTab == _TripTab.ongoing
-              ? () => Navigator.pushNamed(context, 'driverArrived')
-              : () {},
+          onButtonPressed: _onTripCardButtonPressed,
         ),
       ],
     );
+  }
+
+  void _onTripCardButtonPressed() {
+    switch (_selectedTab) {
+      case _TripTab.ongoing:
+        Navigator.pushNamed(context, 'driverArrived');
+      case _TripTab.upcoming:
+      case _TripTab.completed:
+      case _TripTab.cancelled:
+        Navigator.pushNamed(
+          context,
+          'tripDetails',
+          arguments: {'trip': _tripDataForTab(_selectedTab)},
+        );
+    }
   }
 
   TripCardData _tripDataForTab(_TripTab tab) {

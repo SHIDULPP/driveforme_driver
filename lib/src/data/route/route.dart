@@ -7,6 +7,8 @@ import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/end_trip.
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/cash_collected.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_completed.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_screen.dart';
+import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
@@ -200,6 +202,14 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       page = const CashCollectedScreen();
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 350);
+      break;
+    case 'tripDetails':
+      final tripDetailsArgs = settings?.arguments as Map?;
+      final tripData = tripDetailsArgs?['trip'] as TripCardData? ??
+          TripCardData.dummyUpcoming();
+      page = TripDetailsPage(trip: tripData);
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'sos_countdown':
       final countdownArgs = settings?.arguments as Map?;
