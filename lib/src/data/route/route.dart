@@ -22,6 +22,10 @@ import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/registration.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/documents_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/notifications.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/about_us.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/faq.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/refer_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/personal_info.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -261,6 +265,30 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
 
     case 'documentsPage':
       page = const DocumentsPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'notificationsPage':
+      page = const NotificationsPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'referPage':
+      page = const ReferPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'aboutUsPage':
+      page = const AboutUsPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'faqPage':
+      page = const FaqPage();
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
