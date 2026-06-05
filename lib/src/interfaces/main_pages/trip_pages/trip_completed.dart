@@ -103,10 +103,9 @@ class TripCompletedScreen extends StatelessWidget {
                         buttonColor: kTripCtaBlue,
                         labelColor: kWhite,
                         onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
+                          Navigator.pushReplacementNamed(
                             context,
-                            'navBar',
-                            (route) => false,
+                            'cashCollected',
                           );
                         },
                       ),
@@ -148,12 +147,7 @@ class _TotalEarnedBadge extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '₹ 235',
-            style: kStyle(
-              kSemiBold,
-              kSize24,
-              color: kWhite,
-              height: 1.05,
-            ),
+            style: kStyle(kSemiBold, kSize24, color: kWhite, height: 1.05),
           ),
         ],
       ),
@@ -187,10 +181,7 @@ class _PaymentSummaryCard extends StatelessWidget {
                   style: kCaption14M.copyWith(color: kTripBodyMuted),
                 ),
                 const SizedBox(height: 16),
-                const _PaymentRow(
-                  label: 'Base fare (2 hrs)',
-                  amount: '₹ 235',
-                ),
+                const _PaymentRow(label: 'Base fare (2 hrs)', amount: '₹ 235'),
               ],
             ),
           ),
@@ -245,10 +236,7 @@ class _PaymentRow extends StatelessWidget {
                 style: kCaption14M.copyWith(color: _kExtraTimeText),
               ),
             ),
-            Text(
-              amount,
-              style: kCaption14B.copyWith(color: _kExtraTimeText),
-            ),
+            Text(amount, style: kCaption14B.copyWith(color: _kExtraTimeText)),
           ],
         ),
       );
@@ -289,8 +277,8 @@ class _DashedDivider extends StatelessWidget {
       builder: (context, constraints) {
         const dashWidth = 5.0;
         const dashSpace = 4.0;
-        final dashCount =
-            (constraints.maxWidth / (dashWidth + dashSpace)).floor();
+        final dashCount = (constraints.maxWidth / (dashWidth + dashSpace))
+            .floor();
 
         return Row(
           children: List.generate(dashCount, (index) {

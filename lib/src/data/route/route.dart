@@ -4,6 +4,7 @@ import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_help_on_way_
 import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_select_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/driver_arrived_screen.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/end_trip.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/cash_collected.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_completed.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_screen.dart';
 import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
@@ -192,6 +193,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
     case 'tripCompleted':
       page = const TripCompletedScreen();
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 350);
+      break;
+    case 'cashCollected':
+      page = const CashCollectedScreen();
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 350);
       break;
