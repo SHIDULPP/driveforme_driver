@@ -1,11 +1,14 @@
+import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/date_utils.dart';
 import 'package:driveforme_driver/src/interfaces/animations/index.dart' as anim;
 import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/dropdown.dart';
 import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,13 +50,52 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
     super.dispose();
   }
 
-  void _handleSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const DocumentsUploadPage()),
-        (route) => false,
-      );
+  Future<void> _handleSubmit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    if (selectedGender == null || selectedGender!.isEmpty) {
+      _showMessage('Please select your gender');
+      return;
     }
+
+    if (selectedLocation == null || selectedLocation!.isEmpty) {
+      _showMessage('Please select your location');
+      return;
+    }
+
+    ref.read(loadingProvider.notifier).startLoading();
+
+    try {
+      final response = await ref
+          .read(onboardingApiProvider)
+          .submitDriverProfile(
+            fullName: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            dateOfBirth: dobUiToApi(_dobController.text.trim()),
+            gender: genderUiToApi(selectedGender!),
+            location: locationUiToApi(selectedLocation!),
+          );
+
+      if (!mounted) return;
+
+      if (!response.success) {
+        _showMessage(response.message ?? 'Failed to save profile');
+        return;
+      }
+
+      ref.invalidate(userProvider);
+      NavigationService().pushNamedAndRemoveUntil('documentsUpload');
+    } on FormatException {
+      _showMessage('Please enter date of birth as DD-MM-YYYY');
+    } finally {
+      ref.read(loadingProvider.notifier).stopLoading();
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -129,8 +171,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) =>
                               FocusScope.of(context).requestFocus(_emailFocus),
-                          // validator: (v) =>
-                          //     (v == null || v.trim().isEmpty) ? '' : null,
+                          validator: (v) =>
+                              (v == null || v.trim().isEmpty)
+                              ? 'Full name is required'
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -149,13 +193,17 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           controller: _emailController,
                           focusNode: _emailFocus,
                           textInputAction: TextInputAction.next,
-                          // validator: (v) {
-                          //   if (v == null || v.trim().isEmpty) return '';
-                          //   final emailRegex = RegExp(
-                          //     r'^[\w\.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$',
-                          //   );
-                          //   return emailRegex.hasMatch(v.trim()) ? null : '';
-                          // },
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Email is required';
+                            }
+                            final emailRegex = RegExp(
+                              r'^[\w\.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$',
+                            );
+                            return emailRegex.hasMatch(v.trim())
+                                ? null
+                                : 'Enter a valid email';
+                          },
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -172,8 +220,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           type: CustomFieldType.date,
                           hint: 'DD-MM-YYYY',
                           controller: _dobController,
-                          // validator: (v) =>
-                          //     (v == null || v.trim().isEmpty) ? '' : null,
+                          validator: (v) =>
+                              (v == null || v.trim().isEmpty)
+                              ? 'Date of birth is required'
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -189,10 +239,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         child: FormField<String>(
                           key: _fieldKeys['gender'],
                           initialValue: selectedGender,
-                          // validator: (value) =>
-                          //     selectedGender == null || selectedGender!.isEmpty
-                          //     ? "genderIsRequired"
-                          //     : null,
+                          validator: (value) =>
+                              selectedGender == null || selectedGender!.isEmpty
+                              ? 'Gender is required'
+                              : null,
                           builder: (FormFieldState<String> state) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,17 +295,18 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         child: FormField<String>(
                           key: _fieldKeys['location'],
                           initialValue: selectedLocation,
-                          // validator: (value) =>
-                          //     selectedGender == null || selectedGender!.isEmpty
-                          //     ? "genderIsRequired"
-                          //     : null,
+                          validator: (value) =>
+                              selectedLocation == null ||
+                                  selectedLocation!.isEmpty
+                              ? 'Location is required'
+                              : null,
                           builder: (FormFieldState<String> state) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AnimatedDropdown<String>(
                                   hint: "Select Location",
-                                  value: selectedGender,
+                                  value: selectedLocation,
                                   items: const [
                                     'Kochi',
                                     'Kozhikode',
@@ -268,7 +319,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                                   onChanged: (v) {
                                     state.didChange(v);
                                     setState(() {
-                                      selectedGender = v;
+                                      selectedLocation = v;
                                     });
                                   },
                                 ),

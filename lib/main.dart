@@ -1,11 +1,14 @@
 import 'package:driveforme_driver/src/data/providers/screen_data_providers.dart';
 import 'package:driveforme_driver/src/data/route/route.dart' as router;
-import 'package:driveforme_driver/src/data/services/navigation_services';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(ProviderScope(child: const MyApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

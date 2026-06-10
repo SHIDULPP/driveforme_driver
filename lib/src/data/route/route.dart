@@ -11,16 +11,16 @@ import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_scree
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart'
     show TripDetailsPage, TripTicketInfo;
-import 'package:driveforme_driver/src/interfaces/onbording/aadhaar/aadhaar_upload.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/driving_license/driving_license_upload.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/live_photo/selfie_screen.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/live_photo/take_selfie.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/application_rejected.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/application_under_review.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/documents_upload.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/get_started.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/login.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/registration.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/aadhaar/aadhaar_upload.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/driving_license/driving_license_upload.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/live_photo/selfie_screen.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/live_photo/take_selfie.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/application_rejected.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/application_under_review.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/documents_upload.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/get_started.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/login.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/registration.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/documents_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/notifications.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/about_us.dart';
@@ -28,7 +28,7 @@ import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/faq.da
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/help_and_support.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/refer_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/personal_info.dart';
-import 'package:driveforme_driver/src/interfaces/onbording/splash_screen.dart';
+import 'package:driveforme_driver/src/interfaces/onboarding/splash_screen.dart';
 import 'package:flutter/material.dart';
 //router file
 
@@ -257,6 +257,9 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
             'Kochi, Kerala, 9.9312 N, 76.2673 E',
         supportPhone: helpArgs?['supportPhone'] as String? ?? '+91 6282359916',
       );
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
 
     case 'personalInfo':
       page = const PersonalInfoPage();

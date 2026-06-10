@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,13 +87,9 @@ class _EndTripScreenState extends State<EndTripScreen> {
               bottom: MediaQuery.sizeOf(context).height * 0.42,
               child: const _SosButton(),
             ),
-            Align(
+            const Align(
               alignment: Alignment.bottomCenter,
-              child: _EndTripBottomPanel(
-                onEndTrip: () {
-                  Navigator.pushReplacementNamed(context, 'tripCompleted');
-                },
-              ),
+              child: _EndTripBottomPanel(),
             ),
           ],
         ),
@@ -381,9 +378,7 @@ class _SosButton extends StatelessWidget {
 }
 
 class _EndTripBottomPanel extends StatelessWidget {
-  const _EndTripBottomPanel({required this.onEndTrip});
-
-  final VoidCallback onEndTrip;
+  const _EndTripBottomPanel();
 
   @override
   Widget build(BuildContext context) {
@@ -409,7 +404,6 @@ class _EndTripBottomPanel extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPadding + 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const _DestinationTripCard(),
                 const SizedBox(height: 20),
@@ -419,7 +413,9 @@ class _EndTripBottomPanel extends StatelessWidget {
                   fontSize: kSize16,
                   buttonColor: kTripCtaBlue,
                   labelColor: kWhite,
-                  onPressed: onEndTrip,
+                  onPressed: () {
+                    NavigationService().pushNamedAndRemoveUntil('tripCompleted');
+                  },
                 ),
               ],
             ),
