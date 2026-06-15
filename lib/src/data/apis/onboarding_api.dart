@@ -44,6 +44,22 @@ class OnboardingApi {
       requireUserId: true,
     );
   }
+
+  Future<ApiResponse<Map<String, dynamic>>> submitDriverIdentity({
+    required String aadhaarImageUrl,
+    required String drivingLicenseImageUrl,
+    required String livePhotoUrl,
+  }) {
+    return _api.post(
+      '/onboarding/driver/identity',
+      {
+        'aadhaarImageUrl': aadhaarImageUrl,
+        'drivingLicenseImageUrl': drivingLicenseImageUrl,
+        'livePhotoUrl': livePhotoUrl,
+      },
+      requireUserId: true,
+    );
+  }
 }
 
 final onboardingApiProvider = Provider<OnboardingApi>((ref) {

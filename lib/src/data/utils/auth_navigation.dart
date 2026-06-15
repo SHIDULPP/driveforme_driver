@@ -6,10 +6,9 @@ String routeForOnboardingStatus(String status) {
       return 'navBar';
     case 'profile_pending':
       return 'GetStarted';
-    case 'documents_pending':
+    case 'identity_pending':
       return 'documentsUpload';
-    case 'under_review':
-    case 'pending':
+    case 'waiting_approval':
       return 'applicationUnderReview';
     case 'rejected':
       return 'applicationRejected';

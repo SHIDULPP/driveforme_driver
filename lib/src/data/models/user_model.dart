@@ -1,3 +1,40 @@
+class DriverVerification {
+  final String aadhaarImageUrl;
+  final String drivingLicenseImageUrl;
+  final String livePhotoUrl;
+  final DateTime? submittedAt;
+
+  const DriverVerification({
+    this.aadhaarImageUrl = '',
+    this.drivingLicenseImageUrl = '',
+    this.livePhotoUrl = '',
+    this.submittedAt,
+  });
+
+  factory DriverVerification.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const DriverVerification();
+
+    DateTime? submittedAt;
+    final rawSubmittedAt = json['submittedAt'];
+    if (rawSubmittedAt is String && rawSubmittedAt.isNotEmpty) {
+      submittedAt = DateTime.tryParse(rawSubmittedAt);
+    }
+
+    return DriverVerification(
+      aadhaarImageUrl: json['aadhaarImageUrl'] as String? ?? '',
+      drivingLicenseImageUrl:
+          json['drivingLicenseImageUrl'] as String? ?? '',
+      livePhotoUrl: json['livePhotoUrl'] as String? ?? '',
+      submittedAt: submittedAt,
+    );
+  }
+
+  bool get hasAllDocuments =>
+      aadhaarImageUrl.isNotEmpty &&
+      drivingLicenseImageUrl.isNotEmpty &&
+      livePhotoUrl.isNotEmpty;
+}
+
 class UserProfile {
   final String fullName;
   final String email;
@@ -39,6 +76,7 @@ class UserModel {
   final String onboardingStatus;
   final bool isPhoneVerified;
   final UserProfile profile;
+  final DriverVerification driverVerification;
 
   const UserModel({
     required this.userId,
@@ -47,6 +85,7 @@ class UserModel {
     required this.onboardingStatus,
     required this.isPhoneVerified,
     required this.profile,
+    required this.driverVerification,
   });
 
   bool get isApproved => onboardingStatus == 'approved';
@@ -61,6 +100,9 @@ class UserModel {
       isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
       profile: UserProfile.fromJson(
         json['profile'] as Map<String, dynamic>?,
+      ),
+      driverVerification: DriverVerification.fromJson(
+        json['driverVerification'] as Map<String, dynamic>?,
       ),
     );
   }

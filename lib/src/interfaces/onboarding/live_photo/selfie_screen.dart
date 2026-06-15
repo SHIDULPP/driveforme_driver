@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
@@ -98,8 +99,8 @@ class SelfieScreen extends StatelessWidget {
                     context,
                     'takeSelfie',
                   );
-                  if (captured == true && context.mounted) {
-                    Navigator.pop(context, true);
+                  if (captured is DocumentUploadResult && context.mounted) {
+                    Navigator.pop(context, captured);
                   }
                 },
               ),

@@ -1,21 +1,33 @@
+import 'dart:io';
+
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/services/upload_service.dart';
+import 'package:driveforme_driver/src/data/utils/document_upload_helper.dart';
 import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
-class AadhaarUploadPage extends StatefulWidget {
+class AadhaarUploadPage extends ConsumerStatefulWidget {
   const AadhaarUploadPage({super.key});
 
   @override
-  State<AadhaarUploadPage> createState() => _AadhaarUploadPageState();
+  ConsumerState<AadhaarUploadPage> createState() => _AadhaarUploadPageState();
 }
 
-class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
+class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
   final _aadhaarController = TextEditingController();
 
-  bool _hasImage = false;
+  String? _imageUrl;
+  String? _localImagePath;
+  bool _isUploading = false;
+
+  bool get _hasImage => _imageUrl != null && _imageUrl!.isNotEmpty;
 
   bool get _canSubmit =>
       _hasImage &&
@@ -36,16 +48,52 @@ class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
 
   void _onAadhaarChanged() => setState(() {});
 
-  void _setImageUploaded() {
-    setState(() => _hasImage = true);
+  void _clearImage() {
+    setState(() {
+      _imageUrl = null;
+      _localImagePath = null;
+    });
   }
 
-  void _clearImage() {
-    setState(() => _hasImage = false);
+  Future<void> _pickAndUpload({ImageSource? source}) async {
+    if (_isUploading) return;
+
+    setState(() => _isUploading = true);
+    ref.read(loadingProvider.notifier).startLoading();
+
+    try {
+      final result = await pickAndUploadDocumentImage(
+        context: context,
+        uploadService: ref.read(uploadServiceProvider),
+        source: source,
+        folder: 'driver-documents/aadhaar',
+      );
+      if (!mounted || result == null) return;
+
+      setState(() {
+        _imageUrl = result.imageUrl;
+        _localImagePath = result.localPath;
+      });
+    } catch (e) {
+      if (mounted) {
+        _showMessage(e.toString().replaceFirst('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+      ref.read(loadingProvider.notifier).stopLoading();
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(loadingProvider);
+
     return Scaffold(
       backgroundColor: kWhite,
       body: SafeArea(
@@ -80,13 +128,17 @@ class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
                     const SizedBox(height: 24),
                     _hasImage
                         ? _AadhaarPreviewCard(
+                            previewFile: localPreviewFile(_localImagePath),
                             onRetake: _clearImage,
-                            onReplace: _setImageUploaded,
+                            onReplace: () => _pickAndUpload(),
                           )
                         : _AadhaarUploadCard(
-                            onTakePhoto: _setImageUploaded,
-                            onUploadFromGallery: _setImageUploaded,
-                            onTapUploadArea: _setImageUploaded,
+                            isUploading: _isUploading,
+                            onTakePhoto: () =>
+                                _pickAndUpload(source: ImageSource.camera),
+                            onUploadFromGallery: () =>
+                                _pickAndUpload(source: ImageSource.gallery),
+                            onTapUploadArea: () => _pickAndUpload(),
                           ),
                     const SizedBox(height: 24),
                     Text('Aadhaar Number', style: kTripSubSectionSB),
@@ -109,8 +161,17 @@ class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
                 fontSize: kSize16,
                 buttonColor: _canSubmit ? kBrandBlue : kTripCloseBtnBg,
                 labelColor: kWhite,
-                onPressed: _canSubmit
-                    ? () => Navigator.pop(context, true)
+                isLoading: isLoading,
+                onPressed: _canSubmit && !isLoading
+                    ? () {
+                        Navigator.pop(
+                          context,
+                          DocumentUploadResult(
+                            imageUrl: _imageUrl!,
+                            localPath: _localImagePath ?? '',
+                          ),
+                        );
+                      }
                     : null,
               ),
             ),
@@ -123,11 +184,13 @@ class _AadhaarUploadPageState extends State<AadhaarUploadPage> {
 
 class _AadhaarUploadCard extends StatelessWidget {
   const _AadhaarUploadCard({
+    required this.isUploading,
     required this.onTakePhoto,
     required this.onUploadFromGallery,
     required this.onTapUploadArea,
   });
 
+  final bool isUploading;
   final VoidCallback onTakePhoto;
   final VoidCallback onUploadFromGallery;
   final VoidCallback onTapUploadArea;
@@ -144,7 +207,7 @@ class _AadhaarUploadCard extends StatelessWidget {
       child: Column(
         children: [
           GestureDetector(
-            onTap: onTapUploadArea,
+            onTap: isUploading ? null : onTapUploadArea,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
@@ -155,10 +218,19 @@ class _AadhaarUploadCard extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.image_outlined, size: 40, color: kBrandBlue),
+                  if (isUploading)
+                    const SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    )
+                  else
+                    Icon(Icons.image_outlined, size: 40, color: kBrandBlue),
                   const SizedBox(height: 14),
                   Text(
-                    'Tap to upload your image',
+                    isUploading
+                        ? 'Uploading image...'
+                        : 'Tap to upload your image',
                     textAlign: TextAlign.center,
                     style: kCaption14B,
                   ),
@@ -179,7 +251,7 @@ class _AadhaarUploadCard extends StatelessWidget {
                 child: _UploadActionButton(
                   label: 'Take Photo',
                   isPrimary: true,
-                  onTap: onTakePhoto,
+                  onTap: isUploading ? null : onTakePhoto,
                 ),
               ),
               const SizedBox(width: 12),
@@ -187,7 +259,7 @@ class _AadhaarUploadCard extends StatelessWidget {
                 child: _UploadActionButton(
                   label: 'Upload from Gallery',
                   isPrimary: false,
-                  onTap: onUploadFromGallery,
+                  onTap: isUploading ? null : onUploadFromGallery,
                 ),
               ),
             ],
@@ -199,8 +271,13 @@ class _AadhaarUploadCard extends StatelessWidget {
 }
 
 class _AadhaarPreviewCard extends StatelessWidget {
-  const _AadhaarPreviewCard({required this.onRetake, required this.onReplace});
+  const _AadhaarPreviewCard({
+    required this.previewFile,
+    required this.onRetake,
+    required this.onReplace,
+  });
 
+  final File? previewFile;
   final VoidCallback onRetake;
   final VoidCallback onReplace;
 
@@ -223,10 +300,12 @@ class _AadhaarPreviewCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: kActiveGreen, width: 1.5),
             ),
-            child: Image.asset(
-              'assets/pngs/aadhar_image.png',
-              fit: BoxFit.contain,
-            ),
+            child: previewFile != null
+                ? Image.file(previewFile!, fit: BoxFit.contain)
+                : Image.asset(
+                    'assets/pngs/aadhar_image.png',
+                    fit: BoxFit.contain,
+                  ),
           ),
           const SizedBox(height: 14),
           Row(
@@ -263,7 +342,7 @@ class _UploadActionButton extends StatelessWidget {
 
   final String label;
   final bool isPrimary;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

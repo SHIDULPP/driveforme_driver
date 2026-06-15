@@ -1,12 +1,26 @@
+import 'dart:io';
+
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/services/upload_service.dart';
+import 'package:driveforme_driver/src/data/utils/document_upload_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPreviewAsset = 'assets/pngs/take_selfie_example.png';
 
-class TakeSelfiePage extends StatelessWidget {
+class TakeSelfiePage extends ConsumerStatefulWidget {
   const TakeSelfiePage({super.key});
+
+  @override
+  ConsumerState<TakeSelfiePage> createState() => _TakeSelfiePageState();
+}
+
+class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage> {
+  String? _localImagePath;
+  bool _isUploading = false;
 
   static Rect _ovalRect(Size size) {
     final ovalWidth = size.width * 0.78;
@@ -18,8 +32,40 @@ class TakeSelfiePage extends StatelessWidget {
     );
   }
 
+  Future<void> _captureAndUpload() async {
+    if (_isUploading) return;
+
+    setState(() => _isUploading = true);
+    ref.read(loadingProvider.notifier).startLoading();
+
+    try {
+      final result = await pickAndUploadDocumentImage(
+        context: context,
+        uploadService: ref.read(uploadServiceProvider),
+        cameraOnly: true,
+        folder: 'driver-documents/live-photo',
+      );
+      if (!mounted || result == null) return;
+
+      Navigator.pop(context, result);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+      ref.read(loadingProvider.notifier).stopLoading();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final previewFile = localPreviewFile(_localImagePath);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
@@ -36,15 +82,21 @@ class TakeSelfiePage extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: [
-                _DimmedPreviewBackground(),
+                _DimmedPreviewBackground(previewFile: previewFile),
                 Positioned.fromRect(
                   rect: ovalRect,
                   child: ClipOval(
-                    child: Image.asset(
-                      _kPreviewAsset,
-                      fit: BoxFit.cover,
-                      alignment: const Alignment(0, -0.15),
-                    ),
+                    child: previewFile != null
+                        ? Image.file(
+                            previewFile,
+                            fit: BoxFit.cover,
+                            alignment: const Alignment(0, -0.15),
+                          )
+                        : Image.asset(
+                            _kPreviewAsset,
+                            fit: BoxFit.cover,
+                            alignment: const Alignment(0, -0.15),
+                          ),
                   ),
                 ),
                 CustomPaint(
@@ -61,26 +113,26 @@ class TakeSelfiePage extends StatelessWidget {
                           onTap: () => Navigator.pop(context),
                         ),
                       ),
-                      Positioned(
-                        top: 4,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: const BoxDecoration(
-                              color: kActiveGreen,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              color: kWhite,
-                              size: 22,
+                      if (_isUploading)
+                        Positioned(
+                          top: 4,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: kWhite,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                       Positioned(
                         left: 28,
                         right: 28,
@@ -100,7 +152,9 @@ class TakeSelfiePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'Make sure your photo is inside the box and capture a photo.',
+                              _isUploading
+                                  ? 'Uploading your live photo...'
+                                  : 'Make sure your photo is inside the box and capture a photo.',
                               textAlign: TextAlign.center,
                               style: kCaption14R.copyWith(
                                 color: kWhite.withValues(alpha: 0.92),
@@ -116,7 +170,8 @@ class TakeSelfiePage extends StatelessWidget {
                         bottom: 28,
                         child: Center(
                           child: _ShutterButton(
-                            onTap: () => Navigator.pop(context, true),
+                            isDisabled: _isUploading,
+                            onTap: _captureAndUpload,
                           ),
                         ),
                       ),
@@ -133,6 +188,10 @@ class TakeSelfiePage extends StatelessWidget {
 }
 
 class _DimmedPreviewBackground extends StatelessWidget {
+  const _DimmedPreviewBackground({required this.previewFile});
+
+  final File? previewFile;
+
   @override
   Widget build(BuildContext context) {
     return ColorFiltered(
@@ -140,12 +199,19 @@ class _DimmedPreviewBackground extends StatelessWidget {
         kBlack.withValues(alpha: 0.45),
         BlendMode.darken,
       ),
-      child: Image.asset(
-        _kPreviewAsset,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-      ),
+      child: previewFile != null
+          ? Image.file(
+              previewFile!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            )
+          : Image.asset(
+              _kPreviewAsset,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
     );
   }
 }
@@ -200,26 +266,30 @@ class _CameraBackButton extends StatelessWidget {
 }
 
 class _ShutterButton extends StatelessWidget {
-  const _ShutterButton({required this.onTap});
+  const _ShutterButton({required this.onTap, required this.isDisabled});
 
   final VoidCallback onTap;
+  final bool isDisabled;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 80,
-        width: 80,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: kWhite, width: 3),
-        ),
-        padding: const EdgeInsets.all(7),
+      onTap: isDisabled ? null : onTap,
+      child: Opacity(
+        opacity: isDisabled ? 0.5 : 1,
         child: Container(
-          decoration: const BoxDecoration(
-            color: kWhite,
+          height: 80,
+          width: 80,
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
+            border: Border.all(color: kWhite, width: 3),
+          ),
+          padding: const EdgeInsets.all(7),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: kWhite,
+              shape: BoxShape.circle,
+            ),
           ),
         ),
       ),

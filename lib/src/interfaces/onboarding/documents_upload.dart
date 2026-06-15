@@ -1,32 +1,104 @@
+import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/interfaces/animations/index.dart' as anim;
 import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kActionButtonBg = Color(0xFFE7E7F1);
 const _kImageBorder = Color(0xFFD4C4A8);
 const _kImageBg = Color(0xFFF8F8FA);
 const _kContinueDisabled = Color(0xFFD4D8E8);
 
-class DocumentsUploadPage extends StatefulWidget {
+class DocumentsUploadPage extends ConsumerStatefulWidget {
   const DocumentsUploadPage({super.key});
 
   @override
-  State<DocumentsUploadPage> createState() => _DocumentsUploadPageState();
+  ConsumerState<DocumentsUploadPage> createState() =>
+      _DocumentsUploadPageState();
 }
 
-class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
-  bool _aadhaarUploaded = false;
-  bool _licenseUploaded = false;
-  bool _livePhotoCaptured = false;
+class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
+  String? _aadhaarImageUrl;
+  String? _licenseImageUrl;
+  String? _livePhotoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingDocuments();
+  }
+
+  Future<void> _loadExistingDocuments() async {
+    final user = await ref.read(userProvider.future);
+    if (!mounted || user == null) return;
+
+    final verification = user.driverVerification;
+    setState(() {
+      if (verification.aadhaarImageUrl.isNotEmpty) {
+        _aadhaarImageUrl = verification.aadhaarImageUrl;
+      }
+      if (verification.drivingLicenseImageUrl.isNotEmpty) {
+        _licenseImageUrl = verification.drivingLicenseImageUrl;
+      }
+      if (verification.livePhotoUrl.isNotEmpty) {
+        _livePhotoUrl = verification.livePhotoUrl;
+      }
+    });
+  }
+
+  bool get _aadhaarUploaded =>
+      _aadhaarImageUrl != null && _aadhaarImageUrl!.isNotEmpty;
+  bool get _licenseUploaded =>
+      _licenseImageUrl != null && _licenseImageUrl!.isNotEmpty;
+  bool get _livePhotoCaptured =>
+      _livePhotoUrl != null && _livePhotoUrl!.isNotEmpty;
 
   bool get _canContinue =>
       _aadhaarUploaded && _licenseUploaded && _livePhotoCaptured;
 
+  Future<void> _submitDocuments() async {
+    if (!_canContinue) return;
+
+    ref.read(loadingProvider.notifier).startLoading();
+
+    try {
+      final response = await ref.read(onboardingApiProvider).submitDriverIdentity(
+        aadhaarImageUrl: _aadhaarImageUrl!,
+        drivingLicenseImageUrl: _licenseImageUrl!,
+        livePhotoUrl: _livePhotoUrl!,
+      );
+
+      if (!mounted) return;
+
+      if (!response.success) {
+        _showMessage(response.message ?? 'Failed to submit documents');
+        return;
+      }
+
+      ref.invalidate(userProvider);
+      NavigationService().pushNamedAndRemoveUntil('applicationUnderReview');
+    } finally {
+      ref.read(loadingProvider.notifier).stopLoading();
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(loadingProvider);
+
     return Scaffold(
       backgroundColor: kWhite,
       body: SafeArea(
@@ -88,15 +160,19 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                         imagePath: 'assets/pngs/aadhar_image.png',
                         title: 'Aadhaar',
                         description: 'Government ID proof',
-                        actionLabel: 'Tap to Upload',
-                        actionIcon: Icons.file_upload_outlined,
+                        isUploaded: _aadhaarUploaded,
+                        actionLabel:
+                            _aadhaarUploaded ? 'Uploaded' : 'Tap to Upload',
+                        actionIcon: _aadhaarUploaded
+                            ? Icons.check_circle_outline
+                            : Icons.file_upload_outlined,
                         onActionTap: () async {
                           final result = await Navigator.pushNamed(
                             context,
                             'aadhaarUpload',
                           );
-                          if (result == true && mounted) {
-                            setState(() => _aadhaarUploaded = true);
+                          if (result is DocumentUploadResult && mounted) {
+                            setState(() => _aadhaarImageUrl = result.imageUrl);
                           }
                         },
                       ),
@@ -112,15 +188,19 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                         imagePath: 'assets/pngs/drivin_license_image.png',
                         title: 'Driving License',
                         description: 'Required for driver verification',
-                        actionLabel: 'Tap to Upload',
-                        actionIcon: Icons.file_upload_outlined,
+                        isUploaded: _licenseUploaded,
+                        actionLabel:
+                            _licenseUploaded ? 'Uploaded' : 'Tap to Upload',
+                        actionIcon: _licenseUploaded
+                            ? Icons.check_circle_outline
+                            : Icons.file_upload_outlined,
                         onActionTap: () async {
                           final result = await Navigator.pushNamed(
                             context,
                             'drivingLicenseUpload',
                           );
-                          if (result == true && mounted) {
-                            setState(() => _licenseUploaded = true);
+                          if (result is DocumentUploadResult && mounted) {
+                            setState(() => _licenseImageUrl = result.imageUrl);
                           }
                         },
                       ),
@@ -136,15 +216,20 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                         imagePath: 'assets/pngs/live_photo_image.png',
                         title: 'Live Photo',
                         description: 'Capture a real-time photo',
-                        actionLabel: 'Capture Photo',
-                        actionIcon: Icons.camera_alt_outlined,
+                        isUploaded: _livePhotoCaptured,
+                        actionLabel: _livePhotoCaptured
+                            ? 'Captured'
+                            : 'Capture Photo',
+                        actionIcon: _livePhotoCaptured
+                            ? Icons.check_circle_outline
+                            : Icons.camera_alt_outlined,
                         onActionTap: () async {
                           final result = await Navigator.pushNamed(
                             context,
                             'selfieScreen',
                           );
-                          if (result == true && mounted) {
-                            setState(() => _livePhotoCaptured = true);
+                          if (result is DocumentUploadResult && mounted) {
+                            setState(() => _livePhotoUrl = result.imageUrl);
                           }
                         },
                       ),
@@ -167,10 +252,8 @@ class _DocumentsUploadPageState extends State<DocumentsUploadPage> {
                   fontSize: kSize16,
                   buttonColor: _canContinue ? kBrandBlue : _kContinueDisabled,
                   labelColor: kWhite,
-                  onPressed: () {
-                    Navigator.pushNamed(context, 'applicationUnderReview');
-                  },
-                  // _canContinue ? () {} : null,
+                  isLoading: isLoading,
+                  onPressed: _canContinue && !isLoading ? _submitDocuments : null,
                 ),
               ),
             ),
@@ -186,6 +269,7 @@ class _DocumentUploadCard extends StatelessWidget {
     required this.imagePath,
     required this.title,
     required this.description,
+    required this.isUploaded,
     required this.actionLabel,
     required this.actionIcon,
     required this.onActionTap,
@@ -194,6 +278,7 @@ class _DocumentUploadCard extends StatelessWidget {
   final String imagePath;
   final String title;
   final String description;
+  final bool isUploaded;
   final String actionLabel;
   final IconData actionIcon;
   final VoidCallback onActionTap;
@@ -205,7 +290,7 @@ class _DocumentUploadCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: kWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: kCardBorder),
+        border: Border.all(color: isUploaded ? kActiveGreen : kCardBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,20 +326,26 @@ class _DocumentUploadCard extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: _kActionButtonBg,
+                      color: isUploaded
+                          ? kActiveGreen.withValues(alpha: 0.12)
+                          : _kActionButtonBg,
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(actionIcon, size: 16, color: kBrandBlue),
+                        Icon(
+                          actionIcon,
+                          size: 16,
+                          color: isUploaded ? kActiveGreen : kBrandBlue,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           actionLabel,
                           style: kStyle(
                             kMedium,
                             kSize13,
-                            color: kBrandBlue,
+                            color: isUploaded ? kActiveGreen : kBrandBlue,
                             height: 1.1,
                           ),
                         ),
