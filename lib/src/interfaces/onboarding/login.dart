@@ -277,7 +277,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _otpController.dispose();
+    // _otpController.dispose();
     super.dispose();
   }
 

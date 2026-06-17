@@ -55,7 +55,7 @@ dependencies:
   path_provider: ^2.1.2
   flutter_secure_storage: ^9.2.4
   dio: ^5.9.2
-  file_saver: ^0.4.0
+  file_saver: ^0.3.1
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +67,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -113,3 +114,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/pngs/drive_forme_logo.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/pngs/drive_forme_logo.png"
+  remove_alpha_ios: true
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
