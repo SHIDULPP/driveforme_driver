@@ -1,7 +1,9 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 const _kHomeHeaderBlue = Color(0xFF1E518B);
@@ -99,7 +101,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomeHeader extends StatelessWidget {
+class _HomeHeader extends ConsumerWidget {
   const _HomeHeader({
     required this.isOnline,
     required this.onOnlineChanged,
@@ -113,7 +115,24 @@ class _HomeHeader extends StatelessWidget {
   final double curveDepth;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final greeting = userAsync.when(
+      data: (user) => 'Hii ${greetingFirstName(user)}!',
+      loading: () => 'Hii there!',
+      error: (_, _) => 'Hii there!',
+    );
+    final location = userAsync.when(
+      data: (user) => displayLocation(user),
+      loading: () => 'Loading location...',
+      error: (_, _) => 'Location not set',
+    );
+    final walletBalance = userAsync.when(
+      data: (user) => formatWalletBalance(user),
+      loading: () => '₹ 0',
+      error: (_, _) => '₹ 0',
+    );
+
     final topPadding = MediaQuery.paddingOf(context).top;
     final totalHeight = topPadding + contentHeight + curveDepth + 20;
 
@@ -137,7 +156,7 @@ class _HomeHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hii Kumar!',
+                            greeting,
                             style: kStyle(
                               kSemiBold,
                               kSize22,
@@ -156,7 +175,7 @@ class _HomeHeader extends StatelessWidget {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  'Edappally, Lulu Mall',
+                                  location,
                                   style: kCaption14R.copyWith(
                                     color: kWhite.withValues(alpha: 0.85),
                                     height: 1.2,
@@ -165,6 +184,28 @@ class _HomeHeader extends StatelessWidget {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 6),
+                          // Row(
+                          //   children: [
+                          //     SvgPicture.asset(
+                          //       'assets/svgs/wallet_icon.svg',
+                          //       width: 15,
+                          //       height: 13,
+                          //       colorFilter: ColorFilter.mode(
+                          //         kWhite.withValues(alpha: 0.9),
+                          //         BlendMode.srcIn,
+                          //       ),
+                          //     ),
+                          //     const SizedBox(width: 4),
+                          //     Text(
+                          //       walletBalance,
+                          //       style: kCaption14R.copyWith(
+                          //         color: kWhite.withValues(alpha: 0.85),
+                          //         height: 1.2,
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
                     ),
@@ -294,7 +335,6 @@ class _OnlineStatusCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20),
                 Text(
                   'You are Online',
                   style: kStyle(

@@ -1,3 +1,9 @@
+double _parseWalletBalance(dynamic value) {
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0;
+  return 0;
+}
+
 class DriverVerification {
   final String aadhaarImageUrl;
   final String drivingLicenseImageUrl;
@@ -75,6 +81,7 @@ class UserModel {
   final String phoneNumber;
   final String onboardingStatus;
   final bool isPhoneVerified;
+  final double walletBalance;
   final UserProfile profile;
   final DriverVerification driverVerification;
 
@@ -84,6 +91,7 @@ class UserModel {
     required this.phoneNumber,
     required this.onboardingStatus,
     required this.isPhoneVerified,
+    this.walletBalance = 0,
     required this.profile,
     required this.driverVerification,
   });
@@ -98,6 +106,7 @@ class UserModel {
       phoneNumber: json['phoneNumber'] as String? ?? '',
       onboardingStatus: json['onboardingStatus'] as String? ?? '',
       isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
+      walletBalance: _parseWalletBalance(json['walletBalance']),
       profile: UserProfile.fromJson(
         json['profile'] as Map<String, dynamic>?,
       ),

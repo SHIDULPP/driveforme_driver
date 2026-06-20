@@ -13,3 +13,18 @@ String greetingFirstName(UserModel? user) {
   if (fullName == null || fullName.isEmpty) return 'there';
   return fullName.split(RegExp(r'\s+')).first;
 }
+
+String displayLocation(UserModel? user) {
+  final location = user?.profile.location.trim();
+  if (location == null || location.isEmpty) return 'Location not set';
+  if (location.length == 1) return location.toUpperCase();
+  return location[0].toUpperCase() + location.substring(1);
+}
+
+String formatWalletBalance(UserModel? user) {
+  final balance = user?.walletBalance ?? 0;
+  if (balance == balance.truncateToDouble()) {
+    return '₹ ${balance.toInt()}';
+  }
+  return '₹ ${balance.toStringAsFixed(2)}';
+}
