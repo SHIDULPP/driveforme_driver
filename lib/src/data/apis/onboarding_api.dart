@@ -9,7 +9,7 @@ class OnboardingApi {
   OnboardingApi(this._api);
 
   Future<ApiResponse<UserModel>> getMe() async {
-    final response = await _api.get('/onboarding/me', requireUserId: true);
+    final response = await _api.get('/onboarding/me', requireUserId: false);
     if (!response.success) {
       return ApiResponse.error(
         response.message ?? 'Failed to load profile',
@@ -32,17 +32,13 @@ class OnboardingApi {
     required String gender,
     required String location,
   }) {
-    return _api.post(
-      '/onboarding/driver/profile',
-      {
-        'fullName': fullName,
-        'email': email,
-        'dateOfBirth': dateOfBirth,
-        'gender': gender,
-        'location': location,
-      },
-      requireUserId: true,
-    );
+    return _api.post('/onboarding/driver/profile', {
+      'fullName': fullName,
+      'email': email,
+      'dateOfBirth': dateOfBirth,
+      'gender': gender,
+      'location': location,
+    }, requireUserId: true);
   }
 
   Future<ApiResponse<Map<String, dynamic>>> submitDriverIdentity({
@@ -50,15 +46,11 @@ class OnboardingApi {
     required String drivingLicenseImageUrl,
     required String livePhotoUrl,
   }) {
-    return _api.post(
-      '/onboarding/driver/identity',
-      {
-        'aadhaarImageUrl': aadhaarImageUrl,
-        'drivingLicenseImageUrl': drivingLicenseImageUrl,
-        'livePhotoUrl': livePhotoUrl,
-      },
-      requireUserId: true,
-    );
+    return _api.post('/onboarding/driver/identity', {
+      'aadhaarImageUrl': aadhaarImageUrl,
+      'drivingLicenseImageUrl': drivingLicenseImageUrl,
+      'livePhotoUrl': livePhotoUrl,
+    }, requireUserId: true);
   }
 }
 
