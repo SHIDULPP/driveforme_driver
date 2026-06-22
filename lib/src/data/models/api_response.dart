@@ -29,3 +29,13 @@ Map<String, dynamic>? nestedData(Map<String, dynamic>? body) {
   if (data is Map<String, dynamic>) return data;
   return null;
 }
+
+List<Map<String, dynamic>> nestedListData(Map<String, dynamic>? body) {
+  final data = body?['data'];
+  if (data is! List) return const [];
+
+  return data
+      .whereType<Map>()
+      .map((item) => Map<String, dynamic>.from(item))
+      .toList();
+}

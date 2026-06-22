@@ -1,6 +1,14 @@
+import 'dart:async';
+
+import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/new_trip_request_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,16 +30,71 @@ const _kHeaderCurveDepth = 70.0;
 /// Pulls the earnings card up so ~40% sits on the blue header.
 const _kEarningsCardOverlap = 58.0;
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   bool _isOnline = true;
   bool _isShortTrip = true;
+  Timer? _pollTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncTripPreference(_isShortTrip);
+    });
+    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (_isOnline && mounted) {
+        ref.invalidate(availableTripsProvider);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  void _syncTripPreference(bool isShortTrip) {
+    ref.read(tripPreferenceProvider.notifier).state =
+        isShortTrip ? 'short_trip' : 'long_trip';
+    ref.invalidate(availableTripsProvider);
+  }
+
+  void _openTripDetails(TripModel trip) {
+    NavigationService().pushNamed(
+      'tripRequestDetails',
+      arguments: {'trip': trip},
+    );
+  }
+
+  Future<void> _acceptTrip(TripModel trip) async {
+    ref.read(loadingProvider.notifier).startLoading();
+    final response = await ref.read(tripApiProvider).acceptTrip(trip.id);
+    ref.read(loadingProvider.notifier).stopLoading();
+
+    if (!mounted) return;
+
+    if (!response.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Failed to accept trip.')),
+      );
+      return;
+    }
+
+    ref.invalidate(availableTripsProvider);
+    NavigationService().pushNamed('driverArrived');
+  }
+
+  void _declineTrip(TripModel trip) {
+    dismissTripRequest(ref, trip.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +103,14 @@ class _HomePageState extends State<HomePage> {
         topPadding + _kHeaderContentHeight + _kHeaderCurveDepth;
     final scrollTopPadding = headerTotalHeight - _kEarningsCardOverlap;
     final mapTop = topPadding + _kHeaderContentHeight - 12;
+    final tripsAsync = _isOnline ? ref.watch(availableTripsProvider) : null;
+    final currentTrip = tripsAsync == null
+        ? null
+        : tripsAsync.when(
+            data: (trips) => trips.isNotEmpty ? trips.first : null,
+            loading: () => null,
+            error: (_, _) => null,
+          );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -85,8 +156,10 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 12),
                     _TripPreferenceCard(
                       isShortTrip: _isShortTrip,
-                      onChanged: (isShort) =>
-                          setState(() => _isShortTrip = isShort),
+                      onChanged: (isShort) {
+                        setState(() => _isShortTrip = isShort);
+                        _syncTripPreference(isShort);
+                      },
                     ),
                     const SizedBox(height: 12),
                     const _PromoBannerCard(),
@@ -94,6 +167,18 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            if (currentTrip != null)
+              Positioned(
+                left: 20,
+                right: 20,
+                top: scrollTopPadding + 8,
+                child: NewTripRequestCard(
+                  trip: currentTrip,
+                  onTap: () => _openTripDetails(currentTrip),
+                  onAccept: () => _acceptTrip(currentTrip),
+                  onDecline: () => _declineTrip(currentTrip),
+                ),
+              ),
           ],
         ),
       ),
@@ -126,11 +211,6 @@ class _HomeHeader extends ConsumerWidget {
       data: (user) => displayLocation(user),
       loading: () => 'Loading location...',
       error: (_, _) => 'Location not set',
-    );
-    final walletBalance = userAsync.when(
-      data: (user) => formatWalletBalance(user),
-      loading: () => '₹ 0',
-      error: (_, _) => '₹ 0',
     );
 
     final topPadding = MediaQuery.paddingOf(context).top;

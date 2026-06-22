@@ -11,6 +11,8 @@ import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/otp_scree
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart'
     show TripDetailsPage, TripTicketInfo;
+import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_request_details_page.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/interfaces/onboarding/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onboarding/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onboarding/live_photo/selfie_screen.dart';
@@ -210,6 +212,13 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
     case 'cashCollected':
       page = const CashCollectedScreen();
       transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 350);
+      break;
+    case 'tripRequestDetails':
+      final requestArgs = settings?.arguments as Map?;
+      final requestTrip = requestArgs?['trip'] as TripModel?;
+      page = TripRequestDetailsPage(trip: requestTrip!);
+      transitionToUse = TransitionType.slideFromBottom;
       transitionDuration = const Duration(milliseconds: 350);
       break;
     case 'tripDetails':
