@@ -1,11 +1,17 @@
 import 'dart:async';
 
+import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPanelBg = Color(0xFFF5F6F8);
 const _kMapTooltipBlue = Color(0xFF1A5288);
@@ -14,30 +20,157 @@ const _kStatValueBlue = Color(0xFF205D91);
 const _kTripStatusCardBg = Color(0xFF1C1C1E);
 const _kEarningsOrange = Color(0xFFC6934B);
 
-class EndTripScreen extends StatefulWidget {
-  const EndTripScreen({super.key});
+class EndTripScreen extends ConsumerStatefulWidget {
+  const EndTripScreen({
+    super.key,
+    this.tripMongoId = '',
+    this.tripId = '',
+    this.customerId = '',
+    this.customerName = 'Customer',
+    this.customerPhone = '',
+    this.pickup = '',
+    this.dropoff = '',
+    this.headingTo = '',
+    this.distance = '—',
+    this.duration = '—',
+    this.price = '—',
+    this.startedAtIso,
+    this.paymentMethod = 'cash',
+  });
+
+  final String tripMongoId;
+  final String tripId;
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String pickup;
+  final String dropoff;
+  final String headingTo;
+  final String distance;
+  final String duration;
+  final String price;
+  final String? startedAtIso;
+  final String paymentMethod;
 
   @override
-  State<EndTripScreen> createState() => _EndTripScreenState();
+  ConsumerState<EndTripScreen> createState() => _EndTripScreenState();
 }
 
-class _EndTripScreenState extends State<EndTripScreen> {
+class _EndTripScreenState extends ConsumerState<EndTripScreen> {
+  static const _pollInterval = Duration(seconds: 4);
+
   Timer? _timer;
-  Duration _elapsed = const Duration(minutes: 5, seconds: 2);
+  Timer? _pollTimer;
+  Duration _elapsed = Duration.zero;
+  bool _navigatedAway = false;
+  String _price = '—';
+  String _headingTo = '';
+  String _distance = '—';
 
   @override
   void initState() {
     super.initState();
+    _price = widget.price;
+    _headingTo = widget.headingTo.isNotEmpty ? widget.headingTo : widget.dropoff;
+    _distance = widget.distance;
+    _elapsed = _initialElapsed();
+
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() => _elapsed += const Duration(seconds: 1));
-      }
+      if (!mounted) return;
+      setState(() => _elapsed = _initialElapsed());
     });
+    _startPolling();
+  }
+
+  Duration _initialElapsed() {
+    if (widget.startedAtIso == null || widget.startedAtIso!.isEmpty) {
+      return Duration.zero;
+    }
+    final started = DateTime.tryParse(widget.startedAtIso!);
+    if (started == null) return Duration.zero;
+    final diff = DateTime.now().difference(started);
+    return diff.isNegative ? Duration.zero : diff;
+  }
+
+  void _startPolling() {
+    if (widget.tripMongoId.isEmpty) return;
+    _pollTripStatus();
+    _pollTimer = Timer.periodic(_pollInterval, (_) => _pollTripStatus());
+  }
+
+  Future<void> _pollTripStatus() async {
+    if (_navigatedAway || !mounted || widget.tripMongoId.isEmpty) return;
+
+    final response =
+        await ref.read(tripApiProvider).getTripById(widget.tripMongoId);
+    if (!mounted || _navigatedAway) return;
+    if (!response.success || response.data == null) return;
+
+    final trip = response.data!;
+    await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
+
+    if (trip.isCancelled) {
+      _navigatedAway = true;
+      if (!mounted) return;
+      NavigationService().pushNamedAndRemoveUntil('navBar');
+      return;
+    }
+
+    if (trip.isCompleted) {
+      _navigatedAway = true;
+      if (!mounted) return;
+      final target = tripNavigationTarget(trip);
+      if (target != null) {
+        NavigationService().pushNamedAndRemoveUntil(
+          target.route,
+          arguments: target.arguments,
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _price = trip.displayPrice;
+      _headingTo = trip.dropoffAddress ?? trip.pickupAddress;
+      _distance = trip.distanceLabel;
+    });
+  }
+
+  Future<void> _completeTrip() async {
+    if (widget.tripMongoId.isEmpty) return;
+
+    ref.read(loadingProvider.notifier).startLoading();
+    final response =
+        await ref.read(tripApiProvider).completeTrip(widget.tripMongoId);
+    ref.read(loadingProvider.notifier).stopLoading();
+
+    if (!mounted) return;
+
+    if (!response.success || response.data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Failed to complete trip.')),
+      );
+      return;
+    }
+
+    final trip = response.data!;
+    ref.invalidate(walletProvider);
+    await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
+
+    final target = tripNavigationTarget(trip);
+    if (target == null) return;
+
+    _navigatedAway = true;
+    NavigationService().pushNamedAndRemoveUntil(
+      target.route,
+      arguments: target.arguments,
+    );
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _pollTimer?.cancel();
     super.dispose();
   }
 
@@ -66,7 +199,7 @@ class _EndTripScreenState extends State<EndTripScreen> {
             const _MapLayer(),
             const _MapRouteOverlay(),
             const _RouteDestinationMarker(),
-            const _RouteInfoBubble(),
+            _RouteInfoBubble(headingTo: _headingTo, distance: _distance),
             Positioned(
               top: topPadding + 8,
               left: 16,
@@ -80,16 +213,23 @@ class _EndTripScreenState extends State<EndTripScreen> {
             Positioned(
               top: topPadding + 60,
               right: 16,
-              child: const _EarningsCard(),
+              child: _EarningsCard(price: _price),
             ),
             Positioned(
               right: 16,
               bottom: MediaQuery.sizeOf(context).height * 0.42,
-              child: const _SosButton(),
+              child: _SosButton(
+                tripMongoId: widget.tripMongoId,
+                locationLabel: _headingTo,
+              ),
             ),
-            const Align(
+            Align(
               alignment: Alignment.bottomCenter,
-              child: _EndTripBottomPanel(),
+              child: _EndTripBottomPanel(
+                dropoff: _headingTo,
+                distance: _distance,
+                onEndTrip: _completeTrip,
+              ),
             ),
           ],
         ),
@@ -182,7 +322,10 @@ class _RouteDestinationMarker extends StatelessWidget {
 }
 
 class _RouteInfoBubble extends StatelessWidget {
-  const _RouteInfoBubble();
+  const _RouteInfoBubble({required this.headingTo, required this.distance});
+
+  final String headingTo;
+  final String distance;
 
   @override
   Widget build(BuildContext context) {
@@ -214,12 +357,14 @@ class _RouteInfoBubble extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'Infopark , kakkanad , 14 km remaining',
-              style: kCaption13R.copyWith(
-                color: kWhite,
-                fontWeight: kMedium,
-                height: 1.2,
+            Flexible(
+              child: Text(
+                '$headingTo, $distance remaining',
+                style: kCaption13R.copyWith(
+                  color: kWhite,
+                  fontWeight: kMedium,
+                  height: 1.2,
+                ),
               ),
             ),
           ],
@@ -299,7 +444,9 @@ class _TripStatusCard extends StatelessWidget {
 }
 
 class _EarningsCard extends StatelessWidget {
-  const _EarningsCard();
+  const _EarningsCard({required this.price});
+
+  final String price;
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +468,7 @@ class _EarningsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('₹ 235', style: kDriverFoundPriceSB.copyWith(fontSize: kSize20)),
+          Text(price, style: kDriverFoundPriceSB.copyWith(fontSize: kSize20)),
           const SizedBox(height: 2),
           Text(
             'earned so far',
@@ -337,13 +484,25 @@ class _EarningsCard extends StatelessWidget {
 }
 
 class _SosButton extends StatelessWidget {
-  const _SosButton();
+  const _SosButton({
+    required this.tripMongoId,
+    required this.locationLabel,
+  });
+
+  final String tripMongoId;
+  final String locationLabel;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed('sos_countdown');
+        Navigator.of(context).pushNamed(
+          'sos_select',
+          arguments: {
+            'locationLabel': locationLabel,
+            'tripId': tripMongoId,
+          },
+        );
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -378,7 +537,15 @@ class _SosButton extends StatelessWidget {
 }
 
 class _EndTripBottomPanel extends StatelessWidget {
-  const _EndTripBottomPanel();
+  const _EndTripBottomPanel({
+    required this.dropoff,
+    required this.distance,
+    required this.onEndTrip,
+  });
+
+  final String dropoff;
+  final String distance;
+  final VoidCallback onEndTrip;
 
   @override
   Widget build(BuildContext context) {
@@ -405,7 +572,7 @@ class _EndTripBottomPanel extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _DestinationTripCard(),
+                _DestinationTripCard(dropoff: dropoff, distance: distance),
                 const SizedBox(height: 20),
                 primaryButton(
                   label: 'End Trip',
@@ -413,9 +580,7 @@ class _EndTripBottomPanel extends StatelessWidget {
                   fontSize: kSize16,
                   buttonColor: kTripCtaBlue,
                   labelColor: kWhite,
-                  onPressed: () {
-                    NavigationService().pushNamedAndRemoveUntil('tripCompleted');
-                  },
+                  onPressed: onEndTrip,
                 ),
               ],
             ),
@@ -450,7 +615,13 @@ class _PanelWaveClipper extends CustomClipper<Path> {
 }
 
 class _DestinationTripCard extends StatelessWidget {
-  const _DestinationTripCard();
+  const _DestinationTripCard({
+    required this.dropoff,
+    required this.distance,
+  });
+
+  final String dropoff;
+  final String distance;
 
   @override
   Widget build(BuildContext context) {
@@ -492,7 +663,7 @@ class _DestinationTripCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Infopark, Kakkanad', style: kTripSubSectionSB),
+                    Text(dropoff, style: kTripSubSectionSB),
                     const SizedBox(height: 2),
                     Text(
                       'Destination',
@@ -506,13 +677,13 @@ class _DestinationTripCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Row(
+          Row(
             children: [
               Expanded(
-                child: _TripStatItem(label: 'REMAINING', value: '1.2 KM'),
+                child: _TripStatItem(label: 'REMAINING', value: distance),
               ),
-              Expanded(
-                child: _TripStatItem(label: 'ARRIVAL', value: '09:48 AM'),
+              const Expanded(
+                child: _TripStatItem(label: 'STATUS', value: 'On trip'),
               ),
             ],
           ),

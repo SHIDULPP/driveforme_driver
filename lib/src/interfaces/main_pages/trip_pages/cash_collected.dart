@@ -1,16 +1,26 @@
+import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kScreenGreen = Color(0xFF17A34A);
 
-class CashCollectedScreen extends StatelessWidget {
-  const CashCollectedScreen({super.key});
+class CashCollectedScreen extends ConsumerWidget {
+  const CashCollectedScreen({
+    super.key,
+    this.tripMongoId = '',
+    this.collectedAmount = '—',
+  });
+
+  final String tripMongoId;
+  final String collectedAmount;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = MediaQuery.paddingOf(context).top;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
@@ -36,7 +46,7 @@ class CashCollectedScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '₹ 235 Collected!',
+                  '$collectedAmount Collected!',
                   textAlign: TextAlign.center,
                   style: kStyle(
                     kSemiBold,
@@ -61,7 +71,10 @@ class CashCollectedScreen extends StatelessWidget {
                   fontSize: kSize16,
                   buttonColor: kWhite,
                   labelColor: kTripCtaBlue,
-                  onPressed: () {
+                  onPressed: () async {
+                    ref.invalidate(walletProvider);
+                    await ref.read(activeTripProvider.notifier).clear();
+                    if (!context.mounted) return;
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       'navBar',

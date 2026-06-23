@@ -7,6 +7,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/api_response.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/services/notification_token_service.dart';
 import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
 import 'package:driveforme_driver/src/data/utils/auth_navigation.dart';
 import 'package:driveforme_driver/src/interfaces/animations/animated_widget_wrapper.dart'
@@ -569,6 +570,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       await storage.saveUserId(userId);
       await storage.saveAuthToken(token);
       await storage.savePhoneNumber(widget.phoneNumber);
+
+      await ref
+          .read(notificationTokenServiceProvider)
+          .registerTokenIfAvailable();
 
       final route = routeForOnboardingStatus(
         onboardingStatus ?? 'profile_pending',

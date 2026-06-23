@@ -1,29 +1,24 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/user_model.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
 const _kVerifiedBadgeBg = Color(0xFFE8F5EA);
+const _kPendingBadgeBg = Color(0xFFFFF3E8);
+const _kPendingBadgeText = Color(0xFFC6934B);
 
-class DocumentsPage extends StatelessWidget {
+class DocumentsPage extends ConsumerWidget {
   const DocumentsPage({super.key});
 
-  static const _documents = [
-    _DocumentItem(
-      imagePath: 'assets/pngs/ducuments.png',
-      title: 'Aadhaar Card',
-      isVerified: true,
-    ),
-    _DocumentItem(
-      imagePath: 'assets/pngs/ducuments.png',
-      title: 'Driving License',
-      isVerified: true,
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: kWhite,
@@ -39,18 +34,47 @@ class DocumentsPage extends StatelessWidget {
               const _DocumentsHeader(),
               const Divider(height: 1, thickness: 1, color: _kDividerColor),
               Expanded(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    for (var i = 0; i < _documents.length; i++) ...[
-                      _DocumentRow(document: _documents[i], onTap: () {}),
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: _kDividerColor,
-                      ),
-                    ],
-                  ],
+                child: userAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => Center(
+                    child: TextButton(
+                      onPressed: () => ref.invalidate(userProvider),
+                      child: const Text('Retry'),
+                    ),
+                  ),
+                  data: (user) {
+                    if (user == null) {
+                      return const Center(child: Text('No profile data.'));
+                    }
+
+                    final docs = _documentsFor(user);
+                    if (docs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No documents uploaded yet.',
+                          style: kCaption14R.copyWith(color: kMutedText),
+                        ),
+                      );
+                    }
+
+                    return ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        for (var i = 0; i < docs.length; i++) ...[
+                          _DocumentRow(
+                            document: docs[i],
+                            onTap: () => _openDocument(context, docs[i]),
+                          ),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: _kDividerColor,
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
               ),
             ],
@@ -59,18 +83,62 @@ class DocumentsPage extends StatelessWidget {
       ),
     );
   }
+
+  List<_DocumentItem> _documentsFor(UserModel user) {
+    final verification = user.driverVerification;
+    final isApproved = user.onboardingStatus == 'approved';
+    final isRejected = user.onboardingStatus == 'rejected';
+
+    return [
+      if (verification.aadhaarImageUrl.isNotEmpty)
+        _DocumentItem(
+          title: 'Aadhaar Card',
+          url: verification.aadhaarImageUrl,
+          isVerified: isApproved,
+          isPending: !isApproved && !isRejected,
+        ),
+      if (verification.drivingLicenseImageUrl.isNotEmpty)
+        _DocumentItem(
+          title: 'Driving License',
+          url: verification.drivingLicenseImageUrl,
+          isVerified: isApproved,
+          isPending: !isApproved && !isRejected,
+        ),
+      if (verification.livePhotoUrl.isNotEmpty)
+        _DocumentItem(
+          title: 'Live Photo',
+          url: verification.livePhotoUrl,
+          isVerified: isApproved,
+          isPending: !isApproved && !isRejected,
+        ),
+    ];
+  }
+
+  Future<void> _openDocument(BuildContext context, _DocumentItem document) async {
+    final uri = Uri.tryParse(document.url);
+    if (uri == null) return;
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open document.')),
+      );
+    }
+  }
 }
 
 class _DocumentItem {
   const _DocumentItem({
-    required this.imagePath,
     required this.title,
+    required this.url,
     required this.isVerified,
+    required this.isPending,
   });
 
-  final String imagePath;
   final String title;
+  final String url;
   final bool isVerified;
+  final bool isPending;
 }
 
 class _DocumentsHeader extends StatelessWidget {
@@ -119,11 +187,19 @@ class _DocumentRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
-              Image.asset(
-                document.imagePath,
+              Container(
                 width: 48,
                 height: 34,
-                fit: BoxFit.contain,
+                decoration: BoxDecoration(
+                  color: kSearchFieldBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: kCardBorder),
+                ),
+                child: const Icon(
+                  Icons.description_outlined,
+                  color: kBrandBlue,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -139,10 +215,11 @@ class _DocumentRow extends StatelessWidget {
                         height: 1.2,
                       ),
                     ),
-                    if (document.isVerified) ...[
-                      const SizedBox(height: 6),
-                      const _VerifiedBadge(),
-                    ],
+                    const SizedBox(height: 6),
+                    if (document.isVerified)
+                      const _VerifiedBadge()
+                    else if (document.isPending)
+                      const _PendingBadge(),
                   ],
                 ),
               ),
@@ -188,6 +265,25 @@ class _VerifiedBadge extends StatelessWidget {
             child: const Icon(Icons.check_rounded, size: 10, color: kWhite),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PendingBadge extends StatelessWidget {
+  const _PendingBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _kPendingBadgeBg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        'Under review',
+        style: kStyle(kMedium, kSize11, color: _kPendingBadgeText, height: 1.1),
       ),
     );
   }

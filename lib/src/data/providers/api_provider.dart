@@ -77,6 +77,54 @@ class ApiProvider {
     }
   }
 
+  Future<ApiResponse<Map<String, dynamic>>> patch(
+    String endpoint,
+    Map<String, dynamic> data, {
+    bool requireUserId = false,
+    bool requireAuth = false,
+  }) async {
+    try {
+      final headers = await _buildHeaders(
+        requireUserId: requireUserId,
+        requireAuth: requireAuth,
+      );
+      final response = await _client.patch(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+        body: json.encode(data),
+      );
+      return _parseResponse(response);
+    } on StateError catch (e) {
+      return ApiResponse.error(e.message);
+    } catch (e) {
+      log('PATCH $endpoint failed: $e', name: 'ApiProvider');
+      return ApiResponse.error('Failed to connect to the server.');
+    }
+  }
+
+  Future<ApiResponse<Map<String, dynamic>>> delete(
+    String endpoint, {
+    bool requireUserId = false,
+    bool requireAuth = false,
+  }) async {
+    try {
+      final headers = await _buildHeaders(
+        requireUserId: requireUserId,
+        requireAuth: requireAuth,
+      );
+      final response = await _client.delete(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: headers,
+      );
+      return _parseResponse(response);
+    } on StateError catch (e) {
+      return ApiResponse.error(e.message);
+    } catch (e) {
+      log('DELETE $endpoint failed: $e', name: 'ApiProvider');
+      return ApiResponse.error('Failed to connect to the server.');
+    }
+  }
+
   Future<ApiResponse<Map<String, dynamic>>> post(
     String endpoint,
     Map<String, dynamic> data, {

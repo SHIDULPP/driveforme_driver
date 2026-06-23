@@ -29,6 +29,11 @@ class _RaiseTicketPageState extends State<RaiseTicketPage> {
     final description = _descriptionController.text.trim();
     if (subject.isEmpty || description.isEmpty) return;
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Ticket submitted. Our team will get back to you soon.'),
+      ),
+    );
     Navigator.of(context).pop({
       'subject': subject,
       'description': description,

@@ -1,7 +1,10 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/user_model.dart';
+import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/services/auth_logout_service.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,6 +59,8 @@ class ProfilePage extends ConsumerWidget {
                       _ProfileSummaryCard(user: user),
                       const SizedBox(height: 14),
                       const _ProfileMenuCard(),
+                      const SizedBox(height: 14),
+                      const _ProfileLogoutCard(),
                       const SizedBox(height: 32),
                       const _ProfileFooter(),
                     ],
@@ -175,11 +180,13 @@ void _onMenuTap(BuildContext context, String title) {
   }
 }
 
-class _ProfileMenuCard extends StatelessWidget {
+class _ProfileMenuCard extends ConsumerWidget {
   const _ProfileMenuCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
     return Container(
       decoration: BoxDecoration(
         color: kWhite,
@@ -199,6 +206,8 @@ class _ProfileMenuCard extends StatelessWidget {
             children: [
               _ProfileMenuTile(
                 title: _kMenuItems[index],
+                badgeCount:
+                    _kMenuItems[index] == 'Notifications' ? unreadCount : 0,
                 onTap: () => _onMenuTap(context, _kMenuItems[index]),
               ),
               if (!isLast)
@@ -221,10 +230,12 @@ class _ProfileMenuTile extends StatelessWidget {
   const _ProfileMenuTile({
     required this.title,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   final String title;
   final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +254,23 @@ class _ProfileMenuTile extends StatelessWidget {
                   style: kMenuItemM,
                 ),
               ),
+              if (badgeCount > 0) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: kBrandBlue,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    badgeCount > 99 ? '99+' : '$badgeCount',
+                    style: kCaption11R.copyWith(
+                      color: kWhite,
+                      fontWeight: kSemiBold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
               const Icon(
                 Icons.chevron_right_rounded,
                 color: kChevronGrey,
@@ -253,6 +281,57 @@ class _ProfileMenuTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ProfileLogoutCard extends ConsumerWidget {
+  const _ProfileLogoutCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: kBlack.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: _ProfileMenuTile(
+        title: 'Logout',
+        onTap: () => _confirmLogout(context, ref),
+      ),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You will need to sign in again to use the app.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    await ref.read(authLogoutServiceProvider).logout(ref);
+    if (!context.mounted) return;
+    NavigationService().pushNamedAndRemoveUntil('Phone');
   }
 }
 

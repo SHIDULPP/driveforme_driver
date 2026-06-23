@@ -1,21 +1,41 @@
+import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPickupPulse = Color(0xFFFFE8D6);
 const _kOtpBoxSize = 56.0;
 const _kOtpLength = 4;
 
-class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+class OtpScreen extends ConsumerStatefulWidget {
+  const OtpScreen({
+    super.key,
+    this.tripMongoId = '',
+    this.customerId = '',
+    this.customerName = 'Customer',
+    this.customerPhone = '',
+    this.pickup = '',
+    this.dropoff = '',
+  });
+
+  final String tripMongoId;
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String pickup;
+  final String dropoff;
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
+class _OtpScreenState extends ConsumerState<OtpScreen> {
   final _otpController = TextEditingController();
   final _focusNode = FocusNode();
 
@@ -36,6 +56,43 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   bool get _isOtpComplete => _otpController.text.length == _kOtpLength;
+
+  Future<void> _startTrip() async {
+    if (widget.tripMongoId.isEmpty) return;
+
+    ref.read(loadingProvider.notifier).startLoading();
+    final response = await ref.read(tripApiProvider).startTrip(
+          widget.tripMongoId,
+          _otpController.text,
+        );
+    ref.read(loadingProvider.notifier).stopLoading();
+
+    if (!mounted) return;
+
+    if (!response.success || response.data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response.message ??
+                'Could not start trip. Check your wallet balance and OTP.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final trip = response.data!;
+    await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
+
+    final target = tripNavigationTarget(trip);
+    if (target == null || !mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      target.route,
+      arguments: target.arguments,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +155,12 @@ class _OtpScreenState extends State<OtpScreen> {
                               'Enter OTP to Start your trip',
                               textAlign: TextAlign.center,
                               style: kDriverFoundOtpTitleSB,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Ask ${widget.customerName} for the 4-digit code',
+                              textAlign: TextAlign.center,
+                              style: kDriverFoundOtpHintR,
                             ),
                             const SizedBox(height: 20),
                             GestureDetector(
@@ -173,14 +236,7 @@ class _OtpScreenState extends State<OtpScreen> {
                         fontSize: kSize16,
                         buttonColor: kTripCtaBlue,
                         labelColor: kWhite,
-                        onPressed: _isOtpComplete
-                            ? () {
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  'endTrip',
-                                );
-                              }
-                            : null,
+                        onPressed: _isOtpComplete ? _startTrip : null,
                       ),
                     ],
                   ),

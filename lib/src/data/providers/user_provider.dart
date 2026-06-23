@@ -1,5 +1,6 @@
 import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/models/user_model.dart';
+import 'package:driveforme_driver/src/data/models/wallet_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -76,4 +77,8 @@ String formatWalletBalance(UserModel? user) {
     return '₹ ${balance.toInt()}';
   }
   return '₹ ${balance.toStringAsFixed(2)}';
+}
+
+String formatTodayEarnings(UserModel? user) {
+  return formatRupee(user?.todayEarnings ?? 0);
 }

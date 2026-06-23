@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/interfaces/main_pages/chat/chat_screen.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_countdown_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_help_on_way_page.dart';
@@ -113,6 +114,12 @@ RouteTransitionsBuilder _transitionsBuilderFor(TransitionType? type) {
   }
 }
 
+String _routeString(Map<String, dynamic>? args, String key, [String fallback = '']) {
+  final value = args?[key];
+  if (value == null) return fallback;
+  return value.toString();
+}
+
 Route<dynamic> generateRoute(RouteSettings? settings) {
   Widget? page;
   TransitionType? transitionToUse;
@@ -190,27 +197,81 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionDuration = const Duration(milliseconds: 300);
       break;
     case 'driverArrived':
-      page = const DriverArrivedScreen();
+      final arrivedArgs = settings?.arguments as Map<String, dynamic>?;
+      page = DriverArrivedScreen(
+        tripMongoId: _routeString(arrivedArgs, 'tripMongoId'),
+        tripId: _routeString(arrivedArgs, 'tripId'),
+        customerId: _routeString(arrivedArgs, 'customerId'),
+        customerName: _routeString(arrivedArgs, 'customerName', 'Customer'),
+        customerPhone: _routeString(arrivedArgs, 'customerPhone'),
+        pickup: _routeString(arrivedArgs, 'pickup'),
+        dropoff: _routeString(arrivedArgs, 'dropoff'),
+        vehicleNumber: _routeString(arrivedArgs, 'vehicleNumber'),
+        vehicleName: _routeString(arrivedArgs, 'vehicleName'),
+        distance: _routeString(arrivedArgs, 'distance', '—'),
+        duration: _routeString(arrivedArgs, 'duration', '—'),
+        price: _routeString(arrivedArgs, 'price', '—'),
+      );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'tripOtp':
-      page = const OtpScreen();
+      final otpArgs = settings?.arguments as Map<String, dynamic>?;
+      page = OtpScreen(
+        tripMongoId: _routeString(otpArgs, 'tripMongoId'),
+        customerId: _routeString(otpArgs, 'customerId'),
+        customerName: _routeString(otpArgs, 'customerName', 'Customer'),
+        customerPhone: _routeString(otpArgs, 'customerPhone'),
+        pickup: _routeString(otpArgs, 'pickup'),
+        dropoff: _routeString(otpArgs, 'dropoff'),
+      );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'endTrip':
-      page = const EndTripScreen();
+      final endArgs = settings?.arguments as Map<String, dynamic>?;
+      page = EndTripScreen(
+        tripMongoId: _routeString(endArgs, 'tripMongoId'),
+        tripId: _routeString(endArgs, 'tripId'),
+        customerId: _routeString(endArgs, 'customerId'),
+        customerName: _routeString(endArgs, 'customerName', 'Customer'),
+        customerPhone: _routeString(endArgs, 'customerPhone'),
+        pickup: _routeString(endArgs, 'pickup'),
+        dropoff: _routeString(endArgs, 'dropoff'),
+        headingTo: _routeString(endArgs, 'headingTo'),
+        distance: _routeString(endArgs, 'distance', '—'),
+        duration: _routeString(endArgs, 'duration', '—'),
+        price: _routeString(endArgs, 'price', '—'),
+        startedAtIso: _routeString(endArgs, 'startedAt'),
+        paymentMethod: _routeString(endArgs, 'paymentMethod', 'cash'),
+      );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'tripCompleted':
-      page = const TripCompletedScreen();
+      final completedArgs = settings?.arguments as Map<String, dynamic>?;
+      page = TripCompletedScreen(
+        tripMongoId: _routeString(completedArgs, 'tripMongoId'),
+        tripId: _routeString(completedArgs, 'tripId'),
+        routeSummary: _routeString(completedArgs, 'routeSummary'),
+        elapsedDuration: _routeString(completedArgs, 'elapsedDuration'),
+        totalEarned: _routeString(completedArgs, 'totalEarned', '—'),
+        baseFareLabel: _routeString(completedArgs, 'baseFareLabel', 'Base fare'),
+        baseFareAmount: _routeString(completedArgs, 'baseFareAmount', '—'),
+        extraTimeLabel: _routeString(completedArgs, 'extraTimeLabel', 'Extra Time'),
+        extraTimeAmount: _routeString(completedArgs, 'extraTimeAmount', '—'),
+        totalAmount: _routeString(completedArgs, 'totalAmount', '—'),
+        paymentMethod: _routeString(completedArgs, 'paymentMethod', 'cash'),
+      );
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 350);
       break;
     case 'cashCollected':
-      page = const CashCollectedScreen();
+      final cashArgs = settings?.arguments as Map<String, dynamic>?;
+      page = CashCollectedScreen(
+        tripMongoId: _routeString(cashArgs, 'tripMongoId'),
+        collectedAmount: _routeString(cashArgs, 'collectedAmount', '—'),
+      );
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 350);
       break;
@@ -223,20 +284,29 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
     case 'tripDetails':
       final tripDetailsArgs = settings?.arguments as Map?;
-      final tripData =
-          tripDetailsArgs?['trip'] as TripCardData? ??
-          TripCardData.dummyUpcoming();
+      final tripArg = tripDetailsArgs?['trip'];
+      final TripCardData tripData = switch (tripArg) {
+        TripCardData data => data,
+        Map map => TripCardData.fromDetailsArgs(Map<String, dynamic>.from(map)),
+        _ => TripCardData.dummyUpcoming(),
+      };
       final ticket = tripDetailsArgs?['ticket'] as TripTicketInfo?;
       page = TripDetailsPage(trip: tripData, ticket: ticket);
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'sos_countdown':
-      final countdownArgs = settings?.arguments as Map?;
+      final countdownArgs = settings?.arguments as Map<String, dynamic>?;
       page = SosCountdownPage(
         locationLabel:
-            countdownArgs?['locationLabel'] as String? ??
-            'MG Road, Eranakulam, Kochi, GPS Active',
+            _routeString(
+              countdownArgs,
+              'locationLabel',
+              'Location sharing active',
+            ),
+        sosType: _routeString(countdownArgs, 'sosType', 'Other Emergency'),
+        tripId: _routeString(countdownArgs, 'tripId'),
+        pickupAddress: _routeString(countdownArgs, 'pickupAddress'),
         initialSeconds: countdownArgs?['initialSeconds'] as int? ?? 6,
       );
       transitionToUse = TransitionType.slideFromRight;
@@ -244,11 +314,14 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       break;
 
     case 'sos_select':
-      final sosArgs = settings?.arguments as Map?;
+      final sosArgs = settings?.arguments as Map<String, dynamic>?;
       page = SosSelectPage(
-        locationLabel:
-            sosArgs?['locationLabel'] as String? ??
-            'Live location shared . MG road, Erankulam',
+        locationLabel: _routeString(
+          sosArgs,
+          'locationLabel',
+          'Live location shared',
+        ),
+        tripId: _routeString(sosArgs, 'tripId'),
       );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
@@ -308,6 +381,18 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
 
     case 'helpAndSupportPage':
       page = const HelpAndSupportPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'chat_screen':
+      final chatArgs = settings?.arguments as Map<String, dynamic>?;
+      page = ChatScreen(
+        receiverId: _routeString(chatArgs, 'receiverId'),
+        receiverName: _routeString(chatArgs, 'receiverName', 'Customer'),
+        tripId: _routeString(chatArgs, 'tripId'),
+        participantName: _routeString(chatArgs, 'participantName', 'Customer'),
+      );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

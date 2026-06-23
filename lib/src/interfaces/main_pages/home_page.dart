@@ -1,12 +1,12 @@
-import 'dart:async';
-
 import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/new_trip_request_card.dart';
 import 'package:flutter/material.dart';
@@ -43,34 +43,14 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  bool _isOnline = true;
-  bool _isShortTrip = true;
-  Timer? _pollTimer;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncTripPreference(_isShortTrip);
+      loadDriverOnlinePreference(ref);
+      final isShortTrip = ref.read(tripPreferenceProvider) == 'short_trip';
+      setTripPreference(ref, isShortTrip);
     });
-    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      if (_isOnline && mounted) {
-        ref.invalidate(availableTripsProvider);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
-  }
-
-  void _syncTripPreference(bool isShortTrip) {
-    ref.read(tripPreferenceProvider.notifier).state = isShortTrip
-        ? 'short_trip'
-        : 'long_trip';
-    ref.invalidate(availableTripsProvider);
   }
 
   void _openTripDetails(TripModel trip) {
@@ -94,8 +74,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       return;
     }
 
-    ref.invalidate(availableTripsProvider);
-    NavigationService().pushNamed('driverArrived');
+    ref.read(availableTripsProvider.notifier).removeTrip(trip.id);
+    final acceptedTrip = response.data ?? trip;
+    await navigateToActiveTrip(ref, acceptedTrip);
   }
 
   void _declineTrip(TripModel trip) {
@@ -109,14 +90,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         topPadding + _kHeaderContentHeight + _kHeaderCurveDepth;
     final scrollTopPadding = headerTotalHeight - _kEarningsCardOverlap;
     final mapTop = topPadding + _kHeaderContentHeight - 12;
-    final tripsAsync = _isOnline ? ref.watch(availableTripsProvider) : null;
-    final currentTrip = tripsAsync == null
-        ? null
-        : tripsAsync.when(
-            data: (trips) => trips.isNotEmpty ? trips.first : null,
-            loading: () => null,
-            error: (_, _) => null,
-          );
+    final isOnline = ref.watch(driverOnlineProvider);
+    final isShortTrip = ref.watch(tripPreferenceProvider) == 'short_trip';
+    final unreadNotifications = ref.watch(unreadNotificationCountProvider);
+    final availableTrips =
+        isOnline ? ref.watch(availableTripsProvider) : const <TripModel>[];
+    final currentTrip = availableTrips.isNotEmpty ? availableTrips.first : null;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -148,6 +127,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: _HomeHeaderBackground(
                 contentHeight: _kHeaderContentHeight,
                 curveDepth: _kHeaderCurveDepth,
+                unreadNotificationCount: unreadNotifications,
+                onNotificationsTap: () =>
+                    NavigationService().pushNamed('notificationsPage'),
               ),
             ),
             Positioned.fill(
@@ -159,11 +141,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     const _TodaysEarningsCard(),
                     const SizedBox(height: 12),
                     _TripPreferenceCard(
-                      isShortTrip: _isShortTrip,
-                      onChanged: (isShort) {
-                        setState(() => _isShortTrip = isShort);
-                        _syncTripPreference(isShort);
-                      },
+                      isShortTrip: isShortTrip,
+                      onChanged: (isShort) => setTripPreference(ref, isShort),
                     ),
                     const SizedBox(height: 12),
                     const _PromoBannerCard(),
@@ -176,8 +155,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               left: 20,
               right: 20,
               child: _OnlineStatusCard(
-                isOnline: _isOnline,
-                onChanged: (value) => setState(() => _isOnline = value),
+                isOnline: isOnline,
+                onChanged: (value) => setDriverOnline(ref, value),
               ),
             ),
             if (currentTrip != null)
@@ -203,10 +182,14 @@ class _HomeHeaderBackground extends ConsumerWidget {
   const _HomeHeaderBackground({
     required this.contentHeight,
     required this.curveDepth,
+    this.unreadNotificationCount = 0,
+    this.onNotificationsTap,
   });
 
   final double contentHeight;
   final double curveDepth;
+  final int unreadNotificationCount;
+  final VoidCallback? onNotificationsTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -298,17 +281,52 @@ class _HomeHeaderBackground extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        color: kWhite.withValues(alpha: 0.18),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.notifications_none_rounded,
-                        color: kWhite,
-                        size: 22,
+                    GestureDetector(
+                      onTap: onNotificationsTap,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: kWhite.withValues(alpha: 0.18),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.notifications_none_rounded,
+                              color: kWhite,
+                              size: 22,
+                            ),
+                          ),
+                          if (unreadNotificationCount > 0)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFE32626),
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Text(
+                                  unreadNotificationCount > 9
+                                      ? '9+'
+                                      : '$unreadNotificationCount',
+                                  textAlign: TextAlign.center,
+                                  style: kCaption11R.copyWith(
+                                    color: kWhite,
+                                    fontWeight: kSemiBold,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
@@ -457,13 +475,19 @@ class _OnlineStatusCard extends StatelessWidget {
   }
 }
 
-class _TodaysEarningsCard extends StatelessWidget {
+class _TodaysEarningsCard extends ConsumerWidget {
   const _TodaysEarningsCard();
 
   static const _barHeights = [0.38, 0.58, 0.45, 0.82, 0.52, 0.68, 0.62];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final earningsLabel = ref.watch(userProvider).when(
+          data: (user) => formatTodayEarnings(user),
+          loading: () => '₹ —',
+          error: (_, _) => formatTodayEarnings(null),
+        );
+
     return Material(
       color: Colors.transparent,
       elevation: 6,
@@ -518,25 +542,13 @@ class _TodaysEarningsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '₹ 235',
+                        earningsLabel,
                         style: kStyle(
                           kSemiBold,
                           kSize30,
                           color: kBrandBlue,
                           height: 1.05,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: kActiveGreenBg,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text('+ ₹ 235 Bonus', style: kTripBadgeSB),
                       ),
                     ],
                   ),

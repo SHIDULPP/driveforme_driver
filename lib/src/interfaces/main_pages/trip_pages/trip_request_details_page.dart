@@ -6,6 +6,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
@@ -66,9 +67,10 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
       return;
     }
 
-    ref.invalidate(availableTripsProvider);
+    ref.read(availableTripsProvider.notifier).removeTrip(_trip.id);
+    final acceptedTrip = response.data ?? _trip;
     NavigationService().pop();
-    NavigationService().pushNamed('driverArrived');
+    await navigateToActiveTrip(ref, acceptedTrip);
   }
 
   void _handleDecline() {
@@ -229,13 +231,17 @@ class _RequestSheet extends StatelessWidget {
                     _ContactButton(
                       icon: Icons.chat_bubble_outline_rounded,
                       color: _kChatGreen,
-                      onTap: () {},
+                      onTap: () => openChatScreen(
+                        receiverId: trip.customerId,
+                        receiverName: trip.customerDisplayName,
+                        tripId: trip.id,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     _ContactButton(
                       icon: Icons.call_rounded,
                       color: _kCallBlue,
-                      onTap: () {},
+                      onTap: () => launchPhoneCall(trip.customerPhone),
                     ),
                   ],
                 ),

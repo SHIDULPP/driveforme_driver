@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class TripModel {
   static const requestExpiryMinutes = 5;
 
@@ -15,10 +17,14 @@ class TripModel {
   final String durationUnit;
   final DateTime? pickupAt;
   final DateTime? createdAt;
+  final DateTime? startedAt;
+  final DateTime? completedAt;
+  final DateTime? cancelledAt;
   final double? priceMinimum;
   final double? priceMaximum;
   final String currency;
   final String paymentMethod;
+  final String customerId;
   final String customerName;
   final String customerPhone;
   final String vehicleName;
@@ -41,10 +47,14 @@ class TripModel {
     required this.durationUnit,
     this.pickupAt,
     this.createdAt,
+    this.startedAt,
+    this.completedAt,
+    this.cancelledAt,
     this.priceMinimum,
     this.priceMaximum,
     this.currency = 'INR',
     required this.paymentMethod,
+    this.customerId = '',
     this.customerName = '',
     this.customerPhone = '',
     this.vehicleName = '',
@@ -58,6 +68,7 @@ class TripModel {
     final routeMap = route is Map ? Map<String, dynamic>.from(route) : null;
     final routeSummary = routeMap != null ? _asMap(routeMap['summary']) : null;
     final tripDetails = json['tripDetails'];
+    final timeline = json['timeline'];
     final priceEstimate = tripDetails is Map ? tripDetails['priceEstimate'] : null;
     final vehicleDetails = json['vehicleDetails'];
     final customer = json['customer'] ?? json['vehicleOwner'];
@@ -92,6 +103,9 @@ class TripModel {
           : 'hours',
       pickupAt: tripDetails is Map ? _parseDate(tripDetails['pickupAt']) : null,
       createdAt: _parseDate(json['createdAt']),
+      startedAt: timeline is Map ? _parseDate(timeline['startedAt']) : null,
+      completedAt: timeline is Map ? _parseDate(timeline['completedAt']) : null,
+      cancelledAt: timeline is Map ? _parseDate(timeline['cancelledAt']) : null,
       priceMinimum: priceEstimate is Map
           ? _toDouble(priceEstimate['minimum'])
           : null,
@@ -102,6 +116,7 @@ class TripModel {
           ? priceEstimate['currency']?.toString() ?? 'INR'
           : 'INR',
       paymentMethod: json['paymentMethod']?.toString() ?? 'cash',
+      customerId: _userId(customer) ?? '',
       customerName: _userName(customer) ?? '',
       customerPhone: _userPhone(customer) ?? '',
       vehicleName: vehicleDetails is Map
@@ -121,14 +136,44 @@ class TripModel {
 
   bool get isLongTrip => tripType == 'long_trip';
 
+  bool get isOneWay => tripDirection == 'one_way';
+
+  bool get isDriverAssigned => status == 'driver_assigned';
+
+  bool get isInProgress => status == 'in_progress';
+
+  bool get isCompleted => status == 'completed';
+
+  bool get isCancelled => status == 'cancelled';
+
+  String get displayTripId =>
+      tripNumber.isNotEmpty ? '# $tripNumber' : '# ${id.substring(0, 8)}';
+
   String get tripTypeChipLabel => isLongTrip ? 'Long Trip' : 'Short Trip';
 
   String get tripTypeBadgeLabel => isLongTrip ? 'LONG TRIP' : 'SHORT TRIP';
 
-  String get displayEarnings {
+  String get displayEarnings => displayPrice;
+
+  String get displayPrice {
     final amount = priceMinimum ?? priceMaximum;
     if (amount == null) return '—';
     return '₹ ${amount.toStringAsFixed(0)}';
+  }
+
+  String get vehicleTypeLabel {
+    final trans = _titleCase(transmission);
+    if (trans.isEmpty) return '—';
+    return trans;
+  }
+
+  String get vehicleTypesLabel {
+    final type = _titleCase(vehicleType);
+    final trans = _titleCase(transmission);
+    if (type.isEmpty && trans.isEmpty) return '—';
+    if (type.isEmpty) return trans;
+    if (trans.isEmpty) return type;
+    return '$trans + $type';
   }
 
   String get durationLabel {
@@ -150,14 +195,34 @@ class TripModel {
     return '$formatted km';
   }
 
-  String get vehicleTypeLabel {
-    final trans = _titleCase(transmission);
-    if (trans.isEmpty) return '—';
-    return trans;
-  }
-
   String get customerDisplayName =>
       customerName.isNotEmpty ? customerName : 'Customer';
+
+  String get routeSummaryLine {
+    final pickup = pickupAddress.isNotEmpty ? pickupAddress : 'Pickup';
+    final dropoff = dropoffAddress ?? pickup;
+    return '$pickup  →  $dropoff';
+  }
+
+  String get elapsedDurationLabel {
+    if (startedAt == null) return durationLabel;
+    final end = completedAt ?? DateTime.now();
+    final elapsed = end.difference(startedAt!);
+    final hours = elapsed.inHours;
+    final minutes = elapsed.inMinutes.remainder(60);
+    if (hours > 0) return '$hours h $minutes min';
+    return '$minutes min';
+  }
+
+  String formatDateTime(DateTime? date) {
+    if (date == null) return '—';
+    return DateFormat('d MMMM, hh:mm a').format(date);
+  }
+
+  String get paymentTypeKey =>
+      paymentMethod == 'pay_online' || paymentMethod == 'upi'
+          ? 'online'
+          : 'offline';
 
   DateTime? get expiresAt => createdAt?.add(
         const Duration(minutes: requestExpiryMinutes),
@@ -181,6 +246,78 @@ class TripModel {
   }
 
   String get pickupDistanceSubtitle => 'Pickup, $distanceLabel away';
+
+  Map<String, dynamic> toDriverArrivedArguments() => {
+        'tripMongoId': id,
+        'tripId': displayTripId,
+        'customerId': customerId,
+        'customerName': customerDisplayName,
+        'customerPhone': customerPhone,
+        'pickup': pickupAddress,
+        'dropoff': dropoffAddress ?? pickupAddress,
+        'vehicleNumber': vehicleNumber,
+        'vehicleName': vehicleName,
+        'distance': distanceLabel,
+        'duration': durationLabel,
+        'price': displayPrice,
+      };
+
+  Map<String, dynamic> toOtpArguments() => {
+        ...toDriverArrivedArguments(),
+      };
+
+  Map<String, dynamic> toEndTripArguments() => {
+        'tripMongoId': id,
+        'tripId': displayTripId,
+        'customerId': customerId,
+        'customerName': customerDisplayName,
+        'customerPhone': customerPhone,
+        'pickup': pickupAddress,
+        'dropoff': dropoffAddress ?? pickupAddress,
+        'headingTo': dropoffAddress ?? pickupAddress,
+        'distance': distanceLabel,
+        'duration': durationLabel,
+        'price': displayPrice,
+        'startedAt': startedAt?.toIso8601String(),
+        'paymentMethod': paymentMethod,
+      };
+
+  Map<String, dynamic> toTripCompletedArguments() => {
+        'tripMongoId': id,
+        'tripId': displayTripId,
+        'routeSummary': routeSummaryLine,
+        'elapsedDuration': elapsedDurationLabel,
+        'totalEarned': displayPrice,
+        'baseFareLabel': 'Base fare ($durationLabel)',
+        'baseFareAmount': displayPrice,
+        'extraTimeLabel': 'Extra Time',
+        'extraTimeAmount': '—',
+        'totalAmount': displayPrice,
+        'paymentMethod': paymentMethod,
+      };
+
+  Map<String, dynamic> toCashCollectedArguments() => {
+        'tripMongoId': id,
+        'collectedAmount': displayPrice,
+      };
+
+  Map<String, dynamic> toTripDetailsArguments() => {
+        'tripMongoId': id,
+        'tripId': displayTripId,
+        'status': status,
+        'customerName': customerDisplayName,
+        'customerPhone': customerPhone,
+        'customerId': customerId,
+        'pickup': pickupAddress,
+        'dropoff': dropoffAddress ?? pickupAddress,
+        'distance': distanceLabel,
+        'duration': durationLabel,
+        'price': displayPrice,
+        'pickupAt': pickupAt?.toIso8601String(),
+        'completedAt': completedAt?.toIso8601String(),
+        'cancelledAt': cancelledAt?.toIso8601String(),
+        'tripTypeLabel': tripTypeBadgeLabel,
+      };
 
   static Map<String, dynamic>? _asMap(dynamic value) {
     if (value is Map<String, dynamic>) return value;
@@ -210,6 +347,14 @@ class TripModel {
     if (value == null) return null;
     if (value is num) return value.toDouble();
     return double.tryParse(value.toString());
+  }
+
+  static String? _userId(dynamic user) {
+    if (user is Map) {
+      final id = user['_id'] ?? user['id'] ?? user['userId'];
+      if (id != null) return id.toString();
+    }
+    return null;
   }
 
   static String? _userName(dynamic user) {

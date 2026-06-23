@@ -4,6 +4,34 @@ double _parseWalletBalance(dynamic value) {
   return 0;
 }
 
+class AdminReview {
+  final String status;
+  final String notes;
+  final DateTime? reviewedAt;
+
+  const AdminReview({
+    this.status = '',
+    this.notes = '',
+    this.reviewedAt,
+  });
+
+  factory AdminReview.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const AdminReview();
+
+    DateTime? reviewedAt;
+    final raw = json['reviewedAt'];
+    if (raw is String && raw.isNotEmpty) {
+      reviewedAt = DateTime.tryParse(raw);
+    }
+
+    return AdminReview(
+      status: json['status']?.toString() ?? '',
+      notes: json['notes']?.toString() ?? '',
+      reviewedAt: reviewedAt,
+    );
+  }
+}
+
 class DriverVerification {
   final String aadhaarImageUrl;
   final String drivingLicenseImageUrl;
@@ -84,8 +112,11 @@ class UserModel {
   final double walletBalance;
   final double rating;
   final int totalTrips;
+  final double todayEarnings;
   final UserProfile profile;
   final DriverVerification driverVerification;
+  final AdminReview adminReview;
+  final String referralCode;
 
   const UserModel({
     required this.userId,
@@ -96,8 +127,11 @@ class UserModel {
     this.walletBalance = 0,
     this.rating = 5.0,
     this.totalTrips = 0,
+    this.todayEarnings = 0,
     required this.profile,
     required this.driverVerification,
+    this.adminReview = const AdminReview(),
+    this.referralCode = '',
   });
 
   bool get isApproved => onboardingStatus == 'approved';
@@ -113,12 +147,17 @@ class UserModel {
       walletBalance: _parseWalletBalance(json['walletBalance']),
       rating: (json['rating'] as num?)?.toDouble() ?? 5.0,
       totalTrips: (json['totalTrips'] as num?)?.toInt() ?? 0,
+      todayEarnings: (json['todayEarnings'] as num?)?.toDouble() ?? 0,
       profile: UserProfile.fromJson(
         json['profile'] as Map<String, dynamic>?,
       ),
       driverVerification: DriverVerification.fromJson(
         json['driverVerification'] as Map<String, dynamic>?,
       ),
+      adminReview: AdminReview.fromJson(
+        json['adminReview'] as Map<String, dynamic>?,
+      ),
+      referralCode: json['referralCode']?.toString() ?? '',
     );
   }
 }

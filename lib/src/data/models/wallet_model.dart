@@ -106,11 +106,13 @@ class WalletSummaryModel {
 
 class WalletDetailsModel {
   final double walletBalance;
+  final String referralCode;
   final WalletSummaryModel summary;
   final List<WalletTransactionModel> transactions;
 
   const WalletDetailsModel({
     required this.walletBalance,
+    this.referralCode = '',
     required this.summary,
     required this.transactions,
   });
@@ -119,6 +121,7 @@ class WalletDetailsModel {
     final rawTransactions = json['transactions'];
     return WalletDetailsModel(
       walletBalance: (json['walletBalance'] as num?)?.toDouble() ?? 0,
+      referralCode: json['referralCode']?.toString() ?? '',
       summary: WalletSummaryModel.fromJson(
         json['summary'] as Map<String, dynamic>?,
       ),

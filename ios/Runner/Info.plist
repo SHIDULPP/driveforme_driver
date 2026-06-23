@@ -72,5 +72,9 @@
 	<string>This app requires gallery access to upload media.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires microphone access for recording video.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs your location while online to share your position with passengers.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs your location while on a trip to share your position with passengers.</string>
 </dict>
 </plist>

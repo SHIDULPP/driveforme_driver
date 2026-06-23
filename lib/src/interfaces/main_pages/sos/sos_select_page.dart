@@ -1,24 +1,28 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_shared.dart';
 import 'package:flutter/material.dart';
 
 class SosSelectPage extends StatelessWidget {
   final String locationLabel;
+  final String? tripId;
 
   const SosSelectPage({
     super.key,
-    this.locationLabel = 'Live location shared . MG road, Erankulam',
+    this.locationLabel = 'Live location shared',
+    this.tripId,
   });
 
-  void _openHelpOnWay(BuildContext context, SosEmergencyOption option) {
+  void _openCountdown(BuildContext context, SosEmergencyOption option) {
     NavigationService().pushNamedReplacement(
-      'sos_help_on_way',
+      'sos_countdown',
       arguments: {
-        'emergencyTitle': option.title,
-        'locationLine1': 'MG Road, Eranakulam',
-        'locationLine2': 'Kochi, Kerala, 9.9312 N, 76.2673 E',
+        'locationLabel': locationLabel,
+        'sosType': option.title,
+        'tripId': tripId,
+        'pickupAddress': locationLabel,
       },
     );
   }
@@ -96,7 +100,7 @@ class SosSelectPage extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: SosEmergencyTypeCard(
                         option: option,
-                        onTap: () => _openHelpOnWay(context, option),
+                        onTap: () => _openCountdown(context, option),
                       ),
                     ),
                   ),
@@ -112,8 +116,7 @@ class SosSelectPage extends StatelessWidget {
                   color: kSosRed,
                   borderRadius: BorderRadius.circular(28),
                   child: InkWell(
-                    onTap: () =>
-                        _openHelpOnWay(context, kDefaultSosOptions.first),
+                    onTap: () => launchPhoneCall('112'),
                     borderRadius: BorderRadius.circular(28),
                     child: SizedBox(
                       width: double.infinity,

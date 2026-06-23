@@ -1,28 +1,44 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
+import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kTripsStatusBarBlue = Color(0xFF1A5288);
 const _kTripsPageBg = Color(0xFFF8FAF5);
 const _kTabActiveGold = Color(0xFFC19A6B);
 
-enum _TripTab { ongoing, upcoming, completed, cancelled }
-
-class TripsPage extends StatefulWidget {
+class TripsPage extends ConsumerStatefulWidget {
   const TripsPage({super.key});
 
   @override
-  State<TripsPage> createState() => _TripsPageState();
+  ConsumerState<TripsPage> createState() => _TripsPageState();
 }
 
-class _TripsPageState extends State<TripsPage> {
-  _TripTab _selectedTab = _TripTab.ongoing;
+class _TripsPageState extends ConsumerState<TripsPage> {
+  TripHistoryTab _selectedTab = TripHistoryTab.ongoing;
+
+  TripCardStatus _cardStatusFor(TripHistoryTab tab) {
+    switch (tab) {
+      case TripHistoryTab.ongoing:
+        return TripCardStatus.ongoing;
+      case TripHistoryTab.upcoming:
+        return TripCardStatus.upcoming;
+      case TripHistoryTab.completed:
+        return TripCardStatus.completed;
+      case TripHistoryTab.cancelled:
+        return TripCardStatus.cancelled;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final tripsAsync = ref.watch(tripHistoryProvider(_selectedTab));
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: _kTripsStatusBarBlue,
@@ -46,7 +62,59 @@ class _TripsPageState extends State<TripsPage> {
               onTabSelected: (tab) => setState(() => _selectedTab = tab),
             ),
             Expanded(
-              child: _buildTabContent(),
+              child: tripsAsync.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: kBrandBlue),
+                ),
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          error.toString(),
+                          textAlign: TextAlign.center,
+                          style: kCaption14R.copyWith(color: kMutedText),
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () =>
+                              ref.invalidate(tripHistoryProvider(_selectedTab)),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                data: (trips) {
+                  if (trips.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No ${_labelFor(_selectedTab).toLowerCase()} trips',
+                        style: kCaption14R.copyWith(color: kMutedText),
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                    itemCount: trips.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final trip = trips[index];
+                      final cardData = TripCardData.fromTripModel(
+                        trip,
+                        status: _cardStatusFor(_selectedTab),
+                      );
+                      return TripCard(
+                        data: cardData,
+                        onButtonPressed: () => _onTripPressed(trip, cardData),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -54,48 +122,35 @@ class _TripsPageState extends State<TripsPage> {
     );
   }
 
-  Widget _buildTabContent() {
-    final tripData = _tripDataForTab(_selectedTab);
+  Future<void> _onTripPressed(TripModel trip, TripCardData cardData) async {
+    if (_selectedTab == TripHistoryTab.ongoing) {
+      final target = tripNavigationTarget(trip);
+      if (target == null) return;
+      Navigator.pushNamed(
+        context,
+        target.route,
+        arguments: target.arguments,
+      );
+      return;
+    }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-      children: [
-        TripCard(
-          data: tripData,
-          onButtonPressed: _onTripCardButtonPressed,
-        ),
-      ],
+    Navigator.pushNamed(
+      context,
+      'tripDetails',
+      arguments: {'trip': cardData},
     );
   }
 
-  void _onTripCardButtonPressed() {
-    switch (_selectedTab) {
-      case _TripTab.ongoing:
-        Navigator.pushNamed(context, 'driverArrived');
-      case _TripTab.upcoming:
-      case _TripTab.completed:
-      case _TripTab.cancelled:
-        Navigator.pushNamed(
-          context,
-          'tripDetails',
-          arguments: {
-            'trip': _tripDataForTab(_selectedTab),
-            if (_selectedTab == _TripTab.completed) 'ticket': TripTicketInfo.dummy,
-          },
-        );
-    }
-  }
-
-  TripCardData _tripDataForTab(_TripTab tab) {
+  String _labelFor(TripHistoryTab tab) {
     switch (tab) {
-      case _TripTab.ongoing:
-        return TripCardData.dummyOngoing();
-      case _TripTab.upcoming:
-        return TripCardData.dummyUpcoming();
-      case _TripTab.completed:
-        return TripCardData.dummyCompleted();
-      case _TripTab.cancelled:
-        return TripCardData.dummyCancelled();
+      case TripHistoryTab.ongoing:
+        return 'Ongoing';
+      case TripHistoryTab.upcoming:
+        return 'Upcoming';
+      case TripHistoryTab.completed:
+        return 'Completed';
+      case TripHistoryTab.cancelled:
+        return 'Cancelled';
     }
   }
 }
@@ -106,10 +161,10 @@ class _TripsTabBar extends StatelessWidget {
     required this.onTabSelected,
   });
 
-  final _TripTab selectedTab;
-  final ValueChanged<_TripTab> onTabSelected;
+  final TripHistoryTab selectedTab;
+  final ValueChanged<TripHistoryTab> onTabSelected;
 
-  static const _tabs = _TripTab.values;
+  static const _tabs = TripHistoryTab.values;
 
   @override
   Widget build(BuildContext context) {
@@ -161,15 +216,15 @@ class _TripsTabBar extends StatelessWidget {
     );
   }
 
-  String _labelFor(_TripTab tab) {
+  String _labelFor(TripHistoryTab tab) {
     switch (tab) {
-      case _TripTab.ongoing:
+      case TripHistoryTab.ongoing:
         return 'Ongoing';
-      case _TripTab.upcoming:
+      case TripHistoryTab.upcoming:
         return 'Upcoming';
-      case _TripTab.completed:
+      case TripHistoryTab.completed:
         return 'Completed';
-      case _TripTab.cancelled:
+      case TripHistoryTab.cancelled:
         return 'Cancelled';
     }
   }

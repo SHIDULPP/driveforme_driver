@@ -1,8 +1,10 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPanelBg = Color(0xFFF5F6F8);
 const _kMapTooltipBlue = Color(0xFF1A5288);
@@ -12,11 +14,38 @@ const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
 const _kStatValueBlue = Color(0xFF205D91);
 
-class DriverArrivedScreen extends StatelessWidget {
-  const DriverArrivedScreen({super.key});
+class DriverArrivedScreen extends ConsumerWidget {
+  const DriverArrivedScreen({
+    super.key,
+    this.tripMongoId = '',
+    this.tripId = '',
+    this.customerId = '',
+    this.customerName = 'Customer',
+    this.customerPhone = '',
+    this.pickup = '',
+    this.dropoff = '',
+    this.vehicleNumber = '',
+    this.vehicleName = '',
+    this.distance = '—',
+    this.duration = '—',
+    this.price = '—',
+  });
+
+  final String tripMongoId;
+  final String tripId;
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String pickup;
+  final String dropoff;
+  final String vehicleNumber;
+  final String vehicleName;
+  final String distance;
+  final String duration;
+  final String price;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
@@ -31,15 +60,25 @@ class DriverArrivedScreen extends StatelessWidget {
             const _MapLayer(),
             const _MapRouteOverlay(),
             const _PickupMarker(),
-            const _RouteTooltip(),
+            _RouteTooltip(distance: distance),
             Positioned(
               top: MediaQuery.paddingOf(context).top + 8,
               left: 16,
               child: _MapBackButton(onTap: () => Navigator.maybePop(context)),
             ),
-            const Align(
+            Align(
               alignment: Alignment.bottomCenter,
-              child: _BottomTripPanel(),
+              child: _BottomTripPanel(
+                tripMongoId: tripMongoId,
+                customerId: customerId,
+                customerName: customerName,
+                customerPhone: customerPhone,
+                pickup: pickup,
+                vehicleNumber: vehicleNumber,
+                vehicleName: vehicleName,
+                distance: distance,
+                duration: duration,
+              ),
             ),
           ],
         ),
@@ -138,7 +177,9 @@ class _PickupMarker extends StatelessWidget {
 }
 
 class _RouteTooltip extends StatelessWidget {
-  const _RouteTooltip();
+  const _RouteTooltip({required this.distance});
+
+  final String distance;
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +228,7 @@ class _RouteTooltip extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 14),
               child: Text(
-                '0.8 km away',
+                distance,
                 style: kStyle(kSemiBold, kSize14, color: kWhite, height: 1.15),
               ),
             ),
@@ -232,7 +273,27 @@ class _MapBackButton extends StatelessWidget {
 }
 
 class _BottomTripPanel extends StatelessWidget {
-  const _BottomTripPanel();
+  const _BottomTripPanel({
+    required this.tripMongoId,
+    required this.customerId,
+    required this.customerName,
+    required this.customerPhone,
+    required this.pickup,
+    required this.vehicleNumber,
+    required this.vehicleName,
+    required this.distance,
+    required this.duration,
+  });
+
+  final String tripMongoId;
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String pickup;
+  final String vehicleNumber;
+  final String vehicleName;
+  final String distance;
+  final String duration;
 
   @override
   Widget build(BuildContext context) {
@@ -259,9 +320,17 @@ class _BottomTripPanel extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _PassengerInfoCard(),
+                _PassengerInfoCard(
+                  customerId: customerId,
+                  customerName: customerName,
+                  customerPhone: customerPhone,
+                  pickup: pickup,
+                  vehicleNumber: vehicleNumber,
+                  vehicleName: vehicleName,
+                  tripMongoId: tripMongoId,
+                ),
                 const SizedBox(height: 14),
-                const _TripStatsRow(),
+                _TripStatsRow(distance: distance, duration: duration),
                 const SizedBox(height: 20),
                 primaryButton(
                   label: 'I have arrived',
@@ -270,7 +339,18 @@ class _BottomTripPanel extends StatelessWidget {
                   buttonColor: kTripCtaBlue,
                   labelColor: kWhite,
                   onPressed: () {
-                    Navigator.pushNamed(context, 'tripOtp');
+                    Navigator.pushNamed(
+                      context,
+                      'tripOtp',
+                      arguments: {
+                        'tripMongoId': tripMongoId,
+                        'customerId': customerId,
+                        'customerName': customerName,
+                        'customerPhone': customerPhone,
+                        'pickup': pickup,
+                        'dropoff': pickup,
+                      },
+                    );
                   },
                 ),
                 const SizedBox(height: 10),
@@ -291,7 +371,6 @@ class _BottomTripPanel extends StatelessWidget {
   }
 }
 
-/// Top edge of the blue strip dips down in the center (wave into the panel).
 class _PanelWaveClipper extends CustomClipper<Path> {
   const _PanelWaveClipper({required this.arcDepth});
 
@@ -316,10 +395,30 @@ class _PanelWaveClipper extends CustomClipper<Path> {
 }
 
 class _PassengerInfoCard extends StatelessWidget {
-  const _PassengerInfoCard();
+  const _PassengerInfoCard({
+    required this.customerId,
+    required this.customerName,
+    required this.customerPhone,
+    required this.pickup,
+    required this.vehicleNumber,
+    required this.vehicleName,
+    required this.tripMongoId,
+  });
+
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String pickup;
+  final String vehicleNumber;
+  final String vehicleName;
+  final String tripMongoId;
 
   @override
   Widget build(BuildContext context) {
+    final vehicleLine = vehicleNumber.isNotEmpty
+        ? vehicleNumber
+        : (vehicleName.isNotEmpty ? vehicleName : '');
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -349,36 +448,42 @@ class _PassengerInfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ajith Kumar', style: kTripSubSectionSB),
+                Text(customerName, style: kTripSubSectionSB),
                 const SizedBox(height: 4),
                 Text(
-                  'Edappally, Lulu mall',
+                  pickup,
                   style: kTripLocationLabelR.copyWith(
                     color: kTripBodyMuted,
                     fontSize: kSize13,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'KL 57 G 4875',
-                  style: kTripLocationLabelR.copyWith(
-                    color: kTripBodyMuted,
-                    fontSize: kSize13,
+                if (vehicleLine.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    vehicleLine,
+                    style: kTripLocationLabelR.copyWith(
+                      color: kTripBodyMuted,
+                      fontSize: kSize13,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
           _ContactActionButton(
             color: _kChatGreen,
             icon: Icons.chat_bubble_outline_rounded,
-            onTap: () {},
+            onTap: () => openChatScreen(
+              receiverId: customerId,
+              receiverName: customerName,
+              tripId: tripMongoId,
+            ),
           ),
           const SizedBox(width: 10),
           _ContactActionButton(
             color: _kCallBlue,
             icon: Icons.phone_rounded,
-            onTap: () {},
+            onTap: () => launchPhoneCall(customerPhone),
           ),
         ],
       ),
@@ -412,7 +517,10 @@ class _ContactActionButton extends StatelessWidget {
 }
 
 class _TripStatsRow extends StatelessWidget {
-  const _TripStatsRow();
+  const _TripStatsRow({required this.distance, required this.duration});
+
+  final String distance;
+  final String duration;
 
   @override
   Widget build(BuildContext context) {
@@ -430,15 +538,15 @@ class _TripStatsRow extends StatelessWidget {
         ],
       ),
       child: Row(
-        children: const [
+        children: [
           Expanded(
-            child: _TripStatItem(label: 'ETA', value: '4 min'),
+            child: _TripStatItem(label: 'DISTANCE', value: distance),
           ),
           Expanded(
-            child: _TripStatItem(label: 'REMAINING', value: '1.2 KM'),
+            child: _TripStatItem(label: 'DURATION', value: duration),
           ),
-          Expanded(
-            child: _TripStatItem(label: 'ARRIVAL', value: '09:48 AM'),
+          const Expanded(
+            child: _TripStatItem(label: 'STATUS', value: 'En route'),
           ),
         ],
       ),

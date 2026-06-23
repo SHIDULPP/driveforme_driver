@@ -1,8 +1,15 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/home_page.dart';
+import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
+import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/services/active_trip_service.dart';
+import 'package:driveforme_driver/src/data/services/driver_location_service.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/services/trip_socket_service.dart';
+import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/home_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trips.dart';
@@ -21,6 +28,7 @@ class NavBar extends ConsumerStatefulWidget {
 
 class _NavBarState extends ConsumerState<NavBar> {
   late int _currentIndex;
+  bool _checkedActiveTrip = false;
 
   static const _items = <_NavBarItemData>[
     _NavBarItemData(
@@ -53,6 +61,42 @@ class _NavBarState extends ConsumerState<NavBar> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex.clamp(0, _items.length - 1);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadDriverOnlinePreference(ref);
+      ref.read(driverLocationServiceProvider);
+      _setupNotificationSocket();
+      _resumeActiveTrip();
+    });
+  }
+
+  Future<void> _setupNotificationSocket() async {
+    final socket = ref.read(tripSocketServiceProvider);
+    socket.listenForNewNotifications(() {
+      ref.invalidate(notificationsProvider);
+    });
+
+    final user = await ref.read(userProvider.future);
+    if (!mounted || user == null) return;
+
+    socket.connect(
+      onTripAvailable: (_) {},
+      onTripUnavailable: (_) {},
+    );
+    socket.joinUserRoom(user.userId);
+  }
+
+  Future<void> _resumeActiveTrip() async {
+    if (_checkedActiveTrip) return;
+    _checkedActiveTrip = true;
+
+    final target =
+        await ref.read(activeTripServiceProvider).resolveResumableTrip();
+    if (!mounted || target == null) return;
+
+    NavigationService().pushNamed(
+      target.route,
+      arguments: target.arguments,
+    );
   }
 
   @override
@@ -76,10 +120,12 @@ class _NavBarState extends ConsumerState<NavBar> {
           onItemSelected: (index) {
             if (_currentIndex != index) {
               setState(() => _currentIndex = index);
-              if (index == 2) {
-                ref.invalidate(walletProvider);
-              } else if (index == 3) {
+              if (index == 0 || index == 3) {
                 ref.invalidate(userProvider);
+              } else if (index == 1) {
+                ref.invalidate(tripHistoryProvider);
+              } else if (index == 2) {
+                ref.invalidate(walletProvider);
               }
             }
           },

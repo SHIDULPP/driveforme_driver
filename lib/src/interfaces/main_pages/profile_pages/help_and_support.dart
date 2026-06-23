@@ -1,11 +1,13 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
 const _kCallButtonBlue = Color(0xFF1A5A8E);
+const _kSupportPhone = '+916282359916';
 
 class HelpAndSupportPage extends StatelessWidget {
   const HelpAndSupportPage({super.key});
@@ -77,7 +79,7 @@ class HelpAndSupportPage extends StatelessWidget {
                             size: 22,
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () => launchPhoneCall(_kSupportPhone),
                       ),
                       const SizedBox(height: 16),
                       Text(

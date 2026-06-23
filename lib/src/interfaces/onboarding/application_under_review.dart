@@ -1,20 +1,59 @@
+import 'dart:async';
+
+import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Background sampled
 const _kApplicationReviewBg = Color(0xFF3690FF);
+const _pollInterval = Duration(seconds: 30);
 
-class ApplicationUnderReviewPage extends StatefulWidget {
+class ApplicationUnderReviewPage extends ConsumerStatefulWidget {
   const ApplicationUnderReviewPage({super.key});
 
   @override
-  State<ApplicationUnderReviewPage> createState() =>
+  ConsumerState<ApplicationUnderReviewPage> createState() =>
       _ApplicationUnderReviewPageState();
 }
 
-class _ApplicationUnderReviewPageState extends State<ApplicationUnderReviewPage> {
+class _ApplicationUnderReviewPageState
+    extends ConsumerState<ApplicationUnderReviewPage> {
+  Timer? _pollTimer;
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pollTimer = Timer.periodic(_pollInterval, (_) => _checkStatus());
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkStatus() async {
+    if (_isRefreshing || !mounted) return;
+    _isRefreshing = true;
+
+    final response = await ref.read(onboardingApiProvider).getMe();
+    _isRefreshing = false;
+
+    if (!mounted) return;
+    if (!response.success || response.data == null) return;
+
+    final status = response.data!.onboardingStatus;
+    if (status == 'approved') {
+      NavigationService().pushNamedAndRemoveUntil('navBar');
+    } else if (status == 'rejected') {
+      NavigationService().pushNamedAndRemoveUntil('applicationRejected');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -54,6 +93,15 @@ class _ApplicationUnderReviewPageState extends State<ApplicationUnderReviewPage>
                   "We're verifying your details to get\nyou started",
                   textAlign: TextAlign.center,
                   style: kStyle(kRegular, kSize16, color: kWhite, height: 1.45),
+                ),
+                const SizedBox(height: 24),
+                OutlinedButton(
+                  onPressed: _checkStatus,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: kWhite,
+                    side: const BorderSide(color: kWhite),
+                  ),
+                  child: const Text('Check status'),
                 ),
                 const Spacer(),
               ],

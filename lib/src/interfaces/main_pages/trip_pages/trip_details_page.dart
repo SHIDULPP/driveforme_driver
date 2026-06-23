@@ -1,5 +1,6 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +84,8 @@ class TripDetailsPage extends StatelessWidget {
                   ],
                 ),
               ),
-              if (_showBottomActions) const _TripDetailsBottomActions(),
+              if (_showBottomActions)
+                _TripDetailsBottomActions(tripId: trip.tripMongoId ?? ''),
             ],
           ),
         ),
@@ -245,7 +247,14 @@ class _TripDetailsCard extends StatelessWidget {
             _TripStatsRow(stats: trip.stats),
           ],
           const SizedBox(height: 14),
-          const _CustomerProfileCard(),
+          _CustomerProfileCard(
+            customerId: trip.customerId,
+            customerName: trip.customerName,
+            customerPhone: trip.customerPhone,
+            vehicleNumber: trip.vehicleNumber,
+            tripMongoId: trip.tripMongoId,
+            subtitle: trip.infoRowText,
+          ),
           if (_showCountdown) ...[
             const SizedBox(height: 12),
             _CountdownRow(
@@ -574,10 +583,27 @@ class _TripStatItem extends StatelessWidget {
 }
 
 class _CustomerProfileCard extends StatelessWidget {
-  const _CustomerProfileCard();
+  const _CustomerProfileCard({
+    required this.customerId,
+    required this.customerName,
+    required this.customerPhone,
+    required this.vehicleNumber,
+    this.tripMongoId,
+    this.subtitle,
+  });
+
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String vehicleNumber;
+  final String? tripMongoId;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
+    final displayName =
+        customerName.isNotEmpty ? customerName : 'Vehicle owner';
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -601,30 +627,38 @@ class _CustomerProfileCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ajith Kumar', style: kCaption14B),
-                const SizedBox(height: 4),
-                Text(
-                  '3 km away • 12 min',
-                  style: kCaption12R.copyWith(color: kMutedText),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'KL 57 G 4875',
-                  style: kCaption12R.copyWith(color: kMutedText),
-                ),
+                Text(displayName, style: kCaption14B),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: kCaption12R.copyWith(color: kMutedText),
+                  ),
+                ],
+                if (vehicleNumber.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    vehicleNumber,
+                    style: kCaption12R.copyWith(color: kMutedText),
+                  ),
+                ],
               ],
             ),
           ),
           _ContactActionButton(
             color: _kChatGreen,
             icon: Icons.chat_bubble_outline_rounded,
-            onTap: () {},
+            onTap: () => openChatScreen(
+              receiverId: customerId,
+              receiverName: displayName,
+              tripId: tripMongoId,
+            ),
           ),
           const SizedBox(width: 10),
           _ContactActionButton(
             color: _kCallBlue,
             icon: Icons.phone_rounded,
-            onTap: () {},
+            onTap: () => launchPhoneCall(customerPhone),
           ),
         ],
       ),
@@ -678,7 +712,9 @@ class _CountdownRow extends StatelessWidget {
 }
 
 class _TripDetailsBottomActions extends StatelessWidget {
-  const _TripDetailsBottomActions();
+  const _TripDetailsBottomActions({required this.tripId});
+
+  final String tripId;
 
   @override
   Widget build(BuildContext context) {
@@ -704,8 +740,20 @@ class _TripDetailsBottomActions extends StatelessWidget {
               fontSize: kSize16,
               buttonColor: _kNavigateBlue,
               labelColor: kWhite,
-              onPressed: () {
-                Navigator.of(context).pushNamed('raiseTicket');
+              onPressed: () async {
+                final result = await Navigator.of(context).pushNamed(
+                  'raiseTicket',
+                  arguments: {'tripId': tripId},
+                );
+                if (result != null && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Ticket submitted. Our team will get back to you soon.',
+                      ),
+                    ),
+                  );
+                }
               },
             ),
           ),

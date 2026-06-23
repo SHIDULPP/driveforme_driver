@@ -37,6 +37,71 @@ class TripApi {
     return ApiResponse.success(trips, response.statusCode);
   }
 
+  Future<ApiResponse<List<TripModel>>> listOngoingTrips() {
+    return _listTrips(status: 'in_progress');
+  }
+
+  Future<ApiResponse<List<TripModel>>> listAssignedTrips() {
+    return _listTrips(status: 'driver_assigned');
+  }
+
+  Future<ApiResponse<List<TripModel>>> listCompletedTrips() {
+    return _listTrips(status: 'completed');
+  }
+
+  Future<ApiResponse<List<TripModel>>> listCancelledTrips() {
+    return _listTrips(status: 'cancelled');
+  }
+
+  Future<ApiResponse<List<TripModel>>> listUpcomingTrips() async {
+    const statuses = ['scheduled', 'driver_assigned'];
+    final responses = await Future.wait(
+      statuses.map((status) => _listTrips(status: status)),
+    );
+
+    for (final response in responses) {
+      if (!response.success) {
+        return ApiResponse.error(
+          response.message ?? 'Failed to load upcoming trips.',
+          response.statusCode,
+        );
+      }
+    }
+
+    final trips =
+        responses
+            .expand((response) => response.data ?? const <TripModel>[])
+            .toList()
+          ..sort((a, b) {
+            final aDate = a.pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bDate = b.pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return aDate.compareTo(bDate);
+          });
+
+    return ApiResponse.success(trips, responses.first.statusCode);
+  }
+
+  Future<ApiResponse<List<TripModel>>> _listTrips({
+    required String status,
+  }) async {
+    final response = await _api.get(
+      '/trips',
+      requireAuth: true,
+      queryParams: {'status': status},
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to load trips.',
+        response.statusCode,
+      );
+    }
+
+    final trips = nestedListData(response.data).map(TripModel.fromJson).toList();
+
+    return ApiResponse.success(trips, response.statusCode);
+  }
+
   Future<ApiResponse<TripModel>> getTripById(String tripId) async {
     final response = await _api.get(
       '/trips/$tripId',
@@ -75,6 +140,75 @@ class TripApi {
     final data = nestedData(response.data);
     if (data == null) {
       return ApiResponse.error('Invalid accept trip response');
+    }
+
+    return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+  }
+
+  Future<ApiResponse<TripModel>> startTrip(String tripId, String otp) async {
+    final response = await _api.post(
+      '/trips/$tripId/start',
+      {'otp': otp},
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to start trip.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data);
+    if (data == null) {
+      return ApiResponse.error('Invalid start trip response');
+    }
+
+    return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+  }
+
+  Future<ApiResponse<TripModel>> completeTrip(String tripId) async {
+    final response = await _api.post(
+      '/trips/$tripId/complete',
+      {},
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to complete trip.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data);
+    if (data == null) {
+      return ApiResponse.error('Invalid complete trip response');
+    }
+
+    return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+  }
+
+  Future<ApiResponse<TripModel>> cancelTrip(
+    String tripId, {
+    String? reason,
+  }) async {
+    final response = await _api.post(
+      '/trips/$tripId/cancel',
+      {if (reason != null && reason.isNotEmpty) 'reason': reason},
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to cancel trip.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data);
+    if (data == null) {
+      return ApiResponse.error('Invalid cancel trip response');
     }
 
     return ApiResponse.success(TripModel.fromJson(data), response.statusCode);

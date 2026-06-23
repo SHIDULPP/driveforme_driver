@@ -1,7 +1,9 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 const _kNavigateBlue = Color(0xFF205D91);
 const _kShortTripBadgeBg = Color(0xFFF3F4EE);
@@ -37,6 +39,7 @@ class TripCardData {
     required this.pickup,
     required this.drop,
     required this.buttonLabel,
+    this.tripMongoId,
     this.tripTypeLabel = 'SHORT TRIP',
     this.dateLabel,
     this.completedAtLabel,
@@ -45,6 +48,10 @@ class TripCardData {
     this.infoRowText,
     this.countdownPrefix,
     this.countdownValue,
+    this.customerId = '',
+    this.customerName = '',
+    this.customerPhone = '',
+    this.vehicleNumber = '',
     this.stats = const [],
     this.totalEarned,
     this.routeStyle = TripRouteStyle.standard,
@@ -52,6 +59,7 @@ class TripCardData {
   });
 
   final TripCardStatus status;
+  final String? tripMongoId;
   final String tripTypeLabel;
   final String? dateLabel;
   final String? completedAtLabel;
@@ -67,12 +75,124 @@ class TripCardData {
   final String buttonLabel;
   final Widget? buttonIcon;
   final TripRouteStyle routeStyle;
+  final String customerId;
+  final String customerName;
+  final String customerPhone;
+  final String vehicleNumber;
 
   static const _defaultStats = [
     TripStatInfo(label: 'Distance', value: '12 km'),
     TripStatInfo(label: 'Duration', value: '2 hrs'),
     TripStatInfo(label: 'Vehicle Type', value: 'Manual'),
   ];
+
+  static TripCardData fromDetailsArgs(Map<String, dynamic> args) {
+    final statusRaw = args['status']?.toString() ?? '';
+    final status = switch (statusRaw) {
+      'in_progress' || 'driver_assigned' => TripCardStatus.ongoing,
+      'scheduled' => TripCardStatus.upcoming,
+      'completed' => TripCardStatus.completed,
+      'cancelled' => TripCardStatus.cancelled,
+      _ => TripCardStatus.upcoming,
+    };
+
+    return TripCardData(
+      tripMongoId: args['tripMongoId']?.toString(),
+      status: status,
+      tripTypeLabel: args['tripTypeLabel']?.toString() ?? 'SHORT TRIP',
+      dateLabel: args['pickupAt'] != null
+          ? 'Date : ${args['pickupAt']}'
+          : null,
+      completedAtLabel: args['completedAt'] != null
+          ? 'Completed at : ${args['completedAt']}'
+          : null,
+      pickup: TripLocationInfo(
+        title: args['pickup']?.toString() ?? 'Pickup',
+        subtitle: 'Pickup Location',
+      ),
+      drop: TripLocationInfo(
+        title: args['dropoff']?.toString() ?? 'Drop',
+        subtitle: 'Drop Location',
+      ),
+      earningsAmount: args['price']?.toString(),
+      stats: [
+        TripStatInfo(
+          label: 'Distance',
+          value: args['distance']?.toString() ?? '—',
+        ),
+        TripStatInfo(
+          label: 'Duration',
+          value: args['duration']?.toString() ?? '—',
+        ),
+        const TripStatInfo(label: 'Vehicle Type', value: '—'),
+      ],
+      totalEarned: args['price']?.toString(),
+      customerId: args['customerId']?.toString() ?? '',
+      customerName: args['customerName']?.toString() ?? '',
+      customerPhone: args['customerPhone']?.toString() ?? '',
+      vehicleNumber: args['vehicleNumber']?.toString() ?? '',
+      routeStyle: status == TripCardStatus.cancelled
+          ? TripRouteStyle.cancelledBolt
+          : TripRouteStyle.standard,
+      buttonLabel: 'View Trip Details',
+    );
+  }
+
+  static TripCardData fromTripModel(
+    TripModel trip, {
+    required TripCardStatus status,
+  }) {
+    final pickupSubtitle = status == TripCardStatus.ongoing
+        ? trip.pickupDistanceSubtitle
+        : 'Pickup Location';
+    final dropSubtitle = status == TripCardStatus.ongoing
+        ? 'Drop, ${trip.distanceLabel} away'
+        : 'Drop Location';
+
+    return TripCardData(
+      tripMongoId: trip.id,
+      status: status,
+      tripTypeLabel: trip.tripTypeBadgeLabel,
+      dateLabel: trip.pickupAt != null
+          ? 'Date : ${trip.formatDateTime(trip.pickupAt)}'
+          : null,
+      completedAtLabel: trip.completedAt != null
+          ? 'Completed at : ${DateFormat('hh:mm a').format(trip.completedAt!)}'
+          : null,
+      pickup: TripLocationInfo(
+        title: trip.pickupAddress.isNotEmpty ? trip.pickupAddress : 'Pickup',
+        subtitle: pickupSubtitle,
+      ),
+      drop: TripLocationInfo(
+        title: trip.dropoffAddress ?? trip.pickupAddress,
+        subtitle: dropSubtitle,
+      ),
+      earningsAmount: trip.displayEarnings,
+      statusPillLabel: status == TripCardStatus.ongoing
+          ? (trip.isInProgress ? 'Trip in progress' : 'Heading to pickup')
+          : null,
+      infoRowText: status == TripCardStatus.ongoing
+          ? '${trip.durationLabel} • ${trip.distanceLabel}'
+          : null,
+      stats: [
+        TripStatInfo(label: 'Distance', value: trip.distanceLabel),
+        TripStatInfo(label: 'Duration', value: trip.durationLabel),
+        TripStatInfo(label: 'Vehicle Type', value: trip.vehicleTypeLabel),
+      ],
+      totalEarned: trip.displayEarnings,
+      customerId: trip.customerId,
+      customerName: trip.customerDisplayName,
+      customerPhone: trip.customerPhone,
+      vehicleNumber: trip.vehicleNumber,
+      routeStyle: status == TripCardStatus.cancelled
+          ? TripRouteStyle.cancelledBolt
+          : TripRouteStyle.standard,
+      buttonLabel: status == TripCardStatus.ongoing ? 'View Trip' : 'View Trip Details',
+      buttonIcon: status == TripCardStatus.ongoing
+          ? const _NavigateButtonIcon()
+          : null,
+    );
+  }
 
   static TripCardData dummyOngoing() {
     return const TripCardData(
