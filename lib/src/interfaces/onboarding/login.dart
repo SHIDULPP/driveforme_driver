@@ -552,6 +552,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
 
       final data = nestedData(response.data);
       final userId = data?['userId']?.toString();
+      final token = data?['token'] as String?;
       final onboardingStatus = data?['onboardingStatus'] as String?;
 
       if (userId == null || userId.isEmpty) {
@@ -559,8 +560,14 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
         return;
       }
 
+      if (token == null || token.isEmpty) {
+        _showMessage('Invalid response from server');
+        return;
+      }
+
       final storage = ref.read(secureStorageServiceProvider);
       await storage.saveUserId(userId);
+      await storage.saveAuthToken(token);
       await storage.savePhoneNumber(widget.phoneNumber);
 
       final route = routeForOnboardingStatus(

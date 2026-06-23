@@ -1,6 +1,7 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/home_page.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_page.dart';
@@ -77,6 +78,8 @@ class _NavBarState extends ConsumerState<NavBar> {
               setState(() => _currentIndex = index);
               if (index == 2) {
                 ref.invalidate(walletProvider);
+              } else if (index == 3) {
+                ref.invalidate(userProvider);
               }
             }
           },

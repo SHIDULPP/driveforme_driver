@@ -82,6 +82,8 @@ class UserModel {
   final String onboardingStatus;
   final bool isPhoneVerified;
   final double walletBalance;
+  final double rating;
+  final int totalTrips;
   final UserProfile profile;
   final DriverVerification driverVerification;
 
@@ -92,6 +94,8 @@ class UserModel {
     required this.onboardingStatus,
     required this.isPhoneVerified,
     this.walletBalance = 0,
+    this.rating = 5.0,
+    this.totalTrips = 0,
     required this.profile,
     required this.driverVerification,
   });
@@ -107,6 +111,8 @@ class UserModel {
       onboardingStatus: json['onboardingStatus'] as String? ?? '',
       isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
       walletBalance: _parseWalletBalance(json['walletBalance']),
+      rating: (json['rating'] as num?)?.toDouble() ?? 5.0,
+      totalTrips: (json['totalTrips'] as num?)?.toInt() ?? 0,
       profile: UserProfile.fromJson(
         json['profile'] as Map<String, dynamic>?,
       ),

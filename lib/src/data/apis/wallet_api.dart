@@ -9,7 +9,7 @@ class WalletApi {
   WalletApi(this._api);
 
   Future<ApiResponse<WalletDetailsModel>> getWalletDetails() async {
-    final response = await _api.get('/wallet', requireUserId: true);
+    final response = await _api.get('/wallet', requireAuth: true);
 
     if (!response.success) {
       return ApiResponse.error(
@@ -40,7 +40,7 @@ class WalletApi {
         if (description != null && description.isNotEmpty)
           'description': description,
       },
-      requireUserId: true,
+      requireAuth: true,
     );
 
     if (!response.success) {

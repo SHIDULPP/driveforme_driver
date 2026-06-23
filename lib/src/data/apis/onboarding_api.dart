@@ -9,7 +9,7 @@ class OnboardingApi {
   OnboardingApi(this._api);
 
   Future<ApiResponse<UserModel>> getMe() async {
-    final response = await _api.get('/onboarding/me', requireUserId: false);
+    final response = await _api.get('/onboarding/me', requireAuth: true);
     if (!response.success) {
       return ApiResponse.error(
         response.message ?? 'Failed to load profile',
@@ -38,7 +38,7 @@ class OnboardingApi {
       'dateOfBirth': dateOfBirth,
       'gender': gender,
       'location': location,
-    }, requireUserId: true);
+    }, requireAuth: true);
   }
 
   Future<ApiResponse<Map<String, dynamic>>> submitDriverIdentity({
@@ -50,7 +50,7 @@ class OnboardingApi {
       'aadhaarImageUrl': aadhaarImageUrl,
       'drivingLicenseImageUrl': drivingLicenseImageUrl,
       'livePhotoUrl': livePhotoUrl,
-    }, requireUserId: true);
+    }, requireAuth: true);
   }
 }
 

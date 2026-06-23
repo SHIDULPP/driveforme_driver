@@ -70,16 +70,24 @@ class UploadService {
     }
 
     final userId = await _secureStorage.getUserId();
+    final token = await _secureStorage.getAuthToken();
     if (userId == null || userId.isEmpty) {
       throw Exception('User session not found. Please log in again.');
     }
+    if (token == null || token.isEmpty) {
+      throw Exception('Auth token not found. Please log in again.');
+    }
 
+    final apiKey = dotenv.env['API_KEY'] ?? '';
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$baseUrl/upload'),
     );
 
-    request.headers['x-user-id'] = userId;
+    if (apiKey.isNotEmpty) {
+      request.headers['x-api-key'] = apiKey;
+    }
+    request.headers['Authorization'] = 'Bearer $token';
     request.fields['folder'] = folder;
 
     final parts = mimeType.split('/');

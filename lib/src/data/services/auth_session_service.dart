@@ -16,7 +16,12 @@ class AuthSessionService {
 
   Future<String> resolveInitialRoute() async {
     final userId = await _storage.getUserId();
-    if (userId == null || userId.isEmpty) {
+    final token = await _storage.getAuthToken();
+    if (userId == null ||
+        userId.isEmpty ||
+        token == null ||
+        token.isEmpty) {
+      await _storage.clearSession();
       return 'Phone';
     }
 

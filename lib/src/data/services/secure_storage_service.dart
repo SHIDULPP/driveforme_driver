@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class SecureStorageService {
   static const _userIdKey = 'user_id';
   static const _phoneNumberKey = 'phone_number';
+  static const _authTokenKey = 'auth_token';
 
   final FlutterSecureStorage _storage;
 
@@ -20,9 +21,15 @@ class SecureStorageService {
 
   Future<String?> getPhoneNumber() => _storage.read(key: _phoneNumberKey);
 
+  Future<void> saveAuthToken(String token) =>
+      _storage.write(key: _authTokenKey, value: token);
+
+  Future<String?> getAuthToken() => _storage.read(key: _authTokenKey);
+
   Future<void> clearSession() async {
     await _storage.delete(key: _userIdKey);
     await _storage.delete(key: _phoneNumberKey);
+    await _storage.delete(key: _authTokenKey);
   }
 }
 

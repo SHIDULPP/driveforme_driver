@@ -18,7 +18,7 @@ class TripApi {
 
     final response = await _api.get(
       '/trips/available',
-      requireUserId: true,
+      requireAuth: true,
       queryParams: queryParams.isEmpty ? null : queryParams,
     );
 
@@ -40,7 +40,7 @@ class TripApi {
   Future<ApiResponse<TripModel>> getTripById(String tripId) async {
     final response = await _api.get(
       '/trips/$tripId',
-      requireUserId: true,
+      requireAuth: true,
     );
 
     if (!response.success) {
@@ -62,7 +62,7 @@ class TripApi {
     final response = await _api.post(
       '/trips/$tripId/accept',
       {},
-      requireUserId: true,
+      requireAuth: true,
     );
 
     if (!response.success) {

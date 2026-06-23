@@ -1,42 +1,23 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/user_model.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _kAvatarBg = Color(0xFFE8E8E8);
-const _kAvatarIconColor = Color(0xFFB0B0B0);
+const _kDividerColor = Color(0xFFEEEEEE);
 const _kIconCircleBg = Color(0xFFF2F2F2);
 const _kRowIconColor = Color(0xFF8E8E93);
-const _kDividerColor = Color(0xFFEEEEEE);
 
-class PersonalInfoPage extends StatelessWidget {
+class PersonalInfoPage extends ConsumerWidget {
   const PersonalInfoPage({super.key});
 
-  static const _fields = [
-    _PersonalInfoField(
-      icon: Icons.person_outline_rounded,
-      label: 'Name',
-      value: 'John Smith',
-    ),
-    _PersonalInfoField(
-      icon: Icons.mail_outline_rounded,
-      label: 'Email',
-      value: 'john.smith@example.com',
-    ),
-    _PersonalInfoField(
-      icon: Icons.phone_outlined,
-      label: 'Phone',
-      value: '+249 123-4567',
-    ),
-    _PersonalInfoField(
-      icon: Icons.calendar_today_outlined,
-      label: 'Date of birth',
-      value: '02/02/1998',
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: kWhite,
@@ -46,36 +27,116 @@ class PersonalInfoPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: kWhite,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const _PersonalInfoHeader(),
-              const SizedBox(height: 28),
-              const _ProfileAvatarPlaceholder(),
-              const SizedBox(height: 36),
-              Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.zero,
-                  itemCount: _fields.length,
-                  separatorBuilder: (_, __) => const Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: _kDividerColor,
+          child: userAsync.when(
+            data: (user) => _PersonalInfoContent(user: user),
+            loading: () => const Column(
+              children: [
+                _PersonalInfoHeader(),
+                Expanded(child: Center(child: CircularProgressIndicator())),
+              ],
+            ),
+            error: (_, _) => Column(
+              children: [
+                const _PersonalInfoHeader(),
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Could not load personal details',
+                          style: kCaption14B,
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () => ref.invalidate(userProvider),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
                   ),
-                  itemBuilder: (context, index) {
-                    final field = _fields[index];
-                    return _PersonalInfoRow(
-                      icon: field.icon,
-                      label: field.label,
-                      value: field.value,
-                    );
-                  },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PersonalInfoContent extends StatelessWidget {
+  const _PersonalInfoContent({required this.user});
+
+  final UserModel? user;
+
+  List<_PersonalInfoField> get _fields => [
+        _PersonalInfoField(
+          icon: Icons.person_outline_rounded,
+          label: 'Name',
+          value: displayFullName(user),
+        ),
+        _PersonalInfoField(
+          icon: Icons.mail_outline_rounded,
+          label: 'Email',
+          value: displayEmail(user),
+        ),
+        _PersonalInfoField(
+          icon: Icons.phone_outlined,
+          label: 'Phone',
+          value: displayPhone(user),
+        ),
+        _PersonalInfoField(
+          icon: Icons.calendar_today_outlined,
+          label: 'Date of birth',
+          value: displayDateOfBirth(user),
+        ),
+        _PersonalInfoField(
+          icon: Icons.wc_outlined,
+          label: 'Gender',
+          value: displayGender(user),
+        ),
+        _PersonalInfoField(
+          icon: Icons.location_on_outlined,
+          label: 'Location',
+          value: displayLocation(user),
+        ),
+      ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _PersonalInfoHeader(),
+        const SizedBox(height: 28),
+        Center(
+          child: ProfileAvatar(
+            imageUrl: profilePhotoUrl(user),
+            size: 110,
+          ),
+        ),
+        const SizedBox(height: 36),
+        Expanded(
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: _fields.length,
+            separatorBuilder: (_, _) => const Divider(
+              height: 1,
+              thickness: 1,
+              color: _kDividerColor,
+            ),
+            itemBuilder: (context, index) {
+              final field = _fields[index];
+              return _PersonalInfoRow(
+                icon: field.icon,
+                label: field.label,
+                value: field.value,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -122,29 +183,6 @@ class _PersonalInfoHeader extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ProfileAvatarPlaceholder extends StatelessWidget {
-  const _ProfileAvatarPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        height: 110,
-        width: 110,
-        decoration: const BoxDecoration(
-          color: _kAvatarBg,
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.person_outline_rounded,
-          size: 52,
-          color: _kAvatarIconColor,
-        ),
       ),
     );
   }

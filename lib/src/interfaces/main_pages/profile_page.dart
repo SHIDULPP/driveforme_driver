@@ -1,7 +1,11 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/user_model.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kMenuItems = [
   'Personal Details',
@@ -13,11 +17,13 @@ const _kMenuItems = [
   'FAQ',
 ];
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.transparent,
@@ -43,15 +49,21 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-                  children: [
-                    const _ProfileSummaryCard(),
-                    const SizedBox(height: 14),
-                    const _ProfileMenuCard(),
-                    const SizedBox(height: 32),
-                    const _ProfileFooter(),
-                  ],
+                child: userAsync.when(
+                  data: (user) => ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                    children: [
+                      _ProfileSummaryCard(user: user),
+                      const SizedBox(height: 14),
+                      const _ProfileMenuCard(),
+                      const SizedBox(height: 32),
+                      const _ProfileFooter(),
+                    ],
+                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => _ProfileErrorState(
+                    onRetry: () => ref.invalidate(userProvider),
+                  ),
                 ),
               ),
             ],
@@ -63,7 +75,9 @@ class ProfilePage extends StatelessWidget {
 }
 
 class _ProfileSummaryCard extends StatelessWidget {
-  const _ProfileSummaryCard();
+  const _ProfileSummaryCard({required this.user});
+
+  final UserModel? user;
 
   @override
   Widget build(BuildContext context) {
@@ -82,14 +96,10 @@ class _ProfileSummaryCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
+          ProfileAvatar(
+            imageUrl: profilePhotoUrl(user),
+            size: 64,
             borderRadius: BorderRadius.circular(32),
-            child: Image.asset(
-              'assets/pngs/live_photo_image.png',
-              width: 64,
-              height: 64,
-              fit: BoxFit.cover,
-            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -97,7 +107,7 @@ class _ProfileSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Matew',
+                  displayFullName(user),
                   style: kStyle(
                     kSemiBold,
                     kSize18,
@@ -109,31 +119,14 @@ class _ProfileSummaryCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '4.8',
+                      displayRating(user),
                       style: kCaption14M.copyWith(
                         color: kTextColor,
                         fontWeight: kSemiBold,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    ...List.generate(4, (index) {
-                      return Padding(
-                        padding: EdgeInsets.only(right: index < 3 ? 2 : 0),
-                        child: const Icon(
-                          Icons.star_rounded,
-                          size: 16,
-                          color: kGoldAccent,
-                        ),
-                      );
-                    }),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 2),
-                      child: Icon(
-                        Icons.star_half_rounded,
-                        size: 16,
-                        color: kGoldAccent,
-                      ),
-                    ),
+                    ProfileRatingStars(rating: user?.rating ?? 5.0),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Container(
@@ -145,9 +138,12 @@ class _ProfileSummaryCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text(
-                      '120 trips',
-                      style: kCaption13R.copyWith(color: kMutedText),
+                    Flexible(
+                      child: Text(
+                        displayTotalTrips(user),
+                        style: kCaption13R.copyWith(color: kMutedText),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -278,6 +274,32 @@ class _ProfileFooter extends StatelessWidget {
           style: kVersionR,
         ),
       ],
+    );
+  }
+}
+
+class _ProfileErrorState extends StatelessWidget {
+  const _ProfileErrorState({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Could not load profile',
+              style: kCaption14B,
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
+      ),
     );
   }
 }
