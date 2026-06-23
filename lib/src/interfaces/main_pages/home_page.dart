@@ -17,7 +17,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 const _kHomeHeaderBlue = Color(0xFF1E518B);
 const _kOnlineCardBg = Color(0xFF164A72);
 const _kPromoCardBg = Color(0xFFFEFAF2);
-const _kTripSelectedBg = Color(0xFFFFF6EB);
 const _kToggleOrange = Color(0xFFE68C3A);
 const _kEarningsBarBlue = Color(0xFF1E5C8D);
 
@@ -29,6 +28,12 @@ const _kHeaderCurveDepth = 70.0;
 
 /// Pulls the earnings card up so ~40% sits on the blue header.
 const _kEarningsCardOverlap = 58.0;
+
+/// Height of the online status row at the bottom of the header.
+const _kOnlineCardHeight = 68.0;
+
+double _onlineCardTop(double topPadding) =>
+    topPadding + 8 + _kHeaderContentHeight - _kOnlineCardHeight;
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -62,8 +67,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _syncTripPreference(bool isShortTrip) {
-    ref.read(tripPreferenceProvider.notifier).state =
-        isShortTrip ? 'short_trip' : 'long_trip';
+    ref.read(tripPreferenceProvider.notifier).state = isShortTrip
+        ? 'short_trip'
+        : 'long_trip';
     ref.invalidate(availableTripsProvider);
   }
 
@@ -139,9 +145,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               top: 0,
               left: 0,
               right: 0,
-              child: _HomeHeader(
-                isOnline: _isOnline,
-                onOnlineChanged: (value) => setState(() => _isOnline = value),
+              child: _HomeHeaderBackground(
                 contentHeight: _kHeaderContentHeight,
                 curveDepth: _kHeaderCurveDepth,
               ),
@@ -167,6 +171,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
+            Positioned(
+              top: _onlineCardTop(topPadding),
+              left: 20,
+              right: 20,
+              child: _OnlineStatusCard(
+                isOnline: _isOnline,
+                onChanged: (value) => setState(() => _isOnline = value),
+              ),
+            ),
             if (currentTrip != null)
               Positioned(
                 left: 20,
@@ -186,16 +199,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-class _HomeHeader extends ConsumerWidget {
-  const _HomeHeader({
-    required this.isOnline,
-    required this.onOnlineChanged,
+class _HomeHeaderBackground extends ConsumerWidget {
+  const _HomeHeaderBackground({
     required this.contentHeight,
     required this.curveDepth,
   });
 
-  final bool isOnline;
-  final ValueChanged<bool> onOnlineChanged;
   final double contentHeight;
   final double curveDepth;
 
@@ -305,15 +314,8 @@ class _HomeHeader extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _OnlineStatusCard(
-                      isOnline: isOnline,
-                      onChanged: onOnlineChanged,
-                    ),
-                  ),
-                ),
+                const Spacer(),
+                const SizedBox(height: _kOnlineCardHeight),
               ],
             ),
           ),
@@ -416,7 +418,7 @@ class _OnlineStatusCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'You are Online',
+                  isOnline ? 'You are Online' : 'You are Offline',
                   style: kStyle(
                     kSemiBold,
                     kSize15,
@@ -426,7 +428,9 @@ class _OnlineStatusCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Ready to accept orders',
+                  isOnline
+                      ? 'Ready to accept orders'
+                      : 'You will not receive requests',
                   style: kCaption12R.copyWith(
                     color: kWhite.withValues(alpha: 0.7),
                     height: 1.2,
@@ -576,6 +580,9 @@ class _TripPreferenceCard extends StatelessWidget {
   final bool isShortTrip;
   final ValueChanged<bool> onChanged;
 
+  static const _kOptionsBorder = Color(0xFFE8E8E8);
+  static const _kSelectedTripBg = Color(0xFFF9F7F0);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -596,44 +603,49 @@ class _TripPreferenceCard extends StatelessWidget {
         children: [
           Text('Trip Preference', style: kTripSubSectionSB),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _TripOptionTile(
-                  title: 'Short Trip',
-                  subtitle: 'Within City',
-                  icon: Icons.directions_car_filled_rounded,
-                  iconColor: kRed,
-                  isSelected: isShortTrip,
-                  onTap: () => onChanged(true),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: kWhite,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _kOptionsBorder),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _TripOptionTile(
+                    title: 'Short Trip',
+                    subtitle: 'Within City',
+                    imagePath: 'assets/pngs/short_trip.png',
+                    isSelected: isShortTrip,
+                    selectedBackground: _kSelectedTripBg,
+                    onTap: () => onChanged(true),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _TripOptionTile(
-                  title: 'Long Trip',
-                  subtitle: 'Outstation',
-                  icon: Icons.add_road_rounded,
-                  iconColor: kActiveGreen,
-                  isSelected: !isShortTrip,
-                  onTap: () => onChanged(false),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _TripOptionTile(
+                    title: 'Long Trip',
+                    subtitle: 'Outstation',
+                    imagePath: 'assets/pngs/long_trip.png',
+                    isSelected: !isShortTrip,
+                    selectedBackground: _kSelectedTripBg,
+                    onTap: () => onChanged(false),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 10),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Icon(Icons.check_circle, size: 15, color: kActiveGreen),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'You will recieve requestes based on your preferences',
-                  style: kCaption12R.copyWith(
-                    color: kSecondaryTextColor,
-                    height: 1.35,
-                  ),
+                  style: kCaption12R.copyWith(color: kMutedText, height: 1.35),
                 ),
               ),
             ],
@@ -648,43 +660,51 @@ class _TripOptionTile extends StatelessWidget {
   const _TripOptionTile({
     required this.title,
     required this.subtitle,
-    required this.icon,
-    required this.iconColor,
+    required this.imagePath,
     required this.isSelected,
+    required this.selectedBackground,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
-  final IconData icon;
-  final Color iconColor;
+  final String imagePath;
   final bool isSelected;
+  final Color selectedBackground;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? _kTripSelectedBg : kWhite,
+          color: isSelected ? selectedBackground : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? kGoldAccent : kCardBorder,
-            width: isSelected ? 1.5 : 1,
-          ),
+          border: isSelected
+              ? Border.all(color: kGoldAccent, width: 1.2)
+              : null,
         ),
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 28, color: iconColor),
-            const SizedBox(height: 6),
-            Text(title, style: kCaption14B, textAlign: TextAlign.center),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: kCaption12R.copyWith(color: kMutedText),
-              textAlign: TextAlign.center,
+            Image.asset(imagePath, height: 38, width: 38, fit: BoxFit.contain),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(title, style: kCaption14B.copyWith(color: kTextColor)),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: kCaption12R.copyWith(color: kTextColor, height: 1.2),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
