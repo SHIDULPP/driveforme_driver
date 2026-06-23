@@ -1,28 +1,36 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/wallet_model.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/earning_pages/wallet_recharge_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kEarningsHeaderBlue = Color(0xFF1A5288);
 const _kEarningsGold = Color(0xFFC6934B);
 const _kStatValueBlue = Color(0xFF205D91);
 const _kChartBarInactive = Color(0xFFF3F0E8);
 const _kChartAmountMuted = Color(0xFFB8B0A4);
+const _kCreditGreen = Color(0xFF17A34A);
+const _kDebitRed = Color(0xFFE32626);
 
 enum _EarningsSection { earnings, transactions }
 
-class EarningPage extends StatefulWidget {
+class EarningPage extends ConsumerStatefulWidget {
   const EarningPage({super.key});
 
   @override
-  State<EarningPage> createState() => _EarningPageState();
+  ConsumerState<EarningPage> createState() => _EarningPageState();
 }
 
-class _EarningPageState extends State<EarningPage> {
+class _EarningPageState extends ConsumerState<EarningPage> {
   _EarningsSection _section = _EarningsSection.earnings;
 
   @override
   Widget build(BuildContext context) {
+    final walletAsync = ref.watch(walletProvider);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: _kEarningsHeaderBlue,
@@ -34,15 +42,35 @@ class _EarningPageState extends State<EarningPage> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _EarningsHeader(),
+            walletAsync.when(
+              data: (wallet) => _EarningsHeader(
+                balanceLabel: formatRupee(wallet.walletBalance),
+                onAddBalance: () => WalletRechargeSheet.show(context),
+              ),
+              loading: () => const _EarningsHeader(
+                balanceLabel: '₹ —',
+                onAddBalance: null,
+              ),
+              error: (_, _) => _EarningsHeader(
+                balanceLabel: '₹ —',
+                onAddBalance: () => ref.invalidate(walletProvider),
+              ),
+            ),
             _EarningsSegmentedTabs(
               selected: _section,
               onChanged: (value) => setState(() => _section = value),
             ),
             Expanded(
-              child: _section == _EarningsSection.earnings
-                  ? const _EarningsTabContent()
-                  : const _TransactionsPlaceholder(),
+              child: walletAsync.when(
+                data: (wallet) => _section == _EarningsSection.earnings
+                    ? _EarningsTabContent(wallet: wallet)
+                    : _TransactionsList(transactions: wallet.transactions),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => _WalletErrorState(
+                  message: error.toString(),
+                  onRetry: () => ref.invalidate(walletProvider),
+                ),
+              ),
             ),
           ],
         ),
@@ -52,19 +80,24 @@ class _EarningPageState extends State<EarningPage> {
 }
 
 class _EarningsHeader extends StatelessWidget {
-  const _EarningsHeader();
+  const _EarningsHeader({
+    required this.balanceLabel,
+    required this.onAddBalance,
+  });
+
+  final String balanceLabel;
+  final VoidCallback? onAddBalance;
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
 
     return Container(
-      // height: 150,
       color: _kEarningsHeaderBlue,
       padding: EdgeInsets.fromLTRB(20, topPadding + 12, 20, 20),
       child: Column(
         children: [
-          SizedBox(height: 70),
+          const SizedBox(height: 70),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -81,7 +114,7 @@ class _EarningsHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '₹ 150',
+                      balanceLabel,
                       style: kStyle(
                         kSemiBold,
                         kSize30,
@@ -105,7 +138,7 @@ class _EarningsHeader extends StatelessWidget {
                 color: _kEarningsGold,
                 borderRadius: BorderRadius.circular(30),
                 child: InkWell(
-                  onTap: () {},
+                  onTap: onAddBalance,
                   borderRadius: BorderRadius.circular(30),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -220,31 +253,42 @@ class _SegmentTab extends StatelessWidget {
 }
 
 class _EarningsTabContent extends StatelessWidget {
-  const _EarningsTabContent();
+  const _EarningsTabContent({required this.wallet});
 
-  static const _barHeights = [0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 1.0];
+  final WalletDetailsModel wallet;
+
   static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
+    final weekly = wallet.weeklyEarningsByWeekday();
+    final maxWeekly = weekly.values.fold<double>(0, (a, b) => a > b ? a : b);
+    final todayIndex = DateTime.now().weekday - 1;
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 100),
       children: [
-        const Row(
+        Row(
           children: [
             Expanded(
               child: _StatSummaryCard(
-                value: '₹ 2,035',
+                value: formatRupeeCompact(wallet.totalTripEarnings),
                 label: 'Total Earnings',
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Expanded(
-              child: _StatSummaryCard(value: '20', label: 'Total Trips'),
+              child: _StatSummaryCard(
+                value: '${wallet.completedTripCount}',
+                label: 'Total Trips',
+              ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Expanded(
-              child: _StatSummaryCard(value: '4.9', label: 'Rating'),
+              child: _StatSummaryCard(
+                value: formatRupeeCompact(wallet.summary.totalCredits),
+                label: 'Total Credits',
+              ),
             ),
           ],
         ),
@@ -272,7 +316,8 @@ class _EarningsTabContent extends StatelessWidget {
                         children: [
                           const TextSpan(text: 'This week - '),
                           TextSpan(
-                            text: '₹ 2,035 total',
+                            text:
+                                '${formatRupee(wallet.thisWeekEarnings)} total',
                             style: kStyle(
                               kSemiBold,
                               kSize14,
@@ -294,20 +339,9 @@ class _EarningsTabContent extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: kCardBorder),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'This week',
-                          style: kCaption13R.copyWith(color: kTextColor),
-                        ),
-                        const SizedBox(width: 2),
-                        const Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          size: 18,
-                          color: kTextColor,
-                        ),
-                      ],
+                    child: Text(
+                      'This week',
+                      style: kCaption13R.copyWith(color: kTextColor),
                     ),
                   ),
                 ],
@@ -318,6 +352,11 @@ class _EarningsTabContent extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: List.generate(7, (index) {
+                    final amount = weekly[index] ?? 0;
+                    final heightFactor = maxWeekly > 0
+                        ? (amount / maxWeekly).clamp(0.08, 1.0)
+                        : 0.08;
+
                     return Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(
@@ -325,10 +364,12 @@ class _EarningsTabContent extends StatelessWidget {
                           right: index == 6 ? 0 : 3,
                         ),
                         child: _WeeklyBar(
-                          heightFactor: _barHeights[index],
+                          heightFactor: heightFactor,
                           dayLabel: _dayLabels[index],
-                          isHighlighted: index == 6,
-                          amountLabel: '₹ 2,035',
+                          isHighlighted: index == todayIndex,
+                          amountLabel: amount > 0
+                              ? formatRupeeCompact(amount)
+                              : '₹ 0',
                         ),
                       ),
                     );
@@ -446,15 +487,125 @@ class _WeeklyBar extends StatelessWidget {
   }
 }
 
-class _TransactionsPlaceholder extends StatelessWidget {
-  const _TransactionsPlaceholder();
+class _TransactionsList extends StatelessWidget {
+  const _TransactionsList({required this.transactions});
+
+  final List<WalletTransactionModel> transactions;
+
+  @override
+  Widget build(BuildContext context) {
+    if (transactions.isEmpty) {
+      return Center(
+        child: Text(
+          'No transactions yet',
+          style: kCaption14R.copyWith(color: kMutedText),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 100),
+      itemCount: transactions.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        return _TransactionTile(transaction: transactions[index]);
+      },
+    );
+  }
+}
+
+class _TransactionTile extends StatelessWidget {
+  const _TransactionTile({required this.transaction});
+
+  final WalletTransactionModel transaction;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = transaction.isCredit ? _kCreditGreen : _kDebitRed;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: kCardBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 40,
+            width: 40,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              transaction.isCredit
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.description,
+                  style: kCaption14B,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${transaction.categoryLabel} • ${transaction.displayDate}',
+                  style: kCaption12R.copyWith(color: kMutedText),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            transaction.displayAmount,
+            style: kStyle(kSemiBold, kSize14, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WalletErrorState extends StatelessWidget {
+  const _WalletErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(
-        'No transactions yet',
-        style: kCaption14R.copyWith(color: kMutedText),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Could not load wallet',
+              style: kCaption14B,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              style: kCaption12R.copyWith(color: kMutedText),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
       ),
     );
   }

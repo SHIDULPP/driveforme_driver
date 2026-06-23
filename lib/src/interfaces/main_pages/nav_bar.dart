@@ -1,22 +1,24 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/home_page.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trips.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class NavBar extends StatefulWidget {
+class NavBar extends ConsumerStatefulWidget {
   const NavBar({super.key, this.initialIndex = 0});
 
   final int initialIndex;
 
   @override
-  State<NavBar> createState() => _NavBarState();
+  ConsumerState<NavBar> createState() => _NavBarState();
 }
 
-class _NavBarState extends State<NavBar> {
+class _NavBarState extends ConsumerState<NavBar> {
   late int _currentIndex;
 
   static const _items = <_NavBarItemData>[
@@ -73,6 +75,9 @@ class _NavBarState extends State<NavBar> {
           onItemSelected: (index) {
             if (_currentIndex != index) {
               setState(() => _currentIndex = index);
+              if (index == 2) {
+                ref.invalidate(walletProvider);
+              }
             }
           },
         ),
