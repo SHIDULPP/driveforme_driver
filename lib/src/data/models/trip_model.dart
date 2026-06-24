@@ -196,7 +196,9 @@ class TripModel {
   }
 
   String get customerDisplayName =>
-      customerName.isNotEmpty ? customerName : 'Customer';
+      customerName.isNotEmpty ? customerName : 'Vehicle owner';
+
+  String get earningsLabel => displayPrice;
 
   String get routeSummaryLine {
     final pickup = pickupAddress.isNotEmpty ? pickupAddress : 'Pickup';
@@ -263,7 +265,7 @@ class TripModel {
       };
 
   Map<String, dynamic> toOtpArguments() => {
-        ...toDriverArrivedArguments(),
+        'tripMongoId': id,
       };
 
   Map<String, dynamic> toEndTripArguments() => {

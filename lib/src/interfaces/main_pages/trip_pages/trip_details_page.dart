@@ -5,6 +5,7 @@ import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPageBg = Color(0xFFF8FAF5);
 const _kNavigateBlue = Color(0xFF205D91);
@@ -38,7 +39,7 @@ class TripTicketInfo {
   );
 }
 
-class TripDetailsPage extends StatelessWidget {
+class TripDetailsPage extends ConsumerWidget {
   const TripDetailsPage({
     super.key,
     required this.trip,
@@ -52,8 +53,21 @@ class TripDetailsPage extends StatelessWidget {
       trip.status == TripCardStatus.completed ||
       trip.status == TripCardStatus.cancelled;
 
+  Future<void> _handleCancel(BuildContext context, WidgetRef ref) async {
+    final tripId = trip.tripMongoId;
+    if (tripId == null || tripId.isEmpty) return;
+
+    final cancelled = await cancelTripWithDialog(
+      context: context,
+      ref: ref,
+      tripMongoId: tripId,
+    );
+    if (!context.mounted || cancelled == null) return;
+    Navigator.pushNamedAndRemoveUntil(context, 'navBar', (route) => false);
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: _kPageBg,
@@ -76,7 +90,12 @@ class TripDetailsPage extends StatelessWidget {
                     _showBottomActions ? 16 : 24,
                   ),
                   children: [
-                    _TripDetailsCard(trip: trip),
+                    _TripDetailsCard(
+                      trip: trip,
+                      onCancel: trip.status == TripCardStatus.upcoming
+                          ? () => _handleCancel(context, ref)
+                          : null,
+                    ),
                     if (ticket != null) ...[
                       const SizedBox(height: 12),
                       _TripTicketCard(ticket: ticket!),
@@ -133,9 +152,13 @@ class _TripDetailsHeader extends StatelessWidget {
 }
 
 class _TripDetailsCard extends StatelessWidget {
-  const _TripDetailsCard({required this.trip});
+  const _TripDetailsCard({
+    required this.trip,
+    this.onCancel,
+  });
 
   final TripCardData trip;
+  final VoidCallback? onCancel;
 
   bool get _showEarningsColumn =>
       trip.status == TripCardStatus.upcoming && trip.earningsAmount != null;
@@ -291,7 +314,7 @@ class _TripDetailsCard extends StatelessWidget {
               buttonColor: kWhite,
               sideColor: kRed,
               labelColor: kRed,
-              onPressed: () {},
+              onPressed: onCancel,
             ),
           ],
         ],

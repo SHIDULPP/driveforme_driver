@@ -200,17 +200,6 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       final arrivedArgs = settings?.arguments as Map<String, dynamic>?;
       page = DriverArrivedScreen(
         tripMongoId: _routeString(arrivedArgs, 'tripMongoId'),
-        tripId: _routeString(arrivedArgs, 'tripId'),
-        customerId: _routeString(arrivedArgs, 'customerId'),
-        customerName: _routeString(arrivedArgs, 'customerName', 'Customer'),
-        customerPhone: _routeString(arrivedArgs, 'customerPhone'),
-        pickup: _routeString(arrivedArgs, 'pickup'),
-        dropoff: _routeString(arrivedArgs, 'dropoff'),
-        vehicleNumber: _routeString(arrivedArgs, 'vehicleNumber'),
-        vehicleName: _routeString(arrivedArgs, 'vehicleName'),
-        distance: _routeString(arrivedArgs, 'distance', '—'),
-        duration: _routeString(arrivedArgs, 'duration', '—'),
-        price: _routeString(arrivedArgs, 'price', '—'),
       );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
@@ -219,11 +208,6 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       final otpArgs = settings?.arguments as Map<String, dynamic>?;
       page = OtpScreen(
         tripMongoId: _routeString(otpArgs, 'tripMongoId'),
-        customerId: _routeString(otpArgs, 'customerId'),
-        customerName: _routeString(otpArgs, 'customerName', 'Customer'),
-        customerPhone: _routeString(otpArgs, 'customerPhone'),
-        pickup: _routeString(otpArgs, 'pickup'),
-        dropoff: _routeString(otpArgs, 'dropoff'),
       );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
@@ -232,18 +216,6 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       final endArgs = settings?.arguments as Map<String, dynamic>?;
       page = EndTripScreen(
         tripMongoId: _routeString(endArgs, 'tripMongoId'),
-        tripId: _routeString(endArgs, 'tripId'),
-        customerId: _routeString(endArgs, 'customerId'),
-        customerName: _routeString(endArgs, 'customerName', 'Customer'),
-        customerPhone: _routeString(endArgs, 'customerPhone'),
-        pickup: _routeString(endArgs, 'pickup'),
-        dropoff: _routeString(endArgs, 'dropoff'),
-        headingTo: _routeString(endArgs, 'headingTo'),
-        distance: _routeString(endArgs, 'distance', '—'),
-        duration: _routeString(endArgs, 'duration', '—'),
-        price: _routeString(endArgs, 'price', '—'),
-        startedAtIso: _routeString(endArgs, 'startedAt'),
-        paymentMethod: _routeString(endArgs, 'paymentMethod', 'cash'),
       );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);

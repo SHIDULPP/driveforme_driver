@@ -6,7 +6,9 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
+import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
@@ -24,33 +26,9 @@ class EndTripScreen extends ConsumerStatefulWidget {
   const EndTripScreen({
     super.key,
     this.tripMongoId = '',
-    this.tripId = '',
-    this.customerId = '',
-    this.customerName = 'Customer',
-    this.customerPhone = '',
-    this.pickup = '',
-    this.dropoff = '',
-    this.headingTo = '',
-    this.distance = '—',
-    this.duration = '—',
-    this.price = '—',
-    this.startedAtIso,
-    this.paymentMethod = 'cash',
   });
 
   final String tripMongoId;
-  final String tripId;
-  final String customerId;
-  final String customerName;
-  final String customerPhone;
-  final String pickup;
-  final String dropoff;
-  final String headingTo;
-  final String distance;
-  final String duration;
-  final String price;
-  final String? startedAtIso;
-  final String paymentMethod;
 
   @override
   ConsumerState<EndTripScreen> createState() => _EndTripScreenState();
@@ -61,35 +39,35 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
 
   Timer? _timer;
   Timer? _pollTimer;
+  TripModel? _trip;
   Duration _elapsed = Duration.zero;
   bool _navigatedAway = false;
-  String _price = '—';
-  String _headingTo = '';
-  String _distance = '—';
 
   @override
   void initState() {
     super.initState();
-    _price = widget.price;
-    _headingTo = widget.headingTo.isNotEmpty ? widget.headingTo : widget.dropoff;
-    _distance = widget.distance;
-    _elapsed = _initialElapsed();
-
+    _loadTrip();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _elapsed = _initialElapsed());
+      setState(() => _elapsed = _elapsedFromTrip());
     });
     _startPolling();
   }
 
-  Duration _initialElapsed() {
-    if (widget.startedAtIso == null || widget.startedAtIso!.isEmpty) {
-      return Duration.zero;
-    }
-    final started = DateTime.tryParse(widget.startedAtIso!);
+  Duration _elapsedFromTrip() {
+    final started = _trip?.startedAt;
     if (started == null) return Duration.zero;
     final diff = DateTime.now().difference(started);
     return diff.isNegative ? Duration.zero : diff;
+  }
+
+  Future<void> _loadTrip() async {
+    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    if (!mounted || trip == null) return;
+    setState(() {
+      _trip = trip;
+      _elapsed = _elapsedFromTrip();
+    });
   }
 
   void _startPolling() {
@@ -101,38 +79,20 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
   Future<void> _pollTripStatus() async {
     if (_navigatedAway || !mounted || widget.tripMongoId.isEmpty) return;
 
-    final response =
-        await ref.read(tripApiProvider).getTripById(widget.tripMongoId);
-    if (!mounted || _navigatedAway) return;
-    if (!response.success || response.data == null) return;
+    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    if (!mounted || _navigatedAway || trip == null) return;
 
-    final trip = response.data!;
-    await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
-
-    if (trip.isCancelled) {
+    if (navigateIfTripLeftExpectedStatus(
+      trip: trip,
+      expectedStatuses: const {'in_progress'},
+    )) {
       _navigatedAway = true;
-      if (!mounted) return;
-      NavigationService().pushNamedAndRemoveUntil('navBar');
-      return;
-    }
-
-    if (trip.isCompleted) {
-      _navigatedAway = true;
-      if (!mounted) return;
-      final target = tripNavigationTarget(trip);
-      if (target != null) {
-        NavigationService().pushNamedAndRemoveUntil(
-          target.route,
-          arguments: target.arguments,
-        );
-      }
       return;
     }
 
     setState(() {
-      _price = trip.displayPrice;
-      _headingTo = trip.dropoffAddress ?? trip.pickupAddress;
-      _distance = trip.distanceLabel;
+      _trip = trip;
+      _elapsed = _elapsedFromTrip();
     });
   }
 
@@ -183,7 +143,11 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final trip = _trip;
     final topPadding = MediaQuery.paddingOf(context).top;
+    final headingTo = trip?.dropoffAddress ?? trip?.pickupAddress ?? '—';
+    final distance = trip?.distanceLabel ?? '—';
+    final price = trip?.displayPrice ?? '—';
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -193,13 +157,15 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
       ),
       child: Scaffold(
         backgroundColor: kWhite,
-        body: Stack(
+        body: trip == null
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
           fit: StackFit.expand,
           children: [
             const _MapLayer(),
             const _MapRouteOverlay(),
             const _RouteDestinationMarker(),
-            _RouteInfoBubble(headingTo: _headingTo, distance: _distance),
+            _RouteInfoBubble(headingTo: headingTo, distance: distance),
             Positioned(
               top: topPadding + 8,
               left: 16,
@@ -213,21 +179,21 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
             Positioned(
               top: topPadding + 60,
               right: 16,
-              child: _EarningsCard(price: _price),
+              child: _EarningsCard(price: price),
             ),
             Positioned(
               right: 16,
               bottom: MediaQuery.sizeOf(context).height * 0.42,
               child: _SosButton(
                 tripMongoId: widget.tripMongoId,
-                locationLabel: _headingTo,
+                locationLabel: headingTo,
               ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
               child: _EndTripBottomPanel(
-                dropoff: _headingTo,
-                distance: _distance,
+                dropoff: headingTo,
+                distance: distance,
                 onEndTrip: _completeTrip,
               ),
             ),

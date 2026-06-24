@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
+import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,27 +23,23 @@ class OtpScreen extends ConsumerStatefulWidget {
   const OtpScreen({
     super.key,
     this.tripMongoId = '',
-    this.customerId = '',
-    this.customerName = 'Customer',
-    this.customerPhone = '',
-    this.pickup = '',
-    this.dropoff = '',
   });
 
   final String tripMongoId;
-  final String customerId;
-  final String customerName;
-  final String customerPhone;
-  final String pickup;
-  final String dropoff;
 
   @override
   ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends ConsumerState<OtpScreen> {
+  static const _pollInterval = Duration(seconds: 4);
+
   final _otpController = TextEditingController();
   final _focusNode = FocusNode();
+
+  TripModel? _trip;
+  Timer? _pollTimer;
+  bool _navigatedAway = false;
 
   @override
   void initState() {
@@ -46,13 +48,45 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
+    _loadTrip();
+    _startPolling();
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     _otpController.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadTrip() async {
+    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    if (!mounted || trip == null) return;
+    setState(() => _trip = trip);
+  }
+
+  void _startPolling() {
+    if (widget.tripMongoId.isEmpty) return;
+    _pollTripStatus();
+    _pollTimer = Timer.periodic(_pollInterval, (_) => _pollTripStatus());
+  }
+
+  Future<void> _pollTripStatus() async {
+    if (_navigatedAway || !mounted || widget.tripMongoId.isEmpty) return;
+
+    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    if (!mounted || _navigatedAway || trip == null) return;
+
+    if (navigateIfTripLeftExpectedStatus(
+      trip: trip,
+      expectedStatuses: const {'driver_assigned'},
+    )) {
+      _navigatedAway = true;
+      return;
+    }
+
+    setState(() => _trip = trip);
   }
 
   bool get _isOtpComplete => _otpController.text.length == _kOtpLength;
@@ -82,6 +116,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     }
 
     final trip = response.data!;
+    _navigatedAway = true;
     await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
 
     final target = tripNavigationTarget(trip);
@@ -94,10 +129,23 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     );
   }
 
+  Future<void> _handleCancel() async {
+    final trip = await cancelTripWithDialog(
+      context: context,
+      ref: ref,
+      tripMongoId: widget.tripMongoId,
+    );
+    if (!mounted || trip == null) return;
+    _navigatedAway = true;
+    NavigationService().pushNamedAndRemoveUntil('navBar');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final trip = _trip;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final otp = _otpController.text;
+    final customerName = trip?.customerDisplayName ?? 'Vehicle owner';
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -108,143 +156,164 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       child: Scaffold(
         backgroundColor: kWhite,
         resizeToAvoidBottomInset: true,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            const _MapLayer(),
-            const _PickupWithCarMarker(),
-            Positioned(
-              top: MediaQuery.paddingOf(context).top + 8,
-              left: 16,
-              child: _MapBackButton(onTap: () => Navigator.maybePop(context)),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: kWhite,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 20,
-                      offset: Offset(0, -4),
+        body: trip == null
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
+                fit: StackFit.expand,
+                children: [
+                  const _MapLayer(),
+                  const _PickupWithCarMarker(),
+                  Positioned(
+                    top: MediaQuery.paddingOf(context).top + 8,
+                    left: 16,
+                    child: _MapBackButton(
+                      onTap: () => Navigator.maybePop(context),
                     ),
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 24, 20, bottomPadding + 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          color: kWhite,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: kCardBorder),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: kWhite,
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(28)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x1A000000),
+                            blurRadius: 20,
+                            offset: Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          24,
+                          20,
+                          bottomPadding + 20,
                         ),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'Enter OTP to Start your trip',
-                              textAlign: TextAlign.center,
-                              style: kDriverFoundOtpTitleSB,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Ask ${widget.customerName} for the 4-digit code',
-                              textAlign: TextAlign.center,
-                              style: kDriverFoundOtpHintR,
-                            ),
-                            const SizedBox(height: 20),
-                            GestureDetector(
-                              onTap: () => _focusNode.requestFocus(),
-                              behavior: HitTestBehavior.opaque,
-                              child: Stack(
-                                alignment: Alignment.center,
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 24,
+                              ),
+                              decoration: BoxDecoration(
+                                color: kWhite,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: kCardBorder),
+                              ),
+                              child: Column(
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: List.generate(_kOtpLength, (
-                                      index,
-                                    ) {
-                                      final digit = index < otp.length
-                                          ? otp[index]
-                                          : '';
-                                      final isFilled = digit.isNotEmpty;
-                                      final isActive =
-                                          !isFilled && index == otp.length;
-
-                                      return Padding(
-                                        padding: EdgeInsets.only(
-                                          left: index == 0 ? 0 : 12,
-                                        ),
-                                        child: _OtpDigitBox(
-                                          digit: digit,
-                                          isFilled: isFilled,
-                                          isActive: isActive,
-                                        ),
-                                      );
-                                    }),
+                                  Text(
+                                    'Enter OTP to Start your trip',
+                                    textAlign: TextAlign.center,
+                                    style: kDriverFoundOtpTitleSB,
                                   ),
-                                  Opacity(
-                                    opacity: 0,
-                                    child: SizedBox(
-                                      width:
-                                          _kOtpBoxSize * _kOtpLength +
-                                          12 * (_kOtpLength - 1),
-                                      height: _kOtpBoxSize,
-                                      child: TextField(
-                                        controller: _otpController,
-                                        focusNode: _focusNode,
-                                        keyboardType: TextInputType.number,
-                                        maxLength: _kOtpLength,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter
-                                              .digitsOnly,
-                                        ],
-                                        decoration: const InputDecoration(
-                                          counterText: '',
-                                          border: InputBorder.none,
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Ask $customerName for the 4-digit code',
+                                    textAlign: TextAlign.center,
+                                    style: kDriverFoundOtpHintR,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  GestureDetector(
+                                    onTap: () => _focusNode.requestFocus(),
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: List.generate(
+                                            _kOtpLength,
+                                            (index) {
+                                              final digit = index < otp.length
+                                                  ? otp[index]
+                                                  : '';
+                                              final isFilled = digit.isNotEmpty;
+                                              final isActive = !isFilled &&
+                                                  index == otp.length;
+
+                                              return Padding(
+                                                padding: EdgeInsets.only(
+                                                  left: index == 0 ? 0 : 12,
+                                                ),
+                                                child: _OtpDigitBox(
+                                                  digit: digit,
+                                                  isFilled: isFilled,
+                                                  isActive: isActive,
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         ),
-                                        style: kDriverFoundOtpDigitSB,
-                                      ),
+                                        Opacity(
+                                          opacity: 0,
+                                          child: SizedBox(
+                                            width: _kOtpBoxSize * _kOtpLength +
+                                                12 * (_kOtpLength - 1),
+                                            height: _kOtpBoxSize,
+                                            child: TextField(
+                                              controller: _otpController,
+                                              focusNode: _focusNode,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              maxLength: _kOtpLength,
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly,
+                                              ],
+                                              decoration:
+                                                  const InputDecoration(
+                                                counterText: '',
+                                                border: InputBorder.none,
+                                              ),
+                                              style: kDriverFoundOtpDigitSB,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Only start trip after verifying OTP',
+                                    textAlign: TextAlign.center,
+                                    style: kDriverFoundOtpHintR,
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Only start trip after verifying OTP',
-                              textAlign: TextAlign.center,
-                              style: kDriverFoundOtpHintR,
+                            const SizedBox(height: 20),
+                            primaryButton(
+                              label: 'Start Trip',
+                              buttonHeight: 52,
+                              fontSize: kSize16,
+                              buttonColor: kTripCtaBlue,
+                              labelColor: kWhite,
+                              onPressed: _isOtpComplete ? _startTrip : null,
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: _handleCancel,
+                              child: Text(
+                                'Cancel trip',
+                                style: kCaption14M.copyWith(color: kRed),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      primaryButton(
-                        label: 'Start Trip',
-                        buttonHeight: 52,
-                        fontSize: kSize16,
-                        buttonColor: kTripCtaBlue,
-                        labelColor: kWhite,
-                        onPressed: _isOtpComplete ? _startTrip : null,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
