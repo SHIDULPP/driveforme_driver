@@ -88,6 +88,29 @@ Future<void> launchPhoneCall(String phone) async {
   }
 }
 
+/// Pops back to the existing [navBar] route when possible.
+///
+/// Creating a fresh [NavBar] via [pushNamedAndRemoveUntil] would re-run active
+/// trip resume and can push the driver back onto a trip screen they just left.
+void navigateToHomeAfterActiveTripEnds() {
+  final navigator = NavigationService.navigatorKey.currentState;
+  if (navigator == null) {
+    NavigationService().pushNamedAndRemoveUntil('navBar');
+    return;
+  }
+
+  var foundNavBar = false;
+  navigator.popUntil((route) {
+    final isNavBar = route.settings.name == 'navBar';
+    if (isNavBar) foundNavBar = true;
+    return isNavBar;
+  });
+
+  if (!foundNavBar) {
+    NavigationService().pushNamedAndRemoveUntil('navBar');
+  }
+}
+
 Future<void> navigateToActiveTrip(WidgetRef ref, TripModel trip) async {
   await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
   final target = tripNavigationTarget(trip);

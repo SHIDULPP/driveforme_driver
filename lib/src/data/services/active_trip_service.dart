@@ -1,4 +1,5 @@
 import 'package:driveforme_driver/src/data/apis/trip_api.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,8 +11,8 @@ class ActiveTripService {
   ActiveTripService({
     required SecureStorageService storage,
     required TripApi tripApi,
-  })  : _storage = storage,
-        _tripApi = tripApi;
+  }) : _storage = storage,
+       _tripApi = tripApi;
 
   Future<TripNavigationTarget?> resolveResumableTrip() async {
     final storedId = await _storage.getActiveTripId();
@@ -22,21 +23,21 @@ class ActiveTripService {
     }
 
     final inProgress = await _tripApi.listOngoingTrips();
-    if (inProgress.success &&
-        inProgress.data != null &&
-        inProgress.data!.isNotEmpty) {
-      final trip = inProgress.data!.first;
-      await _storage.saveActiveTripId(trip.id);
-      return tripNavigationTarget(trip);
+    if (inProgress.success && inProgress.data != null) {
+      final trip = _firstResumableTrip(inProgress.data!);
+      if (trip != null) {
+        await _storage.saveActiveTripId(trip.id);
+        return tripNavigationTarget(trip);
+      }
     }
 
     final assigned = await _tripApi.listAssignedTrips();
-    if (assigned.success &&
-        assigned.data != null &&
-        assigned.data!.isNotEmpty) {
-      final trip = assigned.data!.first;
-      await _storage.saveActiveTripId(trip.id);
-      return tripNavigationTarget(trip);
+    if (assigned.success && assigned.data != null) {
+      final trip = _firstResumableTrip(assigned.data!);
+      if (trip != null) {
+        await _storage.saveActiveTripId(trip.id);
+        return tripNavigationTarget(trip);
+      }
     }
 
     return null;
@@ -47,11 +48,21 @@ class ActiveTripService {
     if (!response.success || response.data == null) return null;
 
     final trip = response.data!;
-    if (!isActiveTripStatus(trip.status) && trip.status != 'completed') {
+    if (trip.isCancelled || !isActiveTripStatus(trip.status)) {
+      await _storage.clearActiveTripId();
       return null;
     }
 
     return tripNavigationTarget(trip);
+  }
+
+  TripModel? _firstResumableTrip(List<TripModel> trips) {
+    for (final trip in trips) {
+      if (!trip.isCancelled && isActiveTripStatus(trip.status)) {
+        return trip;
+      }
+    }
+    return null;
   }
 }
 

@@ -2,10 +2,11 @@ import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Fetches trip from API and caches it in [activeTripProvider].
+/// Fetches trip from API; caches only while it is still an active driver trip.
 Future<TripModel?> fetchAndCacheTrip(WidgetRef ref, String tripMongoId) async {
   if (tripMongoId.isEmpty) return null;
 
@@ -13,9 +14,13 @@ Future<TripModel?> fetchAndCacheTrip(WidgetRef ref, String tripMongoId) async {
   if (!response.success || response.data == null) return null;
 
   final trip = response.data!;
-  await ref
-      .read(activeTripProvider.notifier)
-      .setActiveTrip(tripMongoId, trip: trip);
+  if (isActiveTripStatus(trip.status) && !trip.isCancelled) {
+    await ref
+        .read(activeTripProvider.notifier)
+        .setActiveTrip(tripMongoId, trip: trip);
+  } else if (trip.isCancelled) {
+    await ref.read(activeTripProvider.notifier).clear();
+  }
   return trip;
 }
 
@@ -29,7 +34,7 @@ bool navigateIfTripLeftExpectedStatus({
   if (expectedStatuses.contains(trip.status)) return false;
 
   if (trip.isCancelled) {
-    NavigationService().pushNamedAndRemoveUntil('navBar');
+    navigateToHomeAfterActiveTripEnds();
     return true;
   }
 

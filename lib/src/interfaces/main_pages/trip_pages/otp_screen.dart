@@ -6,7 +6,6 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
-import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
@@ -130,14 +129,23 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   }
 
   Future<void> _handleCancel() async {
+    _pollTimer?.cancel();
+    _navigatedAway = true;
+
     final trip = await cancelTripWithDialog(
       context: context,
       ref: ref,
       tripMongoId: widget.tripMongoId,
     );
-    if (!mounted || trip == null) return;
-    _navigatedAway = true;
-    NavigationService().pushNamedAndRemoveUntil('navBar');
+    if (!mounted) return;
+
+    if (trip == null) {
+      _navigatedAway = false;
+      _startPolling();
+      return;
+    }
+
+    navigateToHomeAfterActiveTripEnds();
   }
 
   @override
