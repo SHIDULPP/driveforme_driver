@@ -19,12 +19,15 @@ class TripSocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
+  /// Opens the socket without changing trip event handlers (e.g. notifications).
+  void ensureConnected() => connect();
+
   void connect({
-    required void Function(Map<String, dynamic>) onTripAvailable,
-    required void Function(String tripId) onTripUnavailable,
+    void Function(Map<String, dynamic>)? onTripAvailable,
+    void Function(String tripId)? onTripUnavailable,
   }) {
-    _onTripAvailable = onTripAvailable;
-    _onTripUnavailable = onTripUnavailable;
+    if (onTripAvailable != null) _onTripAvailable = onTripAvailable;
+    if (onTripUnavailable != null) _onTripUnavailable = onTripUnavailable;
 
     if (_socket?.connected == true) return;
 

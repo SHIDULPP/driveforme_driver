@@ -71,6 +71,7 @@ class _NavBarState extends ConsumerState<NavBar> {
 
   Future<void> _setupNotificationSocket() async {
     final socket = ref.read(tripSocketServiceProvider);
+    socket.ensureConnected();
     socket.listenForNewNotifications(() {
       ref.invalidate(notificationsProvider);
     });
@@ -78,10 +79,6 @@ class _NavBarState extends ConsumerState<NavBar> {
     final user = await ref.read(userProvider.future);
     if (!mounted || user == null) return;
 
-    socket.connect(
-      onTripAvailable: (_) {},
-      onTripUnavailable: (_) {},
-    );
     socket.joinUserRoom(user.userId);
   }
 
