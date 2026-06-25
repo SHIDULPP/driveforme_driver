@@ -3,17 +3,17 @@ import 'dart:async';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPanelBg = Color(0xFFF5F6F8);
 const _kMapTooltipBlue = Color(0xFF1A5288);
-const _kRouteBlue = Color(0xFF2B74E1);
-const _kPickupPulse = Color(0xFFFFE8D6);
 const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
 const _kStatValueBlue = Color(0xFF205D91);
@@ -31,7 +31,8 @@ class DriverArrivedScreen extends ConsumerStatefulWidget {
       _DriverArrivedScreenState();
 }
 
-class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen> {
+class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
+    with DriverMapLocationMixin {
   static const _pollInterval = Duration(seconds: 4);
 
   TripModel? _trip;
@@ -43,6 +44,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen> {
   @override
   void initState() {
     super.initState();
+    startDriverLocationTracking();
     _loadTrip();
     _startPolling();
   }
@@ -50,6 +52,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen> {
   @override
   void dispose() {
     _pollTimer?.cancel();
+    stopDriverLocationTracking();
     super.dispose();
   }
 
@@ -127,10 +130,18 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen> {
             : Stack(
                 fit: StackFit.expand,
                 children: [
-                  const _MapLayer(),
-                  const _MapRouteOverlay(),
-                  const _PickupMarker(),
+                  TripMapView(
+                    pickup: trip.pickupLocation,
+                    dropoff: trip.dropoffLocation,
+                    driverLocation: driverMapLocation,
+                    mode: TripMapMode.toPickup,
+                  ),
                   _RouteTooltip(distance: _distance),
+                  Positioned(
+                    right: 16,
+                    top: MediaQuery.paddingOf(context).top + 60,
+                    child: MapNavigateButton(target: trip.pickupLocation),
+                  ),
                   Positioned(
                     top: MediaQuery.paddingOf(context).top + 8,
                     left: 16,
@@ -148,95 +159,6 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen> {
                   ),
                 ],
               ),
-      ),
-    );
-  }
-}
-
-class _MapLayer extends StatelessWidget {
-  const _MapLayer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/pngs/map_image.png',
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-    );
-  }
-}
-
-class _MapRouteOverlay extends StatelessWidget {
-  const _MapRouteOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _RouteLinePainter(), size: Size.infinite);
-  }
-}
-
-class _RouteLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = _kRouteBlue
-      ..strokeWidth = 5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final path = Path()
-      ..moveTo(size.width * 0.22, size.height * 0.38)
-      ..quadraticBezierTo(
-        size.width * 0.45,
-        size.height * 0.32,
-        size.width * 0.58,
-        size.height * 0.42,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.72,
-        size.height * 0.5,
-        size.width * 0.62,
-        size.height * 0.55,
-      );
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _PickupMarker extends StatelessWidget {
-  const _PickupMarker();
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: MediaQuery.sizeOf(context).width * 0.52,
-      top: MediaQuery.sizeOf(context).height * 0.48,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: _kPickupPulse.withValues(alpha: 0.85),
-              shape: BoxShape.circle,
-            ),
-          ),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: _kPickupPulse,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const Icon(Icons.location_on, color: kRed, size: 36),
-        ],
       ),
     );
   }

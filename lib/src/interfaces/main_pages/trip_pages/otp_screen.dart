@@ -6,15 +6,16 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _kPickupPulse = Color(0xFFFFE8D6);
 const _kOtpBoxSize = 56.0;
 const _kOtpLength = 4;
 
@@ -30,7 +31,8 @@ class OtpScreen extends ConsumerStatefulWidget {
   ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends ConsumerState<OtpScreen> {
+class _OtpScreenState extends ConsumerState<OtpScreen>
+    with DriverMapLocationMixin {
   static const _pollInterval = Duration(seconds: 4);
 
   final _otpController = TextEditingController();
@@ -43,6 +45,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   @override
   void initState() {
     super.initState();
+    startDriverLocationTracking();
     _otpController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
@@ -54,6 +57,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   @override
   void dispose() {
     _pollTimer?.cancel();
+    stopDriverLocationTracking();
     _otpController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -169,8 +173,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             : Stack(
                 fit: StackFit.expand,
                 children: [
-                  const _MapLayer(),
-                  const _PickupWithCarMarker(),
+                  TripMapView(
+                    pickup: trip.pickupLocation,
+                    dropoff: trip.dropoffLocation,
+                    driverLocation: driverMapLocation,
+                    mode: TripMapMode.toPickup,
+                    showRoute: false,
+                  ),
                   Positioned(
                     top: MediaQuery.paddingOf(context).top + 8,
                     left: 16,
@@ -325,100 +334,6 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       ),
     );
   }
-}
-
-class _MapLayer extends StatelessWidget {
-  const _MapLayer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/pngs/map_image.png',
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-    );
-  }
-}
-
-class _PickupWithCarMarker extends StatelessWidget {
-  const _PickupWithCarMarker();
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-
-    return Positioned(
-      left: size.width * 0.38,
-      top: size.height * 0.32,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: const Size(100, 100),
-            painter: _DashedCirclePainter(
-              color: kGoldAccent.withValues(alpha: 0.7),
-            ),
-          ),
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: _kPickupPulse.withValues(alpha: 0.75),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const Icon(Icons.location_on, color: kRed, size: 32),
-          Positioned(
-            bottom: 18,
-            child: Image.asset(
-              'assets/pngs/car_image.png',
-              width: 36,
-              height: 20,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashedCirclePainter extends CustomPainter {
-  _DashedCirclePainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    const dashWidth = 5.0;
-    const dashSpace = 4.0;
-    final radius = size.width / 2 - 2;
-    final center = Offset(size.width / 2, size.height / 2);
-    final circumference = 2 * 3.141592653589793 * radius;
-    final dashCount = (circumference / (dashWidth + dashSpace)).floor();
-
-    for (var i = 0; i < dashCount; i++) {
-      final startAngle = (i * (dashWidth + dashSpace)) / radius;
-      final sweep = dashWidth / radius;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweep,
-        false,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedCirclePainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 class _MapBackButton extends StatelessWidget {

@@ -6,8 +6,10 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
+import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,7 +31,8 @@ class TripRequestDetailsPage extends ConsumerStatefulWidget {
       _TripRequestDetailsPageState();
 }
 
-class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage> {
+class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
+    with DriverMapLocationMixin {
   late TripModel _trip;
   Timer? _countdownTimer;
 
@@ -37,6 +40,7 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
   void initState() {
     super.initState();
     _trip = widget.trip;
+    startDriverLocationTracking();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       if (_trip.isExpired) {
@@ -50,6 +54,7 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    stopDriverLocationTracking();
     super.dispose();
   }
 
@@ -92,10 +97,16 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
         body: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
-              'assets/pngs/map_image.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
+            TripMapView(
+              pickup: _trip.pickupLocation,
+              dropoff: _trip.dropoffLocation,
+              driverLocation: driverMapLocation,
+              mode: TripMapMode.toPickup,
+            ),
+            Positioned(
+              right: 16,
+              bottom: MediaQuery.sizeOf(context).height * 0.42,
+              child: MapNavigateButton(target: _trip.pickupLocation),
             ),
             Column(
               children: [

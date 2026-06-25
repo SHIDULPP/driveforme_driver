@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+
 class TripModel {
   static const requestExpiryMinutes = 5;
 
@@ -9,8 +11,8 @@ class TripModel {
   final String tripDirection;
   final String tripType;
   final String rideTime;
-  final String pickupAddress;
-  final String? dropoffAddress;
+  final TripLocation pickupLocation;
+  final TripLocation? dropoffLocation;
   final double? distanceKm;
   final String? estimatedDurationLabel;
   final int durationValue;
@@ -39,8 +41,8 @@ class TripModel {
     required this.tripDirection,
     required this.tripType,
     required this.rideTime,
-    required this.pickupAddress,
-    this.dropoffAddress,
+    required this.pickupLocation,
+    this.dropoffLocation,
     this.distanceKm,
     this.estimatedDurationLabel,
     required this.durationValue,
@@ -86,11 +88,11 @@ class TripModel {
       rideTime: tripDetails is Map
           ? tripDetails['rideTime']?.toString() ?? 'now'
           : 'now',
-      pickupAddress: routeMap != null
-          ? _locationAddress(routeMap['pickupLocation'])
-          : '',
-      dropoffAddress: routeMap != null
-          ? _optionalLocationAddress(routeMap['dropoffLocation'])
+      pickupLocation: routeMap != null
+          ? TripLocation.fromDynamic(routeMap['pickupLocation'])
+          : const TripLocation.empty(),
+      dropoffLocation: routeMap != null
+          ? _optionalLocation(routeMap['dropoffLocation'])
           : null,
       distanceKm: _toDouble(routeSummary?['distanceKm']),
       estimatedDurationLabel:
@@ -132,6 +134,13 @@ class TripModel {
           ? vehicleDetails['transmission']?.toString() ?? ''
           : '',
     );
+  }
+
+  String get pickupAddress => pickupLocation.address;
+
+  String? get dropoffAddress {
+    final address = dropoffLocation?.address ?? '';
+    return address.isEmpty ? null : address;
   }
 
   bool get isLongTrip => tripType == 'long_trip';
@@ -327,16 +336,11 @@ class TripModel {
     return null;
   }
 
-  static String _locationAddress(dynamic location) {
-    if (location is Map) {
-      return location['address']?.toString().trim() ?? '';
-    }
-    return '';
-  }
-
-  static String? _optionalLocationAddress(dynamic location) {
-    final address = _locationAddress(location);
-    return address.isEmpty ? null : address;
+  static TripLocation? _optionalLocation(dynamic location) {
+    if (location == null) return null;
+    final parsed = TripLocation.fromDynamic(location);
+    if (!parsed.hasAddress && !parsed.hasCoordinates) return null;
+    return parsed;
   }
 
   static DateTime? _parseDate(dynamic value) {

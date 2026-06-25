@@ -7,17 +7,18 @@ import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPanelBg = Color(0xFFF5F6F8);
 const _kMapTooltipBlue = Color(0xFF1A5288);
-const _kRouteBlue = Color(0xFF2B74E1);
 const _kStatValueBlue = Color(0xFF205D91);
 const _kTripStatusCardBg = Color(0xFF1C1C1E);
 const _kEarningsOrange = Color(0xFFC6934B);
@@ -34,7 +35,8 @@ class EndTripScreen extends ConsumerStatefulWidget {
   ConsumerState<EndTripScreen> createState() => _EndTripScreenState();
 }
 
-class _EndTripScreenState extends ConsumerState<EndTripScreen> {
+class _EndTripScreenState extends ConsumerState<EndTripScreen>
+    with DriverMapLocationMixin {
   static const _pollInterval = Duration(seconds: 4);
 
   Timer? _timer;
@@ -46,6 +48,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
   @override
   void initState() {
     super.initState();
+    startDriverLocationTracking();
     _loadTrip();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -131,6 +134,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
   void dispose() {
     _timer?.cancel();
     _pollTimer?.cancel();
+    stopDriverLocationTracking();
     super.dispose();
   }
 
@@ -148,6 +152,8 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
     final headingTo = trip?.dropoffAddress ?? trip?.pickupAddress ?? '—';
     final distance = trip?.distanceLabel ?? '—';
     final price = trip?.displayPrice ?? '—';
+    final navigationTarget =
+        trip?.dropoffLocation ?? trip?.pickupLocation;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -162,10 +168,18 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
             : Stack(
           fit: StackFit.expand,
           children: [
-            const _MapLayer(),
-            const _MapRouteOverlay(),
-            const _RouteDestinationMarker(),
+            TripMapView(
+              pickup: trip.pickupLocation,
+              dropoff: trip.dropoffLocation,
+              driverLocation: driverMapLocation,
+              mode: TripMapMode.toDropoff,
+            ),
             _RouteInfoBubble(headingTo: headingTo, distance: distance),
+            Positioned(
+              right: 16,
+              top: topPadding + 60,
+              child: MapNavigateButton(target: navigationTarget),
+            ),
             Positioned(
               top: topPadding + 8,
               left: 16,
@@ -196,89 +210,6 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen> {
                 distance: distance,
                 onEndTrip: _completeTrip,
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MapLayer extends StatelessWidget {
-  const _MapLayer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/pngs/map_image.png',
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-    );
-  }
-}
-
-class _MapRouteOverlay extends StatelessWidget {
-  const _MapRouteOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _RouteLinePainter(), size: Size.infinite);
-  }
-}
-
-class _RouteLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = _kRouteBlue
-      ..strokeWidth = 6
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final path = Path()
-      ..moveTo(size.width * 0.18, size.height * 0.52)
-      ..quadraticBezierTo(
-        size.width * 0.35,
-        size.height * 0.44,
-        size.width * 0.5,
-        size.height * 0.48,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.68,
-        size.height * 0.54,
-        size.width * 0.55,
-        size.height * 0.58,
-      );
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _RouteDestinationMarker extends StatelessWidget {
-  const _RouteDestinationMarker();
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: MediaQuery.sizeOf(context).width * 0.48,
-      top: MediaQuery.sizeOf(context).height * 0.5,
-      child: Container(
-        width: 22,
-        height: 22,
-        decoration: BoxDecoration(
-          color: _kRouteBlue,
-          shape: BoxShape.circle,
-          border: Border.all(color: kWhite, width: 4),
-          boxShadow: [
-            BoxShadow(
-              color: kBlack.withValues(alpha: 0.15),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
             ),
           ],
         ),
