@@ -3,6 +3,7 @@ import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/current_location_provider.dart';
 import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
@@ -47,6 +48,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(currentLocationProvider);
       loadDriverOnlinePreference(ref);
       final isShortTrip = ref.read(tripPreferenceProvider) == 'short_trip';
       setTripPreference(ref, isShortTrip);
@@ -199,11 +201,12 @@ class _HomeHeaderBackground extends ConsumerWidget {
       loading: () => 'Hii there!',
       error: (_, _) => 'Hii there!',
     );
-    final location = userAsync.when(
-      data: (user) => displayLocation(user),
-      loading: () => 'Loading location...',
-      error: (_, _) => 'Location not set',
-    );
+    final location = ref.watch(currentLocationProvider).when(
+          data: (current) =>
+              current?.displayLabel ?? 'Location unavailable',
+          loading: () => 'Getting location...',
+          error: (_, _) => 'Location unavailable',
+        );
 
     final topPadding = MediaQuery.paddingOf(context).top;
     final totalHeight = topPadding + contentHeight + curveDepth + 20;
