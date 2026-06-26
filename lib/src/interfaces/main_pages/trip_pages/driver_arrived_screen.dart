@@ -38,12 +38,14 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
   TripModel? _trip;
   Timer? _pollTimer;
   bool _navigatedAway = false;
+  late final TripScreenService _tripService;
 
   String get _distance => _trip?.distanceLabel ?? '—';
 
   @override
   void initState() {
     super.initState();
+    _tripService = ref.read(tripScreenServiceProvider);
     startDriverLocationTracking();
     _loadTrip();
     _startPolling();
@@ -57,7 +59,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
   }
 
   Future<void> _loadTrip() async {
-    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    final trip = await _tripService.fetchAndCacheTrip(widget.tripMongoId);
     if (!mounted || trip == null) return;
     setState(() => _trip = trip);
   }
@@ -71,7 +73,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
   Future<void> _pollTripStatus() async {
     if (_navigatedAway || !mounted || widget.tripMongoId.isEmpty) return;
 
-    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    final trip = await _tripService.fetchAndCacheTrip(widget.tripMongoId);
     if (!mounted || _navigatedAway || trip == null) return;
 
     if (navigateIfTripLeftExpectedStatus(
@@ -86,6 +88,8 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
   }
 
   void _goToOtp(TripModel trip) {
+    _navigatedAway = true;
+    _pollTimer?.cancel();
     Navigator.pushNamed(
       context,
       'tripOtp',

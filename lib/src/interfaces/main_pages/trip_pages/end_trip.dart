@@ -44,10 +44,12 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
   TripModel? _trip;
   Duration _elapsed = Duration.zero;
   bool _navigatedAway = false;
+  late final TripScreenService _tripService;
 
   @override
   void initState() {
     super.initState();
+    _tripService = ref.read(tripScreenServiceProvider);
     startDriverLocationTracking();
     _loadTrip();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -65,7 +67,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
   }
 
   Future<void> _loadTrip() async {
-    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    final trip = await _tripService.fetchAndCacheTrip(widget.tripMongoId);
     if (!mounted || trip == null) return;
     setState(() {
       _trip = trip;
@@ -82,7 +84,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
   Future<void> _pollTripStatus() async {
     if (_navigatedAway || !mounted || widget.tripMongoId.isEmpty) return;
 
-    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    final trip = await _tripService.fetchAndCacheTrip(widget.tripMongoId);
     if (!mounted || _navigatedAway || trip == null) return;
 
     if (navigateIfTripLeftExpectedStatus(

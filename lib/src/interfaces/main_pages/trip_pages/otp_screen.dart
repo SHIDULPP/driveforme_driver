@@ -41,10 +41,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   TripModel? _trip;
   Timer? _pollTimer;
   bool _navigatedAway = false;
+  late final TripScreenService _tripService;
 
   @override
   void initState() {
     super.initState();
+    _tripService = ref.read(tripScreenServiceProvider);
     startDriverLocationTracking();
     _otpController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -64,7 +66,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   }
 
   Future<void> _loadTrip() async {
-    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    final trip = await _tripService.fetchAndCacheTrip(widget.tripMongoId);
     if (!mounted || trip == null) return;
     setState(() => _trip = trip);
   }
@@ -78,7 +80,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   Future<void> _pollTripStatus() async {
     if (_navigatedAway || !mounted || widget.tripMongoId.isEmpty) return;
 
-    final trip = await fetchAndCacheTrip(ref, widget.tripMongoId);
+    final trip = await _tripService.fetchAndCacheTrip(widget.tripMongoId);
     if (!mounted || _navigatedAway || trip == null) return;
 
     if (navigateIfTripLeftExpectedStatus(
