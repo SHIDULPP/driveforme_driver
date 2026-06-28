@@ -30,6 +30,10 @@ class TripScreenService {
     final trip = response.data!;
     if (isActiveTripStatus(trip.status) && !trip.isCancelled) {
       await activeTripNotifier.setActiveTrip(tripMongoId, trip: trip);
+    } else if (trip.isScheduled &&
+        trip.isPickupTimeReached &&
+        !trip.isCancelled) {
+      await activeTripNotifier.setActiveTrip(tripMongoId, trip: trip);
     } else if (trip.isCancelled) {
       await activeTripNotifier.clear();
     }
@@ -81,6 +85,18 @@ bool navigateIfTripLeftExpectedStatus({
 
   final target = tripNavigationTarget(trip);
   if (target == null) return false;
+
+  // Avoid re-pushing the screen we are already on (caused a loop for scheduled
+  // trips that stay on status `scheduled` while on driverArrived).
+  final nav = NavigationService.navigatorKey.currentState;
+  if (nav != null) {
+    var onTargetRoute = false;
+    nav.popUntil((route) {
+      onTargetRoute = route.settings.name == target.route;
+      return true;
+    });
+    if (onTargetRoute) return false;
+  }
 
   NavigationService().pushNamedAndRemoveUntil(
     target.route,

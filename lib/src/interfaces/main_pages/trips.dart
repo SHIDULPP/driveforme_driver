@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +24,32 @@ class TripsPage extends ConsumerStatefulWidget {
 
 class _TripsPageState extends ConsumerState<TripsPage> {
   TripHistoryTab _selectedTab = TripHistoryTab.ongoing;
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!mounted) return;
+      _invalidateCurrentTab();
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _invalidateCurrentTab() {
+    ref.invalidate(tripHistoryProvider(_selectedTab));
+    if (_selectedTab == TripHistoryTab.upcoming) {
+      ref.invalidate(tripHistoryProvider(TripHistoryTab.ongoing));
+    } else if (_selectedTab == TripHistoryTab.ongoing) {
+      ref.invalidate(tripHistoryProvider(TripHistoryTab.upcoming));
+    }
+  }
 
   TripCardStatus _cardStatusFor(TripHistoryTab tab) {
     switch (tab) {
@@ -59,7 +88,10 @@ class _TripsPageState extends ConsumerState<TripsPage> {
             ),
             _TripsTabBar(
               selectedTab: _selectedTab,
-              onTabSelected: (tab) => setState(() => _selectedTab = tab),
+              onTabSelected: (tab) {
+                setState(() => _selectedTab = tab);
+                ref.invalidate(tripHistoryProvider(tab));
+              },
             ),
             Expanded(
               child: tripsAsync.when(
@@ -97,21 +129,29 @@ class _TripsPageState extends ConsumerState<TripsPage> {
                     );
                   }
 
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                    itemCount: trips.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final trip = trips[index];
-                      final cardData = TripCardData.fromTripModel(
-                        trip,
-                        status: _cardStatusFor(_selectedTab),
-                      );
-                      return TripCard(
-                        data: cardData,
-                        onButtonPressed: () => _onTripPressed(trip, cardData),
-                      );
+                  return RefreshIndicator(
+                    color: kBrandBlue,
+                    onRefresh: () async {
+                      _invalidateCurrentTab();
+                      await ref.read(tripHistoryProvider(_selectedTab).future);
                     },
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                      itemCount: trips.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final trip = trips[index];
+                        final cardData = TripCardData.fromTripModel(
+                          trip,
+                          status: _cardStatusFor(_selectedTab),
+                        );
+                        return TripCard(
+                          data: cardData,
+                          onButtonPressed: () => _onTripPressed(trip, cardData),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
@@ -123,21 +163,19 @@ class _TripsPageState extends ConsumerState<TripsPage> {
   }
 
   Future<void> _onTripPressed(TripModel trip, TripCardData cardData) async {
-    if (_selectedTab == TripHistoryTab.ongoing) {
+    if (_selectedTab == TripHistoryTab.ongoing || trip.isOngoingForDriver) {
       final target = tripNavigationTarget(trip);
-      if (target == null) return;
-      Navigator.pushNamed(
-        context,
-        target.route,
-        arguments: target.arguments,
-      );
-      return;
+      if (target != null) {
+        await navigateToActiveTrip(ref, trip);
+        return;
+      }
     }
 
+    if (!mounted) return;
     Navigator.pushNamed(
       context,
       'tripDetails',
-      arguments: {'trip': cardData},
+      arguments: {'trip': cardData, 'tripModel': trip},
     );
   }
 

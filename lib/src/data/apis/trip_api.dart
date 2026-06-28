@@ -54,31 +54,40 @@ class TripApi {
   }
 
   Future<ApiResponse<List<TripModel>>> listUpcomingTrips() async {
-    const statuses = ['scheduled', 'driver_assigned'];
-    final responses = await Future.wait(
-      statuses.map((status) => _listTrips(status: status)),
-    );
-
-    for (final response in responses) {
-      if (!response.success) {
-        return ApiResponse.error(
-          response.message ?? 'Failed to load upcoming trips.',
-          response.statusCode,
-        );
-      }
+    final response = await _listTrips(status: 'scheduled');
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to load upcoming trips.',
+        response.statusCode,
+      );
     }
 
-    final trips =
-        responses
-            .expand((response) => response.data ?? const <TripModel>[])
-            .toList()
-          ..sort((a, b) {
-            final aDate = a.pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final bDate = b.pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return aDate.compareTo(bDate);
-          });
+    final trips = (response.data ?? [])
+        .where((trip) => trip.isFutureScheduled)
+        .toList()
+      ..sort((a, b) {
+        final aDate = a.pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = b.pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return aDate.compareTo(bDate);
+      });
 
-    return ApiResponse.success(trips, responses.first.statusCode);
+    return ApiResponse.success(trips, response.statusCode);
+  }
+
+  Future<ApiResponse<List<TripModel>>> listDueScheduledTrips() async {
+    final response = await _listTrips(status: 'scheduled');
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to load scheduled trips.',
+        response.statusCode,
+      );
+    }
+
+    final trips = (response.data ?? [])
+        .where((trip) => trip.isScheduled && trip.isPickupTimeReached)
+        .toList();
+
+    return ApiResponse.success(trips, response.statusCode);
   }
 
   Future<ApiResponse<List<TripModel>>> _listTrips({

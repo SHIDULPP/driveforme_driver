@@ -48,7 +48,7 @@ class ActiveTripService {
     if (!response.success || response.data == null) return null;
 
     final trip = response.data!;
-    if (trip.isCancelled || !isActiveTripStatus(trip.status)) {
+    if (trip.isCancelled || !isResumableTrip(trip)) {
       await _storage.clearActiveTripId();
       return null;
     }
@@ -58,9 +58,7 @@ class ActiveTripService {
 
   TripModel? _firstResumableTrip(List<TripModel> trips) {
     for (final trip in trips) {
-      if (!trip.isCancelled && isActiveTripStatus(trip.status)) {
-        return trip;
-      }
+      if (isResumableTrip(trip)) return trip;
     }
     return null;
   }

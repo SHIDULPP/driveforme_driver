@@ -5,6 +5,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
+import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
@@ -78,7 +79,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
 
     if (navigateIfTripLeftExpectedStatus(
       trip: trip,
-      expectedStatuses: const {'driver_assigned'},
+      expectedStatuses: pickupStageStatuses,
     )) {
       _navigatedAway = true;
       return;

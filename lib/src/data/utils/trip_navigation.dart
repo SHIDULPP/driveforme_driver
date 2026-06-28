@@ -15,11 +15,31 @@ const _activeTripStatuses = {
   'in_progress',
 };
 
+/// Statuses where the driver is en route to pickup (includes past-due scheduled).
+const pickupStageStatuses = {
+  'driver_assigned',
+  'scheduled',
+};
+
 bool isActiveTripStatus(String status) => _activeTripStatuses.contains(status);
+
+bool isPickupStageStatus(TripModel trip) {
+  if (!pickupStageStatuses.contains(trip.status)) return false;
+  if (trip.isScheduled) return trip.isPickupTimeReached;
+  return true;
+}
+
+bool isResumableTrip(TripModel trip) {
+  if (trip.isCancelled) return false;
+  if (isActiveTripStatus(trip.status)) return true;
+  return trip.isScheduled && trip.isPickupTimeReached;
+}
 
 TripNavigationTarget? tripNavigationTarget(TripModel trip) {
   switch (trip.status) {
     case 'driver_assigned':
+    case 'scheduled':
+      if (trip.isScheduled && !trip.isPickupTimeReached) return null;
       return TripNavigationTarget(
         route: 'driverArrived',
         arguments: trip.toDriverArrivedArguments(),

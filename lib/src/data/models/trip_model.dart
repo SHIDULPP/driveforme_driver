@@ -149,11 +149,51 @@ class TripModel {
 
   bool get isDriverAssigned => status == 'driver_assigned';
 
+  bool get isScheduled => status == 'scheduled' || rideTime == 'scheduled';
+
   bool get isInProgress => status == 'in_progress';
 
   bool get isCompleted => status == 'completed';
 
   bool get isCancelled => status == 'cancelled';
+
+  /// True when the scheduled pickup minute has arrived (or passed).
+  bool get isPickupTimeReached {
+    if (pickupAt == null) return rideTime == 'now';
+    final now = _truncateToMinute(DateTime.now());
+    final scheduled = _truncateToMinute(pickupAt!);
+    return !now.isBefore(scheduled);
+  }
+
+  /// Scheduled trip still waiting for its pickup window.
+  bool get isFutureScheduled =>
+      isScheduled && !isPickupTimeReached && !isCancelled;
+
+  /// Trips the driver should treat as active (ongoing tab / resume flow).
+  bool get isOngoingForDriver =>
+      isInProgress || isDriverAssigned || (isScheduled && isPickupTimeReached);
+
+  String get startsInLabel {
+    if (pickupAt == null || isPickupTimeReached) return '';
+    final remaining = pickupAt!.difference(DateTime.now());
+    if (remaining.isNegative || remaining.inSeconds <= 0) return '';
+
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes.remainder(60);
+    if (hours > 0) return '$hours hrs $minutes min';
+    if (minutes > 0) return '$minutes min';
+    return 'less than 1 min';
+  }
+
+  static DateTime _truncateToMinute(DateTime value) {
+    return DateTime(
+      value.year,
+      value.month,
+      value.day,
+      value.hour,
+      value.minute,
+    );
+  }
 
   String get displayTripId =>
       tripNumber.isNotEmpty ? '# $tripNumber' : '# ${id.substring(0, 8)}';

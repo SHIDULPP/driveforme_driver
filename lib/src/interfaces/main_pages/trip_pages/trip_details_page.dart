@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
+import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
@@ -39,22 +44,52 @@ class TripTicketInfo {
   );
 }
 
-class TripDetailsPage extends ConsumerWidget {
+class TripDetailsPage extends ConsumerStatefulWidget {
   const TripDetailsPage({
     super.key,
     required this.trip,
+    this.tripModel,
     this.ticket,
   });
 
   final TripCardData trip;
+  final TripModel? tripModel;
   final TripTicketInfo? ticket;
 
-  bool get _showBottomActions =>
-      trip.status == TripCardStatus.completed ||
-      trip.status == TripCardStatus.cancelled;
+  @override
+  ConsumerState<TripDetailsPage> createState() => _TripDetailsPageState();
+}
 
-  Future<void> _handleCancel(BuildContext context, WidgetRef ref) async {
-    final tripId = trip.tripMongoId;
+class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
+  Timer? _refreshTimer;
+
+  TripModel? get _tripModel => widget.tripModel;
+
+  bool get _showBottomActions =>
+      widget.trip.status == TripCardStatus.completed ||
+      widget.trip.status == TripCardStatus.cancelled;
+
+  bool get _isUpcomingScheduled =>
+      widget.trip.status == TripCardStatus.upcoming && _tripModel != null;
+
+  bool get _isPickupTimeReached => _tripModel?.isPickupTimeReached ?? false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _handleCancel() async {
+    final tripId = widget.trip.tripMongoId;
     if (tripId == null || tripId.isEmpty) return;
 
     final cancelled = await cancelTripWithDialog(
@@ -62,12 +97,37 @@ class TripDetailsPage extends ConsumerWidget {
       ref: ref,
       tripMongoId: tripId,
     );
-    if (!context.mounted || cancelled == null) return;
+    if (!mounted || cancelled == null) return;
+
+    ref.invalidate(tripHistoryProvider(TripHistoryTab.upcoming));
+    ref.invalidate(tripHistoryProvider(TripHistoryTab.ongoing));
     Navigator.pushNamedAndRemoveUntil(context, 'navBar', (route) => false);
   }
 
+  Future<void> _openPickupNavigation() async {
+    final location = _tripModel?.pickupLocation ?? widget.trip.pickupLocation;
+    if (location == null) return;
+
+    final launched = await launchMapNavigation(location);
+    if (!mounted || launched) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Could not open navigation.')),
+    );
+  }
+
+  Future<void> _goToPickupFlow() async {
+    final trip = _tripModel;
+    if (trip == null) return;
+    await navigateToActiveTrip(ref, trip);
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final trip = widget.trip;
+    final tripModel = _tripModel;
+    final startsIn = tripModel?.startsInLabel ?? '';
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: _kPageBg,
@@ -87,18 +147,26 @@ class TripDetailsPage extends ConsumerWidget {
                     20,
                     8,
                     20,
-                    _showBottomActions ? 16 : 24,
+                    _showBottomActions || _isUpcomingScheduled ? 16 : 24,
                   ),
                   children: [
                     _TripDetailsCard(
                       trip: trip,
+                      startsInLabel: startsIn,
+                      isPickupTimeReached: _isPickupTimeReached,
                       onCancel: trip.status == TripCardStatus.upcoming
-                          ? () => _handleCancel(context, ref)
+                          ? _handleCancel
+                          : null,
+                      onNavigateToPickup: _isUpcomingScheduled
+                          ? _openPickupNavigation
+                          : null,
+                      onGoToPickup: _isUpcomingScheduled && _isPickupTimeReached
+                          ? _goToPickupFlow
                           : null,
                     ),
-                    if (ticket != null) ...[
+                    if (widget.ticket != null) ...[
                       const SizedBox(height: 12),
-                      _TripTicketCard(ticket: ticket!),
+                      _TripTicketCard(ticket: widget.ticket!),
                     ],
                   ],
                 ),
@@ -155,10 +223,18 @@ class _TripDetailsCard extends StatelessWidget {
   const _TripDetailsCard({
     required this.trip,
     this.onCancel,
+    this.onNavigateToPickup,
+    this.onGoToPickup,
+    this.startsInLabel,
+    this.isPickupTimeReached = false,
   });
 
   final TripCardData trip;
   final VoidCallback? onCancel;
+  final VoidCallback? onNavigateToPickup;
+  final VoidCallback? onGoToPickup;
+  final String? startsInLabel;
+  final bool isPickupTimeReached;
 
   bool get _showEarningsColumn =>
       trip.status == TripCardStatus.upcoming && trip.earningsAmount != null;
@@ -168,9 +244,16 @@ class _TripDetailsCard extends StatelessWidget {
       trip.status == TripCardStatus.cancelled;
 
   bool get _showCountdown =>
-      trip.status == TripCardStatus.upcoming && trip.countdownValue != null;
+      trip.status == TripCardStatus.upcoming &&
+      !isPickupTimeReached &&
+      (startsInLabel?.isNotEmpty == true || trip.countdownValue != null);
 
   bool get _showCancelButton => trip.status == TripCardStatus.upcoming;
+
+  bool get _showNavigateButton => onNavigateToPickup != null;
+
+  bool get _showGoToPickupButton =>
+      onGoToPickup != null && isPickupTimeReached;
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +365,27 @@ class _TripDetailsCard extends StatelessWidget {
             const SizedBox(height: 12),
             _CountdownRow(
               prefix: trip.countdownPrefix ?? 'Starts in ',
-              value: trip.countdownValue!,
+              value: startsInLabel ?? trip.countdownValue ?? '',
+            ),
+          ],
+          if (isPickupTimeReached && trip.status == TripCardStatus.upcoming) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 18,
+                  color: kActiveGreen,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Pickup time reached — you can head to pickup',
+                  style: kCaption13R.copyWith(
+                    color: kActiveGreen,
+                    fontWeight: kMedium,
+                  ),
+                ),
+              ],
             ),
           ],
           if (trip.totalEarned != null) ...[
@@ -305,8 +408,35 @@ class _TripDetailsCard extends StatelessWidget {
               ],
             ),
           ],
-          if (_showCancelButton) ...[
+          if (_showNavigateButton) ...[
             const SizedBox(height: 16),
+            primaryButton(
+              label: 'Navigate to pickup',
+              buttonHeight: 52,
+              fontSize: kSize16,
+              buttonColor: _kNavigateBlue,
+              labelColor: kWhite,
+              icon: const Icon(
+                Icons.navigation_rounded,
+                size: 18,
+                color: kWhite,
+              ),
+              onPressed: onNavigateToPickup,
+            ),
+          ],
+          if (_showGoToPickupButton) ...[
+            const SizedBox(height: 10),
+            primaryButton(
+              label: 'Go to pickup',
+              buttonHeight: 52,
+              fontSize: kSize16,
+              buttonColor: kTripCtaBlue,
+              labelColor: kWhite,
+              onPressed: onGoToPickup,
+            ),
+          ],
+          if (_showCancelButton) ...[
+            const SizedBox(height: 10),
             primaryButton(
               label: 'Cancel trip',
               buttonHeight: 52,

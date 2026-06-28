@@ -9,6 +9,7 @@ import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
+import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
@@ -85,7 +86,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
 
     if (navigateIfTripLeftExpectedStatus(
       trip: trip,
-      expectedStatuses: const {'driver_assigned'},
+      expectedStatuses: pickupStageStatuses,
     )) {
       _navigatedAway = true;
       return;

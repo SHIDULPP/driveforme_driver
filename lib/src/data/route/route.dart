@@ -257,13 +257,14 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
     case 'tripDetails':
       final tripDetailsArgs = settings?.arguments as Map?;
       final tripArg = tripDetailsArgs?['trip'];
+      final tripModel = tripDetailsArgs?['tripModel'] as TripModel?;
       final TripCardData tripData = switch (tripArg) {
         TripCardData data => data,
         Map map => TripCardData.fromDetailsArgs(Map<String, dynamic>.from(map)),
         _ => TripCardData.dummyUpcoming(),
       };
       final ticket = tripDetailsArgs?['ticket'] as TripTicketInfo?;
-      page = TripDetailsPage(trip: tripData, ticket: ticket);
+      page = TripDetailsPage(trip: tripData, tripModel: tripModel, ticket: ticket);
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

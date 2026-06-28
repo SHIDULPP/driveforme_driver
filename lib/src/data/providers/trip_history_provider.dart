@@ -12,15 +12,22 @@ final tripHistoryProvider =
     case TripHistoryTab.ongoing:
       final inProgress = await api.listOngoingTrips();
       final assigned = await api.listAssignedTrips();
+      final dueScheduled = await api.listDueScheduledTrips();
       if (!inProgress.success) {
         throw Exception(inProgress.message ?? 'Failed to load ongoing trips.');
       }
       if (!assigned.success) {
         throw Exception(assigned.message ?? 'Failed to load assigned trips.');
       }
+      if (!dueScheduled.success) {
+        throw Exception(
+          dueScheduled.message ?? 'Failed to load scheduled trips.',
+        );
+      }
       return [
         ...(inProgress.data ?? []),
         ...(assigned.data ?? []),
+        ...(dueScheduled.data ?? []),
       ];
     case TripHistoryTab.upcoming:
       final response = await api.listUpcomingTrips();

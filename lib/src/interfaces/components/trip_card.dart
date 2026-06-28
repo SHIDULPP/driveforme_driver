@@ -1,5 +1,6 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,9 @@ class TripCardData {
     this.totalEarned,
     this.routeStyle = TripRouteStyle.standard,
     this.buttonIcon,
+    this.pickupAt,
+    this.pickupLocation,
+    this.tripApiStatus,
   });
 
   final TripCardStatus status;
@@ -79,6 +83,9 @@ class TripCardData {
   final String customerName;
   final String customerPhone;
   final String vehicleNumber;
+  final DateTime? pickupAt;
+  final TripLocation? pickupLocation;
+  final String? tripApiStatus;
 
   static const _defaultStats = [
     TripStatInfo(label: 'Distance', value: '12 km'),
@@ -187,11 +194,29 @@ class TripCardData {
       routeStyle: status == TripCardStatus.cancelled
           ? TripRouteStyle.cancelledBolt
           : TripRouteStyle.standard,
-      buttonLabel: status == TripCardStatus.ongoing ? 'View Trip' : 'View Trip Details',
+      buttonLabel: _buttonLabelFor(trip, status),
       buttonIcon: status == TripCardStatus.ongoing
           ? const _NavigateButtonIcon()
           : null,
+      pickupAt: trip.pickupAt,
+      pickupLocation: trip.pickupLocation,
+      tripApiStatus: trip.status,
+      countdownPrefix:
+          status == TripCardStatus.upcoming && trip.startsInLabel.isNotEmpty
+              ? 'Starts in '
+              : null,
+      countdownValue: status == TripCardStatus.upcoming &&
+              trip.startsInLabel.isNotEmpty
+          ? trip.startsInLabel
+          : null,
     );
+  }
+
+  static String _buttonLabelFor(TripModel trip, TripCardStatus status) {
+    if (status == TripCardStatus.ongoing) {
+      return trip.isInProgress ? 'View Trip' : 'Go to pickup';
+    }
+    return 'View Trip Details';
   }
 
   static TripCardData dummyOngoing() {
