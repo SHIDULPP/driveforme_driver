@@ -18,4 +18,4 @@ String routeForOnboardingStatus(String status) {
 }
 
 String routeForUser(UserModel user) =>
-    routeForOnboardingStatus(user.onboardingStatus);
+    routeForOnboardingStatus(user.effectiveOnboardingStatus);

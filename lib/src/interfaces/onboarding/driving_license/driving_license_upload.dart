@@ -107,9 +107,9 @@ class _DrivingLicenseUploadPageState
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _openLicenseCategorySheet() async {
@@ -203,6 +203,7 @@ class _DrivingLicenseUploadPageState
                       type: CustomFieldType.date,
                       hint: 'DD/MM/YY',
                       controller: _expiryDateController,
+                      lastDate: DateTime(2040, 12, 31),
                       onDateSelected: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 20),

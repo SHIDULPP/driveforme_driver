@@ -31,9 +31,18 @@ class ApplicationRejectedPage extends ConsumerWidget {
         ),
       ),
       data: (user) {
-        final rejectionReason = user?.adminReview.notes.isNotEmpty == true
-            ? user!.adminReview.notes
-            : 'We could not verify your documents. Please upload clearer copies.';
+        final verification = user?.driverVerification;
+        final fallbackReason = user?.adminReview.notes.trim().isNotEmpty == true
+            ? user!.adminReview.notes.trim()
+            : verification?.aiVerificationNotes.trim().isNotEmpty == true
+                ? verification!.aiVerificationNotes.trim()
+                : 'We could not verify your documents. Please upload clearer copies.';
+        final licenseReason = verification?.drivingLicenseCheck
+                .rejectionReason(fallbackReason) ??
+            fallbackReason;
+        final aadhaarReason =
+            verification?.aadhaarCheck.rejectionReason(fallbackReason) ??
+                fallbackReason;
 
         return Scaffold(
           backgroundColor: kSosScreenBg,
@@ -97,13 +106,13 @@ class ApplicationRejectedPage extends ConsumerWidget {
                           _RejectedDocumentCard(
                             imagePath: 'assets/pngs/drivin_license_image.png',
                             title: 'Driving License',
-                            reason: rejectionReason,
+                            reason: licenseReason,
                           ),
                           const SizedBox(height: 12),
                           _RejectedDocumentCard(
                             imagePath: 'assets/pngs/aadhar_image.png',
                             title: 'Aadhaar',
-                            reason: rejectionReason,
+                            reason: aadhaarReason,
                           ),
                           const SizedBox(height: 24),
                           primaryButton(

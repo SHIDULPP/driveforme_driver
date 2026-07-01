@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +28,7 @@ class _ApplicationUnderReviewPageState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkStatus());
     _pollTimer = Timer.periodic(_pollInterval, (_) => _checkStatus());
   }
 
@@ -46,10 +48,13 @@ class _ApplicationUnderReviewPageState
     if (!mounted) return;
     if (!response.success || response.data == null) return;
 
-    final status = response.data!.onboardingStatus;
+    final user = response.data!;
+    final status = user.effectiveOnboardingStatus;
     if (status == 'approved') {
+      ref.invalidate(userProvider);
       NavigationService().pushNamedAndRemoveUntil('navBar');
     } else if (status == 'rejected') {
+      ref.invalidate(userProvider);
       NavigationService().pushNamedAndRemoveUntil('applicationRejected');
     }
   }
@@ -95,14 +100,14 @@ class _ApplicationUnderReviewPageState
                   style: kStyle(kRegular, kSize16, color: kWhite, height: 1.45),
                 ),
                 const SizedBox(height: 24),
-                OutlinedButton(
-                  onPressed: _checkStatus,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: kWhite,
-                    side: const BorderSide(color: kWhite),
-                  ),
-                  child: const Text('Check status'),
-                ),
+                // OutlinedButton(
+                //   onPressed: _checkStatus,
+                //   style: OutlinedButton.styleFrom(
+                //     foregroundColor: kWhite,
+                //     side: const BorderSide(color: kWhite),
+                //   ),
+                //   child: const Text('Check status'),
+                // ),
                 const Spacer(),
               ],
             ),

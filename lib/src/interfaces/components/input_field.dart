@@ -54,6 +54,8 @@ class InputField extends StatelessWidget {
   final int maxLines;
   final bool allowDecimal;
   final FormFieldValidator<String>? validator;
+  final DateTime? firstDate;
+  final DateTime? lastDate;
 
   const InputField({
     super.key,
@@ -69,6 +71,8 @@ class InputField extends StatelessWidget {
     this.maxLines = 1,
     this.allowDecimal = false,
     this.validator,
+    this.firstDate,
+    this.lastDate,
   });
 
   DateTime? _parseDate(String dateStr) {
@@ -89,13 +93,17 @@ class InputField extends StatelessWidget {
 
   Future<void> _showDatePicker(BuildContext context) async {
     final parsed = _parseDate(controller.text);
-    final initialDate = parsed ?? DateTime.now();
+    final minDate = firstDate ?? DateTime(1900);
+    final maxDate = lastDate ?? DateTime.now();
+    var initialDate = parsed ?? DateTime.now();
+    if (initialDate.isBefore(minDate)) initialDate = minDate;
+    if (initialDate.isAfter(maxDate)) initialDate = maxDate;
 
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      firstDate: minDate,
+      lastDate: maxDate,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(

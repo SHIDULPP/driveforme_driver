@@ -87,7 +87,7 @@ class DocumentsPage extends ConsumerWidget {
   List<_DocumentItem> _documentsFor(UserModel user) {
     final verification = user.driverVerification;
     final isApproved = user.onboardingStatus == 'approved';
-    final isRejected = user.onboardingStatus == 'rejected';
+    final isRejected = user.isOnboardingRejected;
 
     return [
       if (verification.aadhaarImageUrl.isNotEmpty)

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:driveforme_driver/src/data/apis/auth_api.dart';
+import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/api_response.dart';
@@ -554,7 +555,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       final data = nestedData(response.data);
       final userId = data?['userId']?.toString();
       final token = data?['token'] as String?;
-      final onboardingStatus = data?['onboardingStatus'] as String?;
 
       if (userId == null || userId.isEmpty) {
         _showMessage('Invalid response from server');
@@ -575,9 +575,12 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
           .read(notificationTokenServiceProvider)
           .registerTokenIfAvailable();
 
-      final route = routeForOnboardingStatus(
-        onboardingStatus ?? 'profile_pending',
-      );
+      final meResponse = await ref.read(onboardingApiProvider).getMe();
+      final route = meResponse.success && meResponse.data != null
+          ? routeForUser(meResponse.data!)
+          : routeForOnboardingStatus(
+              data?['onboardingStatus'] as String? ?? 'profile_pending',
+            );
       NavigationService().pushNamedAndRemoveUntil(route);
     } finally {
       ref.read(loadingProvider.notifier).stopLoading();
