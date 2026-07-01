@@ -296,10 +296,13 @@ class _HomeHeaderBackground extends ConsumerWidget {
                               color: kWhite.withValues(alpha: 0.18),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.notifications_none_rounded,
-                              color: kWhite,
-                              size: 22,
+                            alignment: Alignment.center,
+                            child: Image.asset(
+                              'assets/gifs/notification.gif',
+                              width: 22,
+                              height: 22,
+                              fit: BoxFit.contain,
+                              gaplessPlayback: true,
                             ),
                           ),
                           if (unreadNotificationCount > 0)

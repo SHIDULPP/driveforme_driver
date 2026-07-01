@@ -34,24 +34,28 @@ class _NavBarState extends ConsumerState<NavBar> {
     _NavBarItemData(
       label: 'Home',
       iconPath: 'assets/svgs/home_icon.svg',
+      activeGif: 'assets/gifs/home_icon.gif',
       iconWidth: 23,
       iconHeight: 24,
     ),
     _NavBarItemData(
       label: 'Trips',
       iconPath: 'assets/svgs/trips_icon.svg',
+      activeGif: 'assets/gifs/trips.gif',
       iconWidth: 20,
       iconHeight: 25,
     ),
     _NavBarItemData(
       label: 'Earnings',
       iconPath: 'assets/svgs/wallet_icon.svg',
+      activeGif: 'assets/gifs/wallet.gif',
       iconWidth: 26,
       iconHeight: 21,
     ),
     _NavBarItemData(
       label: 'Profile',
       iconPath: 'assets/svgs/profie_icon.svg',
+      activeGif: 'assets/gifs/profile.gif',
       iconWidth: 25,
       iconHeight: 25,
     ),
@@ -136,12 +140,14 @@ class _NavBarItemData {
   const _NavBarItemData({
     required this.label,
     required this.iconPath,
+    required this.activeGif,
     required this.iconWidth,
     required this.iconHeight,
   });
 
   final String label;
   final String iconPath;
+  final String activeGif;
   final double iconWidth;
   final double iconHeight;
 }
@@ -249,12 +255,10 @@ class _ActiveTabContent extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
-          child: SvgPicture.asset(
-            item.iconPath,
+          child: _NavGifIcon(
+            asset: item.activeGif,
             width: item.iconWidth,
             height: item.iconHeight,
-            fit: BoxFit.contain,
-            colorFilter: const ColorFilter.mode(kWhite, BlendMode.srcIn),
           ),
         ),
         const SizedBox(width: 6),
@@ -263,6 +267,30 @@ class _ActiveTabContent extends StatelessWidget {
           style: kStyle(kSemiBold, kSize14, color: kWhite, height: 1.1),
         ),
       ],
+    );
+  }
+}
+
+class _NavGifIcon extends StatelessWidget {
+  const _NavGifIcon({
+    required this.asset,
+    required this.width,
+    required this.height,
+  });
+
+  final String asset;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      asset,
+      width: width,
+      height: height,
+      fit: BoxFit.contain,
+      gaplessPlayback: true,
+      filterQuality: FilterQuality.medium,
     );
   }
 }

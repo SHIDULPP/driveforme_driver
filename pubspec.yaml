@@ -90,6 +90,7 @@ flutter:
     - .env
     - assets/pngs/
     - assets/svgs/
+    - assets/gifs/
     - assets/svgs/home_icon.svg
     - assets/svgs/trips_icon.svg
     - assets/svgs/wallet_icon.svg
