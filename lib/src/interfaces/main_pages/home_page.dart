@@ -130,8 +130,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 contentHeight: _kHeaderContentHeight,
                 curveDepth: _kHeaderCurveDepth,
                 unreadNotificationCount: unreadNotifications,
-                onNotificationsTap: () =>
-                    NavigationService().pushNamed('notificationsPage'),
               ),
             ),
             Positioned.fill(
@@ -173,6 +171,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                   onDecline: () => _declineTrip(currentTrip),
                 ),
               ),
+            Positioned(
+              top: topPadding + 6,
+              right: 18,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () =>
+                    NavigationService().pushNamed('notificationsPage'),
+                child: const SizedBox(width: 44, height: 44),
+              ),
+            ),
           ],
         ),
       ),
@@ -185,13 +193,11 @@ class _HomeHeaderBackground extends ConsumerWidget {
     required this.contentHeight,
     required this.curveDepth,
     this.unreadNotificationCount = 0,
-    this.onNotificationsTap,
   });
 
   final double contentHeight;
   final double curveDepth;
   final int unreadNotificationCount;
-  final VoidCallback? onNotificationsTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -284,12 +290,10 @@ class _HomeHeaderBackground extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: onNotificationsTap,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
                             height: 40,
                             width: 40,
                             decoration: BoxDecoration(
@@ -332,8 +336,7 @@ class _HomeHeaderBackground extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                      ],
                     ),
                   ],
                 ),
