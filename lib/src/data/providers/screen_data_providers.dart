@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,19 +29,22 @@ class ScreenSizeData {
     required this.viewInsets,
   });
 
+  double get scale => (width / kDesignWidth).clamp(0.88, 1.12);
+
   double widthPercent(double percent) => width * (percent / 100);
 
   double heightPercent(double percent) => height * (percent / 100);
 
-  double responsiveFontSize(double baseSize) {
-    double scale = width / 375;
-    return baseSize * scale;
-  }
+  double responsiveFontSize(double baseSize) => baseSize * scale;
 
-  double responsivePadding(double basePadding) {
-    double scale = width / 375;
-    return basePadding * scale;
-  }
+  double responsivePadding(double basePadding) => basePadding * scale;
+
+  double responsiveSize(double baseSize) => baseSize * scale;
+
+  double get horizontalPadding => responsivePadding(20);
+
+  double scaffoldBottomPadding() =>
+      responsivePadding(64) + responsivePadding(16) + padding.bottom + responsivePadding(12);
 }
 
 class ScreenSizeScope extends ConsumerWidget {
@@ -51,6 +55,7 @@ class ScreenSizeScope extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final screenSize = MediaQuery.of(context);
+    final scaled = scaledMediaQuery(context);
 
     return ProviderScope(
       overrides: [
@@ -67,7 +72,7 @@ class ScreenSizeScope extends ConsumerWidget {
           ),
         ),
       ],
-      child: child,
+      child: MediaQuery(data: scaled, child: child),
     );
   }
 }

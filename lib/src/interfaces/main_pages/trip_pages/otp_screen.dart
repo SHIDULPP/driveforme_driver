@@ -9,9 +9,7 @@ import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
-import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
-import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,14 +40,15 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   TripModel? _trip;
   Timer? _pollTimer;
   bool _navigatedAway = false;
+  bool _isStartingTrip = false;
   late final TripScreenService _tripService;
 
   @override
   void initState() {
     super.initState();
     _tripService = ref.read(tripScreenServiceProvider);
-    startDriverLocationTracking();
-    _otpController.addListener(() => setState(() {}));
+    startDriverLocationTracking(interval: const Duration(seconds: 4));
+    _otpController.addListener(_onOtpChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -95,11 +94,21 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     setState(() => _trip = trip);
   }
 
-  bool get _isOtpComplete => _otpController.text.length == _kOtpLength;
+  void _onOtpChanged() {
+    setState(() {});
+    if (_otpController.text.length == _kOtpLength &&
+        !_isStartingTrip &&
+        !_navigatedAway) {
+      _startTrip();
+    }
+  }
 
   Future<void> _startTrip() async {
-    if (widget.tripMongoId.isEmpty) return;
+    if (widget.tripMongoId.isEmpty || _isStartingTrip || _navigatedAway) {
+      return;
+    }
 
+    setState(() => _isStartingTrip = true);
     ref.read(loadingProvider.notifier).startLoading();
     final response = await ref.read(tripApiProvider).startTrip(
           widget.tripMongoId,
@@ -110,6 +119,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     if (!mounted) return;
 
     if (!response.success || response.data == null) {
+      setState(() => _isStartingTrip = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -181,7 +191,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                     dropoff: trip.dropoffLocation,
                     driverLocation: driverMapLocation,
                     mode: TripMapMode.toPickup,
-                    showRoute: false,
+                    followDriver: true,
                   ),
                   Positioned(
                     top: MediaQuery.paddingOf(context).top + 8,
@@ -302,24 +312,25 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  Text(
-                                    'Only start trip after verifying OTP',
-                                    textAlign: TextAlign.center,
-                                    style: kDriverFoundOtpHintR,
-                                  ),
+                                  if (_isStartingTrip)
+                                    const SizedBox(
+                                      height: 28,
+                                      width: 28,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: kTripCtaBlue,
+                                      ),
+                                    )
+                                  else
+                                    Text(
+                                      'Trip starts automatically after OTP verification',
+                                      textAlign: TextAlign.center,
+                                      style: kDriverFoundOtpHintR,
+                                    ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 20),
-                            primaryButton(
-                              label: 'Start Trip',
-                              buttonHeight: 52,
-                              fontSize: kSize16,
-                              buttonColor: kTripCtaBlue,
-                              labelColor: kWhite,
-                              onPressed: _isOtpComplete ? _startTrip : null,
-                            ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             TextButton(
                               onPressed: _handleCancel,
                               child: Text(

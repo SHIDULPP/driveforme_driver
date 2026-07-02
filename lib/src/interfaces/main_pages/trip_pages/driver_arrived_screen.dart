@@ -2,22 +2,22 @@ import 'dart:async';
 
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
+import 'package:driveforme_driver/src/data/utils/pickup_proximity.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
+import 'package:driveforme_driver/src/interfaces/components/driver_navigation_sheet.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _kPanelBg = Color(0xFFF5F6F8);
-const _kMapTooltipBlue = Color(0xFF1A5288);
 const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
-const _kStatValueBlue = Color(0xFF205D91);
 
 class DriverArrivedScreen extends ConsumerStatefulWidget {
   const DriverArrivedScreen({
@@ -35,19 +35,34 @@ class DriverArrivedScreen extends ConsumerStatefulWidget {
 class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
     with DriverMapLocationMixin {
   static const _pollInterval = Duration(seconds: 4);
+  static const _locationInterval = Duration(seconds: 4);
 
   TripModel? _trip;
   Timer? _pollTimer;
   bool _navigatedAway = false;
   late final TripScreenService _tripService;
+  RouteSummary? _routeSummary;
 
-  String get _distance => _trip?.distanceLabel ?? '—';
+  String get _distanceLabel =>
+      _routeSummary?.distanceLabel ?? _trip?.distanceLabel ?? '—';
+
+  String get _etaLabel =>
+      _routeSummary?.durationLabel ?? _trip?.durationLabel ?? '—';
+
+  bool get _canArrive {
+    final trip = _trip;
+    if (trip == null) return false;
+    return isWithinPickupRadius(
+      driver: driverMapLocation?.latLng,
+      pickup: trip.pickupLocation.latLng,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     _tripService = ref.read(tripScreenServiceProvider);
-    startDriverLocationTracking();
+    startDriverLocationTracking(interval: _locationInterval);
     _loadTrip();
     _startPolling();
   }
@@ -88,7 +103,13 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
     setState(() => _trip = trip);
   }
 
+  void _onRouteSummary(RouteSummary? summary) {
+    if (!mounted || summary == null) return;
+    setState(() => _routeSummary = summary);
+  }
+
   void _goToOtp(TripModel trip) {
+    if (!_canArrive) return;
     _navigatedAway = true;
     _pollTimer?.cancel();
     Navigator.pushNamed(
@@ -140,8 +161,9 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                     dropoff: trip.dropoffLocation,
                     driverLocation: driverMapLocation,
                     mode: TripMapMode.toPickup,
+                    followDriver: true,
+                    onRouteSummary: _onRouteSummary,
                   ),
-                  _RouteTooltip(distance: _distance),
                   Positioned(
                     right: 16,
                     top: MediaQuery.paddingOf(context).top + 60,
@@ -156,77 +178,47 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: _BottomTripPanel(
-                      trip: trip,
-                      onArrived: () => _goToOtp(trip),
-                      onCancel: _handleCancel,
+                    child: DriverNavigationSheet(
+                      title: 'Navigate to pickup',
+                      subtitle: trip.pickupAddress,
+                      distanceLabel: _distanceLabel,
+                      etaLabel: _etaLabel,
+                      footer: Column(
+                        children: [
+                          primaryButton(
+                            label: 'I have arrived',
+                            buttonHeight: 52,
+                            fontSize: kSize16,
+                            buttonColor: kTripCtaBlue,
+                            labelColor: kWhite,
+                            onPressed:
+                                _canArrive ? () => _goToOtp(trip) : null,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _canArrive
+                                ? 'Tap when you reached the pickup location'
+                                : 'Approach pickup to unlock',
+                            textAlign: TextAlign.center,
+                            style: kCaption12R.copyWith(
+                              color: kTripBodyMuted,
+                              height: 1.35,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _handleCancel,
+                            child: Text(
+                              'Cancel trip',
+                              style: kCaption14M.copyWith(color: kRed),
+                            ),
+                          ),
+                        ],
+                      ),
+                      child: _PassengerInfoCard(trip: trip),
                     ),
                   ),
                 ],
               ),
-      ),
-    );
-  }
-}
-
-class _RouteTooltip extends StatelessWidget {
-  const _RouteTooltip({required this.distance});
-
-  final String distance;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: MediaQuery.sizeOf(context).width * 0.28,
-      top: MediaQuery.sizeOf(context).height * 0.36,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: _kMapTooltipBlue,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: kBlack.withValues(alpha: 0.12),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: kOrange,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Heading to the pickup',
-                  style: kCaption12R.copyWith(
-                    color: kWhite.withValues(alpha: 0.9),
-                    height: 1.1,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Padding(
-              padding: const EdgeInsets.only(left: 14),
-              child: Text(
-                distance,
-                style: kStyle(kSemiBold, kSize14, color: kWhite, height: 1.15),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -263,106 +255,6 @@ class _MapBackButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _BottomTripPanel extends StatelessWidget {
-  const _BottomTripPanel({
-    required this.trip,
-    required this.onArrived,
-    required this.onCancel,
-  });
-
-  final TripModel trip;
-  final VoidCallback onArrived;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
-
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: _kPanelBg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipPath(
-            clipper: const _PanelWaveClipper(arcDepth: 14),
-            child: const ColoredBox(
-              color: kTripCtaBlue,
-              child: SizedBox(height: 28, width: double.infinity),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPadding + 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _PassengerInfoCard(trip: trip),
-                const SizedBox(height: 14),
-                _TripStatsRow(
-                  distance: trip.distanceLabel,
-                  duration: trip.durationLabel,
-                ),
-                const SizedBox(height: 20),
-                primaryButton(
-                  label: 'I have arrived',
-                  buttonHeight: 52,
-                  fontSize: kSize16,
-                  buttonColor: kTripCtaBlue,
-                  labelColor: kWhite,
-                  onPressed: onArrived,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Tap when you reached the pickup location',
-                  textAlign: TextAlign.center,
-                  style: kCaption12R.copyWith(
-                    color: kTripBodyMuted,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: onCancel,
-                  child: Text(
-                    'Cancel trip',
-                    style: kCaption14M.copyWith(color: kRed),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PanelWaveClipper extends CustomClipper<Path> {
-  const _PanelWaveClipper({required this.arcDepth});
-
-  final double arcDepth;
-
-  @override
-  Path getClip(Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    return Path()
-      ..moveTo(0, 0)
-      ..quadraticBezierTo(w / 2, arcDepth, w, 0)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-  }
-
-  @override
-  bool shouldReclip(covariant _PanelWaveClipper oldClipper) =>
-      oldClipper.arcDepth != arcDepth;
 }
 
 class _PassengerInfoCard extends StatelessWidget {
@@ -469,78 +361,6 @@ class _ContactActionButton extends StatelessWidget {
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         child: Icon(icon, color: kWhite, size: 22),
       ),
-    );
-  }
-}
-
-class _TripStatsRow extends StatelessWidget {
-  const _TripStatsRow({required this.distance, required this.duration});
-
-  final String distance;
-  final String duration;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: kWhite,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: kBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _TripStatItem(label: 'DISTANCE', value: distance),
-          ),
-          Expanded(
-            child: _TripStatItem(label: 'DURATION', value: duration),
-          ),
-          const Expanded(
-            child: _TripStatItem(label: 'STATUS', value: 'En route'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TripStatItem extends StatelessWidget {
-  const _TripStatItem({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: kCaption11R.copyWith(
-            color: kTripMutedLabel,
-            letterSpacing: 0.4,
-            fontWeight: kMedium,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: kStyle(
-            kSemiBold,
-            kSize16,
-            color: _kStatValueBlue,
-            height: 1.1,
-          ),
-        ),
-      ],
     );
   }
 }

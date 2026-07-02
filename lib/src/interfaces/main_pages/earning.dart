@@ -2,6 +2,7 @@ import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/wallet_model.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning_pages/wallet_recharge_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -94,7 +95,12 @@ class _EarningsHeader extends StatelessWidget {
 
     return Container(
       color: _kEarningsHeaderBlue,
-      padding: EdgeInsets.fromLTRB(20, topPadding + 12, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        context.horizontalPadding,
+        topPadding + context.rs(12),
+        context.horizontalPadding,
+        context.rs(20),
+      ),
       child: Column(
         children: [
           const SizedBox(height: 70),
@@ -266,7 +272,12 @@ class _EarningsTabContent extends StatelessWidget {
     final todayIndex = DateTime.now().weekday - 1;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 100),
+      padding: EdgeInsets.fromLTRB(
+        context.horizontalPadding,
+        context.rs(14),
+        context.horizontalPadding,
+        context.scaffoldBottomPadding,
+      ),
       children: [
         Row(
           children: [
@@ -504,7 +515,12 @@ class _TransactionsList extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 100),
+      padding: EdgeInsets.fromLTRB(
+        context.horizontalPadding,
+        context.rs(14),
+        context.horizontalPadding,
+        context.scaffoldBottomPadding,
+      ),
       itemCount: transactions.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) {

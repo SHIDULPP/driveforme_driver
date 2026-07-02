@@ -2,6 +2,7 @@ import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -396,25 +397,33 @@ class TripCard extends StatelessWidget {
                 ),
               ),
               if (_showEarningsColumn) ...[
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      data.earningsAmount!,
-                      style: kStyle(
-                        kSemiBold,
-                        kSize26,
-                        color: _kNavigateBlue,
-                        height: 1.05,
+                SizedBox(width: context.rs(8)),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          data.earningsAmount!,
+                          maxLines: 1,
+                          style: kStyle(
+                            kSemiBold,
+                            kSize26,
+                            color: _kNavigateBlue,
+                            height: 1.05,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'you earn',
-                      style: kCaption12R.copyWith(color: kMutedText),
-                    ),
-                  ],
+                      SizedBox(height: context.rs(2)),
+                      Text(
+                        'you earn',
+                        maxLines: 1,
+                        style: kCaption12R.copyWith(color: kMutedText),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ],
@@ -542,9 +551,9 @@ class _TripCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _StatusBadge(status: status),
-        const SizedBox(width: 8),
-        _ShortTripBadge(label: tripTypeLabel),
+        Flexible(child: _StatusBadge(status: status)),
+        SizedBox(width: context.rs(8)),
+        Flexible(child: _ShortTripBadge(label: tripTypeLabel)),
         const Spacer(),
         IconButton(
           onPressed: onMenuPressed,
@@ -577,7 +586,6 @@ class _StatusBadge extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 height: 6,
@@ -588,7 +596,14 @@ class _StatusBadge extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Text('NOW', style: kTripBadgeSB),
+              Flexible(
+                child: Text(
+                  'NOW',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: kTripBadgeSB,
+                ),
+              ),
             ],
           ),
         );
@@ -639,7 +654,6 @@ class _DotStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             height: 6,
@@ -647,9 +661,13 @@ class _DotStatusBadge extends StatelessWidget {
             decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: kStyle(kSemiBold, kSize11, color: textColor, height: 1.1),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: kStyle(kSemiBold, kSize11, color: textColor, height: 1.1),
+            ),
           ),
         ],
       ),
@@ -671,7 +689,6 @@ class _ShortTripBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.sync_alt_rounded,
@@ -679,9 +696,13 @@ class _ShortTripBadge extends StatelessWidget {
             color: kTextColor.withValues(alpha: 0.7),
           ),
           const SizedBox(width: 5),
-          Text(
-            label,
-            style: kStyle(kMedium, kSize11, color: kTextColor, height: 1.1),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: kStyle(kMedium, kSize11, color: kTextColor, height: 1.1),
+            ),
           ),
         ],
       ),
@@ -810,9 +831,19 @@ class _TripLocationBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: kCaption14B),
-        const SizedBox(height: 2),
-        Text(subtitle, style: kCaption12R.copyWith(color: kMutedText)),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: kCaption14B,
+        ),
+        SizedBox(height: context.rs(2)),
+        Text(
+          subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: kCaption12R.copyWith(color: kMutedText),
+        ),
       ],
     );
   }
@@ -832,7 +863,6 @@ class _OngoingStatusPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             height: 20,
@@ -848,9 +878,13 @@ class _OngoingStatusPill extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: kStyle(kMedium, kSize13, color: kWhite, height: 1.1),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: kStyle(kMedium, kSize13, color: kWhite, height: 1.1),
+            ),
           ),
         ],
       ),
@@ -874,11 +908,15 @@ class _TripStatsRow extends StatelessWidget {
                 children: [
                   Text(
                     stat.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: kCaption12R.copyWith(color: kMutedText),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: context.rs(4)),
                   Text(
                     stat.value,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: kStyle(
                       kSemiBold,
                       kSize14,

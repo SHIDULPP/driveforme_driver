@@ -143,12 +143,12 @@ class _InteractiveButtonState extends State<_InteractiveButton> {
                       ],
                       Text(
                         widget.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: widget.labelColor,
-                          // fontSize: GlobalVariables.preferredLanguage == 'ml'
-                          //     ? widget.fontSize - 1
-                          //     : widget.fontSize,
+                          fontSize: widget.fontSize,
                         ),
                       ),
                     ],

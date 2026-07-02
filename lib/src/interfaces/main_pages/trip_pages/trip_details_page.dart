@@ -6,6 +6,7 @@ import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
 import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
@@ -275,9 +276,9 @@ class _TripDetailsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _StatusBadge(status: trip.status),
-              const SizedBox(width: 8),
-              _ShortTripBadge(label: trip.tripTypeLabel),
+              Flexible(child: _StatusBadge(status: trip.status)),
+              SizedBox(width: context.rs(8)),
+              Flexible(child: _ShortTripBadge(label: trip.tripTypeLabel)),
               if (_showMenu) ...[
                 const Spacer(),
                 IconButton(
@@ -515,7 +516,6 @@ class _DotStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             height: 6,
@@ -523,9 +523,13 @@ class _DotStatusBadge extends StatelessWidget {
             decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: kStyle(kSemiBold, kSize11, color: textColor, height: 1.1),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: kStyle(kSemiBold, kSize11, color: textColor, height: 1.1),
+            ),
           ),
         ],
       ),
@@ -547,7 +551,6 @@ class _ShortTripBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.sync_alt_rounded,
@@ -555,9 +558,13 @@ class _ShortTripBadge extends StatelessWidget {
             color: kTextColor.withValues(alpha: 0.7),
           ),
           const SizedBox(width: 5),
-          Text(
-            label,
-            style: kStyle(kMedium, kSize11, color: kTextColor, height: 1.1),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: kStyle(kMedium, kSize11, color: kTextColor, height: 1.1),
+            ),
           ),
         ],
       ),
@@ -686,9 +693,19 @@ class _LocationBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: kCaption14B),
-        const SizedBox(height: 2),
-        Text(subtitle, style: kCaption12R.copyWith(color: kMutedText)),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: kCaption14B,
+        ),
+        SizedBox(height: context.rs(2)),
+        Text(
+          subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: kCaption12R.copyWith(color: kMutedText),
+        ),
       ],
     );
   }
@@ -724,10 +741,17 @@ class _TripStatItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: kCaption12R.copyWith(color: kMutedText)),
-        const SizedBox(height: 4),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: kCaption12R.copyWith(color: kMutedText),
+        ),
+        SizedBox(height: context.rs(4)),
         Text(
           value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: kStyle(kSemiBold, kSize14, color: _kNavigateBlue, height: 1.1),
         ),
       ],
@@ -780,18 +804,27 @@ class _CustomerProfileCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(displayName, style: kCaption14B),
+                Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: kCaption14B,
+                ),
                 if (subtitle != null && subtitle!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  SizedBox(height: context.rs(4)),
                   Text(
                     subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: kCaption12R.copyWith(color: kMutedText),
                   ),
                 ],
                 if (vehicleNumber.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: context.rs(2)),
                   Text(
                     vehicleNumber,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: kCaption12R.copyWith(color: kMutedText),
                   ),
                 ],

@@ -9,6 +9,7 @@ import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/services/trip_socket_service.dart';
 import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/home_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_page.dart';
@@ -105,6 +106,8 @@ class _NavBarState extends ConsumerState<NavBar> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final horizontalMargin = _NavBarMetrics.horizontalMargin(context);
+    final barHeight = _NavBarMetrics.barHeight(context);
+    final bottomGap = _NavBarMetrics.bottomGap(context);
 
     return Scaffold(
       backgroundColor: kScreenBg,
@@ -118,9 +121,10 @@ class _NavBarState extends ConsumerState<NavBar> {
           horizontalMargin,
           0,
           horizontalMargin,
-          bottomInset + _NavBarMetrics.bottomGap,
+          bottomInset + bottomGap,
         ),
         child: _FloatingNavBar(
+          barHeight: barHeight,
           items: _items,
           currentIndex: _currentIndex,
           onItemSelected: (index) {
@@ -142,15 +146,14 @@ class _NavBarState extends ConsumerState<NavBar> {
 }
 
 class _NavBarMetrics {
-  static const barHeight = 64.0;
-  static const bottomGap = 16.0;
-  static const horizontalPadding = 12.0;
-  static const verticalPadding = 6.0;
-  static const activeCircleSize = 36.0;
-  static const activeIconTextGap = 8.0;
-  static const activePillRadius = 28.0;
-  static const inactiveIconSize = 22.0;
-  static const inactiveTapSize = 44.0;
+  static double barHeight(BuildContext context) => context.rs(64);
+  static double bottomGap(BuildContext context) => context.rs(16);
+  static double horizontalPadding(BuildContext context) => context.rs(12);
+  static double verticalPadding(BuildContext context) => context.rs(6);
+  static double activeCircleSize(BuildContext context) => context.rs(36);
+  static double activeIconTextGap(BuildContext context) => context.rs(8);
+  static double activePillRadius(BuildContext context) => context.rs(28);
+  static double inactiveTapSize(BuildContext context) => context.rs(44);
 
   static double horizontalMargin(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
@@ -176,27 +179,29 @@ class _NavBarItemData {
 
 class _FloatingNavBar extends StatelessWidget {
   const _FloatingNavBar({
+    required this.barHeight,
     required this.items,
     required this.currentIndex,
     required this.onItemSelected,
   });
 
+  final double barHeight;
   final List<_NavBarItemData> items;
   final int currentIndex;
   final ValueChanged<int> onItemSelected;
 
   @override
   Widget build(BuildContext context) {
-    final radius = _NavBarMetrics.barHeight / 2;
+    final radius = barHeight / 2;
 
     return Material(
       color: Colors.transparent,
       elevation: 0,
       child: Container(
-        height: _NavBarMetrics.barHeight,
-        padding: const EdgeInsets.symmetric(
-          horizontal: _NavBarMetrics.horizontalPadding,
-          vertical: _NavBarMetrics.verticalPadding,
+        height: barHeight,
+        padding: EdgeInsets.symmetric(
+          horizontal: _NavBarMetrics.horizontalPadding(context),
+          vertical: _NavBarMetrics.verticalPadding(context),
         ),
         decoration: BoxDecoration(
           color: kWhite,
@@ -215,17 +220,15 @@ class _FloatingNavBar extends StatelessWidget {
             final item = items[index];
             final isSelected = currentIndex == index;
 
-            final tab = _NavBarTab(
-              item: item,
-              isSelected: isSelected,
-              onTap: () => onItemSelected(index),
+            return Expanded(
+              child: Center(
+                child: _NavBarTab(
+                  item: item,
+                  isSelected: isSelected,
+                  onTap: () => onItemSelected(index),
+                ),
+              ),
             );
-
-            if (isSelected) {
-              return tab;
-            }
-
-            return Expanded(child: Center(child: tab));
           }),
         ),
       ),
@@ -246,22 +249,25 @@ class _NavBarTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pillRadius = _NavBarMetrics.activePillRadius(context);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(_NavBarMetrics.activePillRadius),
+        borderRadius: BorderRadius.circular(pillRadius),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
           padding: isSelected
-              ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
+              ? EdgeInsets.symmetric(
+                  horizontal: context.rs(10),
+                  vertical: context.rs(4),
+                )
               : EdgeInsets.zero,
           decoration: BoxDecoration(
             color: isSelected ? kBrandBlue : Colors.transparent,
-            borderRadius: BorderRadius.circular(
-              _NavBarMetrics.activePillRadius,
-            ),
+            borderRadius: BorderRadius.circular(pillRadius),
           ),
           child: isSelected
               ? _ActiveTabContent(item: item)
@@ -279,29 +285,38 @@ class _ActiveTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          height: _NavBarMetrics.activeCircleSize,
-          width: _NavBarMetrics.activeCircleSize,
-          decoration: BoxDecoration(
-            color: kWhite.withValues(alpha: 0.22),
-            shape: BoxShape.circle,
+    final circleSize = _NavBarMetrics.activeCircleSize(context);
+    final iconGap = _NavBarMetrics.activeIconTextGap(context);
+
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: circleSize,
+            width: circleSize,
+            decoration: BoxDecoration(
+              color: kWhite.withValues(alpha: 0.22),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: _NavGifIcon(
+              asset: item.activeGif,
+              width: context.rs(item.iconWidth),
+              height: context.rs(item.iconHeight),
+            ),
           ),
-          alignment: Alignment.center,
-          child: _NavGifIcon(
-            asset: item.activeGif,
-            width: item.iconWidth,
-            height: item.iconHeight,
+          SizedBox(width: iconGap),
+          Text(
+            item.label,
+            maxLines: 1,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: kStyle(kSemiBold, kSize14, color: kWhite, height: 1.0),
           ),
-        ),
-        const SizedBox(width: _NavBarMetrics.activeIconTextGap),
-        Text(
-          item.label,
-          style: kStyle(kSemiBold, kSize14, color: kWhite, height: 1.0),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -337,14 +352,16 @@ class _InactiveTabIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tapSize = _NavBarMetrics.inactiveTapSize(context);
+
     return SizedBox(
-      height: _NavBarMetrics.inactiveTapSize,
-      width: _NavBarMetrics.inactiveTapSize,
+      height: tapSize,
+      width: tapSize,
       child: Center(
         child: SvgPicture.asset(
           item.iconPath,
-          width: item.iconWidth,
-          height: item.iconHeight,
+          width: context.rs(item.iconWidth),
+          height: context.rs(item.iconHeight),
           fit: BoxFit.contain,
           colorFilter: const ColorFilter.mode(
             _kNavInactiveIcon,

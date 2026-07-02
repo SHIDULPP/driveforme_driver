@@ -9,6 +9,7 @@ import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/new_trip_request_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,19 +23,19 @@ const _kToggleOrange = Color(0xFFE68C3A);
 const _kEarningsBarBlue = Color(0xFF1E5C8D);
 
 /// Content height inside the blue header (greeting + online card + inner padding).
-const _kHeaderContentHeight = 156.0;
+double _headerContentHeight(BuildContext context) => context.rs(156);
 
 /// How far the center of the header curve extends below the content box.
-const _kHeaderCurveDepth = 70.0;
+double _headerCurveDepth(BuildContext context) => context.rs(70);
 
 /// Pulls the earnings card up so ~40% sits on the blue header.
-const _kEarningsCardOverlap = 58.0;
+double _earningsCardOverlap(BuildContext context) => context.rs(58);
 
 /// Height of the online status row at the bottom of the header.
-const _kOnlineCardHeight = 68.0;
+double _onlineCardHeight(BuildContext context) => context.rs(68);
 
-double _onlineCardTop(double topPadding) =>
-    topPadding + 8 + _kHeaderContentHeight - _kOnlineCardHeight;
+double _onlineCardTop(BuildContext context, double topPadding) =>
+    topPadding + context.rs(8) + _headerContentHeight(context) - _onlineCardHeight(context);
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -88,10 +89,14 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
-    final headerTotalHeight =
-        topPadding + _kHeaderContentHeight + _kHeaderCurveDepth;
-    final scrollTopPadding = headerTotalHeight - _kEarningsCardOverlap;
-    final mapTop = topPadding + _kHeaderContentHeight - 12;
+    final horizontal = context.horizontalPadding;
+    final headerContentHeight = _headerContentHeight(context);
+    final headerCurveDepth = _headerCurveDepth(context);
+    final earningsOverlap = _earningsCardOverlap(context);
+    final headerTotalHeight = topPadding + headerContentHeight + headerCurveDepth;
+    final scrollTopPadding = headerTotalHeight - earningsOverlap;
+    final mapTop = topPadding + headerContentHeight - context.rs(12);
+    final bottomPadding = context.scaffoldBottomPadding;
     final isOnline = ref.watch(driverOnlineProvider);
     final isShortTrip = ref.watch(tripPreferenceProvider) == 'short_trip';
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
@@ -127,15 +132,21 @@ class _HomePageState extends ConsumerState<HomePage> {
               left: 0,
               right: 0,
               child: _HomeHeaderBackground(
-                contentHeight: _kHeaderContentHeight,
-                curveDepth: _kHeaderCurveDepth,
+                contentHeight: headerContentHeight,
+                curveDepth: headerCurveDepth,
+                onlineCardHeight: _onlineCardHeight(context),
                 unreadNotificationCount: unreadNotifications,
               ),
             ),
             Positioned.fill(
               child: SingleChildScrollView(
                 clipBehavior: Clip.none,
-                padding: EdgeInsets.fromLTRB(20, scrollTopPadding, 20, 100),
+                padding: EdgeInsets.fromLTRB(
+                  horizontal,
+                  scrollTopPadding,
+                  horizontal,
+                  bottomPadding,
+                ),
                 child: Column(
                   children: [
                     const _TodaysEarningsCard(),
@@ -151,9 +162,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             Positioned(
-              top: _onlineCardTop(topPadding),
-              left: 20,
-              right: 20,
+              top: _onlineCardTop(context, topPadding),
+              left: horizontal,
+              right: horizontal,
               child: _OnlineStatusCard(
                 isOnline: isOnline,
                 onChanged: (value) => setDriverOnline(ref, value),
@@ -161,9 +172,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             if (currentTrip != null)
               Positioned(
-                left: 20,
-                right: 20,
-                top: scrollTopPadding + 8,
+                left: horizontal,
+                right: horizontal,
+                top: scrollTopPadding + context.rs(8),
                 child: NewTripRequestCard(
                   trip: currentTrip,
                   onTap: () => _openTripDetails(currentTrip),
@@ -172,13 +183,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             Positioned(
-              top: topPadding + 6,
-              right: 18,
+              top: topPadding + context.rs(6),
+              right: context.rs(18),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () =>
                     NavigationService().pushNamed('notificationsPage'),
-                child: const SizedBox(width: 44, height: 44),
+                child: SizedBox(
+                  width: context.rs(44),
+                  height: context.rs(44),
+                ),
               ),
             ),
           ],
@@ -192,11 +206,13 @@ class _HomeHeaderBackground extends ConsumerWidget {
   const _HomeHeaderBackground({
     required this.contentHeight,
     required this.curveDepth,
+    required this.onlineCardHeight,
     this.unreadNotificationCount = 0,
   });
 
   final double contentHeight;
   final double curveDepth;
+  final double onlineCardHeight;
   final int unreadNotificationCount;
 
   @override
@@ -215,7 +231,8 @@ class _HomeHeaderBackground extends ConsumerWidget {
         );
 
     final topPadding = MediaQuery.paddingOf(context).top;
-    final totalHeight = topPadding + contentHeight + curveDepth + 20;
+    final totalHeight = topPadding + contentHeight + curveDepth + context.rs(20);
+    final horizontal = context.horizontalPadding;
 
     return SizedBox(
       height: totalHeight,
@@ -223,7 +240,12 @@ class _HomeHeaderBackground extends ConsumerWidget {
         clipper: _HomeHeaderClipper(curveDepth: curveDepth),
         child: Container(
           color: _kHomeHeaderBlue,
-          padding: EdgeInsets.fromLTRB(20, topPadding + 8, 20, curveDepth + 18),
+          padding: EdgeInsets.fromLTRB(
+            horizontal,
+            topPadding + context.rs(8),
+            horizontal,
+            curveDepth + context.rs(18),
+          ),
           child: SizedBox(
             height: contentHeight,
             child: Column(
@@ -238,6 +260,8 @@ class _HomeHeaderBackground extends ConsumerWidget {
                         children: [
                           Text(
                             greeting,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: kStyle(
                               kSemiBold,
                               kSize22,
@@ -245,18 +269,20 @@ class _HomeHeaderBackground extends ConsumerWidget {
                               height: 1.15,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: context.rs(4)),
                           Row(
                             children: [
                               Icon(
                                 Icons.location_on,
-                                size: 15,
+                                size: context.rs(15),
                                 color: kWhite.withValues(alpha: 0.9),
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: context.rs(4)),
                               Expanded(
                                 child: Text(
                                   location,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: kCaption14R.copyWith(
                                     color: kWhite.withValues(alpha: 0.85),
                                     height: 1.2,
@@ -265,7 +291,7 @@ class _HomeHeaderBackground extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: context.rs(6)),
                           // Row(
                           //   children: [
                           //     SvgPicture.asset(
@@ -294,8 +320,8 @@ class _HomeHeaderBackground extends ConsumerWidget {
                       clipBehavior: Clip.none,
                       children: [
                         Container(
-                            height: 40,
-                            width: 40,
+                            height: context.rs(40),
+                            width: context.rs(40),
                             decoration: BoxDecoration(
                               color: kWhite.withValues(alpha: 0.18),
                               shape: BoxShape.circle,
@@ -303,8 +329,8 @@ class _HomeHeaderBackground extends ConsumerWidget {
                             alignment: Alignment.center,
                             child: Image.asset(
                               'assets/gifs/notification.gif',
-                              width: 22,
-                              height: 22,
+                              width: context.rs(22),
+                              height: context.rs(22),
                               fit: BoxFit.contain,
                               gaplessPlayback: true,
                             ),
@@ -340,9 +366,9 @@ class _HomeHeaderBackground extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: context.rs(14)),
                 const Spacer(),
-                const SizedBox(height: _kOnlineCardHeight),
+                SizedBox(height: onlineCardHeight),
               ],
             ),
           ),
@@ -405,10 +431,13 @@ class _OnlineStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(12),
+        vertical: context.rs(10),
+      ),
       decoration: BoxDecoration(
         color: _kOnlineCardBg.withValues(alpha: 0.68),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(context.rs(20)),
       ),
       child: Row(
         children: [
@@ -416,11 +445,11 @@ class _OnlineStatusCard extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(26),
+                borderRadius: BorderRadius.circular(context.rs(26)),
                 child: Image.asset(
                   'assets/pngs/live_photo_image.png',
-                  width: 48,
-                  height: 48,
+                  width: context.rs(48),
+                  height: context.rs(48),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -428,8 +457,8 @@ class _OnlineStatusCard extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  height: 12,
-                  width: 12,
+                  height: context.rs(12),
+                  width: context.rs(12),
                   decoration: BoxDecoration(
                     color: isOnline ? kActiveGreen : kMutedText,
                     shape: BoxShape.circle,
@@ -439,13 +468,15 @@ class _OnlineStatusCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: context.rs(10)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   isOnline ? 'You are Online' : 'You are Offline',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: kStyle(
                     kSemiBold,
                     kSize15,
@@ -453,11 +484,13 @@ class _OnlineStatusCard extends StatelessWidget {
                     height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: context.rs(2)),
                 Text(
                   isOnline
                       ? 'Ready to accept orders'
                       : 'You will not receive requests',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: kCaption12R.copyWith(
                     color: kWhite.withValues(alpha: 0.7),
                     height: 1.2,
@@ -696,38 +729,75 @@ class _TripOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageSize = context.rs(38);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.rs(10),
+          vertical: context.rs(12),
+        ),
         decoration: BoxDecoration(
           color: isSelected ? selectedBackground : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(context.rs(12)),
           border: isSelected
               ? Border.all(color: kGoldAccent, width: 1.2)
               : null,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset(imagePath, height: 38, width: 38, fit: BoxFit.contain),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final useColumn = constraints.maxWidth < context.rs(110);
+
+            final image = Image.asset(
+              imagePath,
+              height: imageSize,
+              width: imageSize,
+              fit: BoxFit.contain,
+            );
+
+            final textColumn = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: kCaption14B.copyWith(color: kTextColor),
+                ),
+                SizedBox(height: context.rs(2)),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: kCaption12R.copyWith(color: kTextColor, height: 1.2),
+                ),
+              ],
+            );
+
+            if (useColumn) {
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(title, style: kCaption14B.copyWith(color: kTextColor)),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: kCaption12R.copyWith(color: kTextColor, height: 1.2),
-                  ),
+                  image,
+                  SizedBox(height: context.rs(8)),
+                  textColumn,
                 ],
-              ),
-            ),
-          ],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                image,
+                SizedBox(width: context.rs(8)),
+                Expanded(child: textColumn),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -739,11 +809,13 @@ class _PromoBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageWidth = context.rs(130);
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _kPromoCardBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(context.rs(16)),
         border: Border.all(color: kGoldAccent.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
@@ -759,21 +831,21 @@ class _PromoBannerCard extends StatelessWidget {
             right: 0,
             bottom: 0,
             top: 0,
-            width: 130,
+            width: imageWidth,
             child: Stack(
               alignment: Alignment.centerRight,
               children: [
                 Positioned(
-                  right: 8,
-                  bottom: 8,
+                  right: context.rs(8),
+                  bottom: context.rs(8),
                   child: Image.asset(
                     'assets/pngs/car_shadow.png',
-                    width: 100,
+                    width: context.rs(100),
                     fit: BoxFit.contain,
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(right: 4),
+                  padding: EdgeInsets.only(right: context.rs(4)),
                   child: Image.asset(
                     'assets/pngs/car_image.png',
                     fit: BoxFit.contain,
@@ -784,7 +856,12 @@ class _PromoBannerCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 118, 14),
+            padding: EdgeInsets.fromLTRB(
+              context.rs(16),
+              context.rs(14),
+              imageWidth - context.rs(12),
+              context.rs(14),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

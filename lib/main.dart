@@ -33,7 +33,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       builder: (context, child) {
-        return ScreenSizeScope(child: child!);
+        return ScreenSizeScope(
+          child: child ?? const SizedBox.shrink(),
+        );
       },
     );
   }

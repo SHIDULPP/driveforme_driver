@@ -1,9 +1,11 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
+import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
 import 'package:driveforme_driver/src/data/services/directions_service.dart';
 import 'package:driveforme_driver/src/data/services/location_service.dart';
 import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum TripMapMode {
@@ -24,6 +26,8 @@ class TripMapView extends StatefulWidget {
   final TripMapMode mode;
   final bool showDropoff;
   final bool showRoute;
+  final bool followDriver;
+  final ValueChanged<RouteSummary?>? onRouteSummary;
 
   const TripMapView({
     super.key,
@@ -33,6 +37,8 @@ class TripMapView extends StatefulWidget {
     this.mode = TripMapMode.toPickup,
     this.showDropoff = true,
     this.showRoute = true,
+    this.followDriver = false,
+    this.onRouteSummary,
   });
 
   TripLocation? get navigationTarget {
@@ -52,6 +58,9 @@ class TripMapView extends StatefulWidget {
 
 class _TripMapViewState extends State<TripMapView> {
   static const _locationService = LocationService();
+  static const _routeRefreshMinInterval = Duration(seconds: 30);
+  static const _routeRefreshMinDistanceMeters = 100.0;
+
   final DirectionsService _directionsService = DirectionsService();
 
   GoogleMapController? _mapController;
@@ -61,27 +70,59 @@ class _TripMapViewState extends State<TripMapView> {
   List<LatLng> _routePoints = const [];
   bool _isResolving = true;
   int _resolveGeneration = 0;
+  DateTime? _lastRouteFetchAt;
+  LatLng? _lastRouteOrigin;
 
   @override
   void initState() {
     super.initState();
-    _resolveMapData();
+    _resolveMapData(forceRouteRefresh: true);
   }
 
   @override
   void didUpdateWidget(covariant TripMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.pickup != widget.pickup ||
+    final driverChanged = oldWidget.driverLocation != widget.driverLocation;
+    final otherChanged = oldWidget.pickup != widget.pickup ||
         oldWidget.dropoff != widget.dropoff ||
-        oldWidget.driverLocation != widget.driverLocation ||
         oldWidget.mode != widget.mode ||
         oldWidget.showDropoff != widget.showDropoff ||
-        oldWidget.showRoute != widget.showRoute) {
-      _resolveMapData();
+        oldWidget.showRoute != widget.showRoute;
+
+    if (otherChanged) {
+      _resolveMapData(forceRouteRefresh: true);
+      return;
+    }
+
+    if (driverChanged) {
+      _resolveMapData(
+        forceRouteRefresh: _shouldRefreshRoute(widget.driverLocation),
+      );
     }
   }
 
-  Future<void> _resolveMapData() async {
+  bool _shouldRefreshRoute(TripLocation? driver) {
+    if (!widget.showRoute) return false;
+    final now = DateTime.now();
+    if (_lastRouteFetchAt == null) return true;
+    if (now.difference(_lastRouteFetchAt!) >= _routeRefreshMinInterval) {
+      return true;
+    }
+
+    final driverPoint = driver?.latLng ?? _resolvedDriver?.latLng;
+    final lastOrigin = _lastRouteOrigin;
+    if (driverPoint == null || lastOrigin == null) return false;
+
+    final moved = Geolocator.distanceBetween(
+      driverPoint.latitude,
+      driverPoint.longitude,
+      lastOrigin.latitude,
+      lastOrigin.longitude,
+    );
+    return moved >= _routeRefreshMinDistanceMeters;
+  }
+
+  Future<void> _resolveMapData({required bool forceRouteRefresh}) async {
     final generation = ++_resolveGeneration;
 
     if (mounted) {
@@ -103,13 +144,23 @@ class _TripMapViewState extends State<TripMapView> {
       resolvedDriver = await _locationService.resolveLocation(driver);
     }
 
-    final routePoints = widget.showRoute
-        ? await _resolveRoute(
-            resolvedPickup: resolvedPickup,
-            resolvedDropoff: resolvedDropoff,
-            resolvedDriver: resolvedDriver,
-          )
-        : <LatLng>[];
+    var routePoints = _routePoints;
+    RouteSummary? routeSummary;
+
+    if (widget.showRoute && forceRouteRefresh) {
+      routePoints = await _resolveRoute(
+        resolvedPickup: resolvedPickup,
+        resolvedDropoff: resolvedDropoff,
+        resolvedDriver: resolvedDriver,
+      );
+      routeSummary = await _resolveRouteSummary(
+        resolvedPickup: resolvedPickup,
+        resolvedDropoff: resolvedDropoff,
+        resolvedDriver: resolvedDriver,
+      );
+      _lastRouteFetchAt = DateTime.now();
+      _lastRouteOrigin = resolvedDriver?.latLng;
+    }
 
     if (!mounted || generation != _resolveGeneration) return;
 
@@ -117,11 +168,60 @@ class _TripMapViewState extends State<TripMapView> {
       _resolvedPickup = resolvedPickup;
       _resolvedDropoff = resolvedDropoff;
       _resolvedDriver = resolvedDriver;
-      _routePoints = routePoints;
+      if (forceRouteRefresh) {
+        _routePoints = routePoints;
+      }
       _isResolving = false;
     });
 
-    _fitCamera();
+    if (forceRouteRefresh) {
+      widget.onRouteSummary?.call(routeSummary);
+    }
+
+    if (widget.followDriver && resolvedDriver?.latLng != null) {
+      _followDriver(resolvedDriver!.latLng!);
+    } else {
+      _fitCamera();
+    }
+  }
+
+  Future<RouteSummary?> _resolveRouteSummary({
+    required TripLocation resolvedPickup,
+    required TripLocation? resolvedDropoff,
+    required TripLocation? resolvedDriver,
+  }) async {
+    switch (widget.mode) {
+      case TripMapMode.toPickup:
+        if (resolvedDriver != null) {
+          return _directionsService.routeSummaryBetween(
+            origin: resolvedDriver,
+            destination: resolvedPickup,
+          );
+        }
+        return null;
+      case TripMapMode.toDropoff:
+        final destination = resolvedDropoff ?? resolvedPickup;
+        if (resolvedDriver != null) {
+          return _directionsService.routeSummaryBetween(
+            origin: resolvedDriver,
+            destination: destination,
+          );
+        }
+        if (resolvedPickup.hasCoordinates && destination.hasCoordinates) {
+          return _directionsService.routeSummaryBetween(
+            origin: resolvedPickup,
+            destination: destination,
+          );
+        }
+        return null;
+      case TripMapMode.fullRoute:
+        final dropoff = resolvedDropoff;
+        if (dropoff == null) return null;
+        return _directionsService.routeSummaryBetween(
+          origin: resolvedPickup,
+          destination: dropoff,
+        );
+    }
   }
 
   Future<List<LatLng>> _resolveRoute({
@@ -224,6 +324,22 @@ class _TripMapViewState extends State<TripMapView> {
         kDefaultMapCenter;
   }
 
+  void _followDriver(LatLng driver) {
+    if (!mounted || _mapController == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final controller = _mapController;
+      if (controller == null) return;
+
+      try {
+        controller.animateCamera(
+          CameraUpdate.newLatLngZoom(driver, 16),
+        );
+      } catch (_) {}
+    });
+  }
+
   void _fitCamera() {
     if (!mounted || _mapController == null) return;
 
@@ -264,9 +380,7 @@ class _TripMapViewState extends State<TripMapView> {
         }
 
         controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 56));
-      } catch (_) {
-        // Map was disposed before the camera animation ran.
-      }
+      } catch (_) {}
     });
   }
 
@@ -295,6 +409,7 @@ class _TripMapViewState extends State<TripMapView> {
   void dispose() {
     _resolveGeneration++;
     _mapController = null;
+    _directionsService.dispose();
     super.dispose();
   }
 
@@ -317,7 +432,11 @@ class _TripMapViewState extends State<TripMapView> {
           rotateGesturesEnabled: false,
           onMapCreated: (controller) {
             _mapController = controller;
-            _fitCamera();
+            if (widget.followDriver && _resolvedDriver?.latLng != null) {
+              _followDriver(_resolvedDriver!.latLng!);
+            } else {
+              _fitCamera();
+            }
           },
         ),
         if (_isResolving)

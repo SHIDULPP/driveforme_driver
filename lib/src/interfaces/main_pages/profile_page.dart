@@ -5,6 +5,7 @@ import 'package:driveforme_driver/src/data/providers/notification_provider.dart'
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/services/auth_logout_service.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,7 +41,12 @@ class ProfilePage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                padding: EdgeInsets.fromLTRB(
+                  context.horizontalPadding,
+                  context.rs(8),
+                  context.horizontalPadding,
+                  0,
+                ),
                 child: Text(
                   'Profile',
                   style: kStyle(
@@ -54,7 +60,12 @@ class ProfilePage extends ConsumerWidget {
               Expanded(
                 child: userAsync.when(
                   data: (user) => ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                    padding: EdgeInsets.fromLTRB(
+                      context.horizontalPadding,
+                      context.rs(20),
+                      context.horizontalPadding,
+                      context.scaffoldBottomPadding,
+                    ),
                     children: [
                       _ProfileSummaryCard(user: user),
                       const SizedBox(height: 14),
@@ -86,11 +97,13 @@ class _ProfileSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatarSize = context.rs(64);
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(context.rs(16)),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(context.rs(18)),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.04),
@@ -103,16 +116,18 @@ class _ProfileSummaryCard extends StatelessWidget {
         children: [
           ProfileAvatar(
             imageUrl: profilePhotoUrl(user),
-            size: 64,
-            borderRadius: BorderRadius.circular(32),
+            size: avatarSize,
+            borderRadius: BorderRadius.circular(avatarSize / 2),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: context.rs(14)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   displayFullName(user),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: kStyle(
                     kSemiBold,
                     kSize18,
@@ -190,7 +205,7 @@ class _ProfileMenuCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(context.rs(18)),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.04),
@@ -245,12 +260,17 @@ class _ProfileMenuTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.rs(16),
+            vertical: context.rs(16),
+          ),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: kMenuItemM,
                 ),
               ),
@@ -292,7 +312,7 @@ class _ProfileLogoutCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(context.rs(18)),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.04),

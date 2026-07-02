@@ -6,6 +6,7 @@ import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -137,7 +138,12 @@ class _TripsPageState extends ConsumerState<TripsPage> {
                     },
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                      padding: EdgeInsets.fromLTRB(
+                        context.horizontalPadding,
+                        context.rs(16),
+                        context.horizontalPadding,
+                        context.scaffoldBottomPadding,
+                      ),
                       itemCount: trips.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
@@ -221,24 +227,29 @@ class _TripsTabBar extends StatelessWidget {
               onTap: () => onTabSelected(tab),
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: context.rs(14)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      _labelFor(tab),
-                      style: kStyle(
-                        isSelected ? kSemiBold : kMedium,
-                        kSize14,
-                        color: isSelected ? _kTabActiveGold : kTextColor,
-                        height: 1.1,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _labelFor(tab),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: kStyle(
+                          isSelected ? kSemiBold : kMedium,
+                          kSize14,
+                          color: isSelected ? _kTabActiveGold : kTextColor,
+                          height: 1.1,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: context.rs(8)),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       height: 2,
-                      width: isSelected ? 28 : 0,
+                      width: isSelected ? context.rs(28) : 0,
                       decoration: BoxDecoration(
                         color: _kTabActiveGold,
                         borderRadius: BorderRadius.circular(2),
