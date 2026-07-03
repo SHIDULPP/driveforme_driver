@@ -1,4 +1,5 @@
 import 'package:driveforme_driver/src/interfaces/main_pages/chat/chat_screen.dart';
+import 'package:driveforme_driver/src/interfaces/components/location_permission_gate.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_countdown_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_help_on_way_page.dart';
@@ -192,7 +193,7 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionDuration = const Duration(milliseconds: 300);
       break;
     case 'navBar':
-      page = const NavBar();
+      page = const LocationPermissionGate(child: NavBar());
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 300);
       break;

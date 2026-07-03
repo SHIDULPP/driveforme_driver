@@ -13,7 +13,6 @@ class DriverLocationService {
   final SecureStorageService _storage;
 
   Timer? _timer;
-  bool _permissionDenied = false;
 
   DriverLocationService({
     required TripSocketService socket,
@@ -43,15 +42,9 @@ class DriverLocationService {
   }
 
   Future<bool> _ensurePermission() async {
-    if (_permissionDenied) return false;
-
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
+    final permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      _permissionDenied = true;
       log('Location permission denied', name: 'DriverLocationService');
       return false;
     }
