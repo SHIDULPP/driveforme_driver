@@ -179,6 +179,63 @@ final kFooterBrandB = kStyle(kSemiBold, kSize13, color: kBrandBlue);
 
 final kEmptyStateM = kStyle(kMedium, kSize15, color: kMutedText);
 
+// ── Earnings / Wallet page ────────────────────────────────────────────────────
+
+final kEarningsBalanceLabelR = kStyle(
+  kRegular,
+  kSize13,
+  color: kWhite,
+  height: 1.2,
+);
+final kEarningsBalanceAmountB = kStyle(
+  kBold,
+  kSize34,
+  color: kWhite,
+  height: 1.05,
+);
+final kEarningsSectionTitleSB = kStyle(
+  kSemiBold,
+  kSize15,
+  color: kTextColor,
+  height: 1.2,
+);
+final kEarningsStatValueSB = kStyle(
+  kSemiBold,
+  kSize16,
+  color: kEarningsStatValueBlue,
+  height: 1.1,
+);
+final kEarningsViewAllM = kStyle(
+  kMedium,
+  kSize14,
+  color: kBrandBlue,
+  height: 1.2,
+);
+final kEarningsTabActiveM = kStyle(
+  kMedium,
+  kSize14,
+  color: kEarningsHeaderBlue,
+  height: 1.1,
+);
+final kEarningsTabInactiveM = kStyle(
+  kMedium,
+  kSize14,
+  color: kSecondaryTextColor,
+  height: 1.1,
+);
+final kEarningsChartTotalSB = kStyle(
+  kSemiBold,
+  kSize22,
+  color: kEarningsStatValueBlue,
+  height: 1.1,
+);
+final kEarningsTrendR = kStyle(
+  kRegular,
+  kSize12,
+  color: kActiveGreen,
+  height: 1.2,
+);
+
 // ── Profile ───────────────────────────────────────────────────────────────────
 
 final kProfileNameB = kStyle(

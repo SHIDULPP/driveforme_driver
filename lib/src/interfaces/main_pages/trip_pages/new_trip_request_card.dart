@@ -1,12 +1,9 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
-
-const _kTripTypeChipBg = Color(0xFFF3F0E8);
-const _kStatsBarBg = Color(0xFFF5F3EE);
-const _kDeclineRed = Color(0xFFE32626);
 
 class NewTripRequestCard extends StatelessWidget {
   const NewTripRequestCard({
@@ -24,19 +21,23 @@ class NewTripRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cardRadius = context.rs(18);
+    final buttonRadius = context.rs(12);
+    final buttonHeight = context.rs(46);
+
     return Material(
       color: Colors.transparent,
-      elevation: 8,
-      shadowColor: kBlack.withValues(alpha: 0.14),
-      borderRadius: BorderRadius.circular(20),
+      elevation: 6,
+      shadowColor: kBlack.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(cardRadius),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(cardRadius),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          padding: EdgeInsets.all(context.rs(14)),
           decoration: BoxDecoration(
             color: kWhite,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(cardRadius),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -46,131 +47,96 @@ class NewTripRequestCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'New Trip request',
-                      style: kStyle(kSemiBold, kSize16, color: kTextColor),
+                      style: kTripSubSectionSB,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: context.rs(10),
+                      vertical: context.rs(4),
                     ),
                     decoration: BoxDecoration(
-                      color: _kTripTypeChipBg,
-                      borderRadius: BorderRadius.circular(20),
+                      color: kChipGreyBg,
+                      borderRadius: BorderRadius.circular(context.rs(20)),
                     ),
                     child: Text(
                       trip.tripTypeChipLabel,
-                      style: kCaption12R.copyWith(color: kSecondaryTextColor),
+                      style: kTripChipR.copyWith(color: kSecondaryTextColor),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: context.rs(12)),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.asset(
-                      'assets/pngs/live_photo_image.png',
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
+                  _PassengerAvatar(size: context.rs(44)),
+                  SizedBox(width: context.rs(10)),
                   Expanded(
-                    child: Text(
-                      trip.customerDisplayName,
-                      style: kCaption14B,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          trip.customerDisplayName,
+                          style: kCaption14B,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: context.rs(8)),
+                        TripRoutePreview(
+                          compact: true,
+                          pickup: trip.pickupAddress,
+                          dropoff: trip.dropoffAddress ?? trip.pickupAddress,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              TripRoutePreview(
-                pickup: trip.pickupAddress,
-                dropoff: trip.dropoffAddress ?? trip.pickupAddress,
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: _kStatsBarBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _StatColumn(
-                        label: 'Distance',
-                        value: trip.distanceLabel,
-                      ),
-                    ),
-                    Expanded(
-                      child: _StatColumn(
-                        label: 'Duration',
-                        value: trip.durationLabel,
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'you earn',
-                            style: kCaption12R.copyWith(color: kMutedText),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            trip.displayEarnings,
-                            style: kStyle(
-                              kSemiBold,
-                              kSize15,
-                              color: kBrandBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
+              SizedBox(height: context.rs(12)),
+              _TripStatsBar(trip: trip),
+              SizedBox(height: context.rs(12)),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: onDecline,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: _kDeclineRed,
-                        side: const BorderSide(color: _kDeclineRed, width: 1.2),
-                        minimumSize: const Size.fromHeight(44),
+                        foregroundColor: kSosRed,
+                        side: BorderSide(color: kSosRed, width: context.rs(1)),
+                        minimumSize: Size.fromHeight(buttonHeight),
+                        padding: EdgeInsets.symmetric(horizontal: context.rs(8)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(buttonRadius),
                         ),
                       ),
                       child: Text(
                         'Decline ride',
-                        style: kStyle(kMedium, kSize14, color: _kDeclineRed),
+                        style: kStyle(kMedium, kSize14, color: kSosRed),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: context.rs(10)),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: onAccept,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kBrandBlue,
+                        backgroundColor: kTripCtaBlue,
                         foregroundColor: kWhite,
-                        minimumSize: const Size.fromHeight(44),
+                        minimumSize: Size.fromHeight(buttonHeight),
                         elevation: 0,
+                        padding: EdgeInsets.symmetric(horizontal: context.rs(8)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(buttonRadius),
                         ),
                       ),
                       child: Text(
                         'Accept Ride',
                         style: kStyle(kSemiBold, kSize14, color: kWhite),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -184,6 +150,91 @@ class NewTripRequestCard extends StatelessWidget {
   }
 }
 
+class _PassengerAvatar extends StatelessWidget {
+  const _PassengerAvatar({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: kTripRequestAvatarRing, width: context.rs(1.5)),
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/pngs/live_photo_image.png',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+
+class _TripStatsBar extends StatelessWidget {
+  const _TripStatsBar({required this.trip});
+
+  final TripModel trip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: context.rs(10),
+        horizontal: context.rs(4),
+      ),
+      decoration: BoxDecoration(
+        color: kTripRequestStatsBg,
+        borderRadius: BorderRadius.circular(context.rs(10)),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              child: _StatColumn(
+                label: 'Distance',
+                value: trip.distanceLabel,
+              ),
+            ),
+            _StatDivider(),
+            Expanded(
+              child: _StatColumn(
+                label: 'Duration',
+                value: trip.durationLabel,
+              ),
+            ),
+            _StatDivider(),
+            Expanded(
+              child: _StatColumn(
+                label: 'you earn',
+                value: trip.displayEarnings,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return VerticalDivider(
+      width: context.rs(1),
+      thickness: context.rs(1),
+      color: kCardBorder.withValues(alpha: 0.8),
+      indent: context.rs(2),
+      endIndent: context.rs(2),
+    );
+  }
+}
+
 class _StatColumn extends StatelessWidget {
   const _StatColumn({required this.label, required this.value});
 
@@ -192,16 +243,28 @@ class _StatColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: kCaption12R.copyWith(color: kMutedText)),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: kStyle(kSemiBold, kSize14, color: kBrandBlue),
-        ),
-      ],
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: context.rs(6)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: kTripLocationLabelR,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: context.rs(4)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: kTripDurationPriceB.copyWith(fontSize: kSize15),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

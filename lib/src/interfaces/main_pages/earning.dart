@@ -1,22 +1,17 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/wallet_model.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning_pages/wallet_recharge_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
-const _kEarningsHeaderBlue = Color(0xFF1A5288);
-const _kEarningsGold = Color(0xFFC6934B);
-const _kStatValueBlue = Color(0xFF205D91);
-const _kChartBarInactive = Color(0xFFF3F0E8);
-const _kChartAmountMuted = Color(0xFFB8B0A4);
-const _kCreditGreen = Color(0xFF17A34A);
-const _kDebitRed = Color(0xFFE32626);
-
-enum _EarningsSection { earnings, transactions }
+enum _EarningsSection { wallet, earnings }
 
 class EarningPage extends ConsumerStatefulWidget {
   const EarningPage({super.key});
@@ -26,7 +21,7 @@ class EarningPage extends ConsumerStatefulWidget {
 }
 
 class _EarningPageState extends ConsumerState<EarningPage> {
-  _EarningsSection _section = _EarningsSection.earnings;
+  _EarningsSection _section = _EarningsSection.wallet;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +29,7 @@ class _EarningPageState extends ConsumerState<EarningPage> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: _kEarningsHeaderBlue,
+        statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
       ),
@@ -45,7 +40,7 @@ class _EarningPageState extends ConsumerState<EarningPage> {
           children: [
             walletAsync.when(
               data: (wallet) => _EarningsHeader(
-                balanceLabel: formatRupee(wallet.walletBalance),
+                balanceLabel: _formatBalance(wallet.walletBalance),
                 onAddBalance: () => WalletRechargeSheet.show(context),
               ),
               loading: () => const _EarningsHeader(
@@ -63,9 +58,9 @@ class _EarningPageState extends ConsumerState<EarningPage> {
             ),
             Expanded(
               child: walletAsync.when(
-                data: (wallet) => _section == _EarningsSection.earnings
-                    ? _EarningsTabContent(wallet: wallet)
-                    : _TransactionsList(transactions: wallet.transactions),
+                data: (wallet) => _section == _EarningsSection.wallet
+                    ? _WalletTabContent(wallet: wallet)
+                    : _EarningsTabContent(wallet: wallet),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => _WalletErrorState(
                   message: error.toString(),
@@ -80,6 +75,56 @@ class _EarningPageState extends ConsumerState<EarningPage> {
   }
 }
 
+String _formatBalance(double amount) => '₹ ${amount.toStringAsFixed(2)}';
+
+final _rupeeStatFormat = NumberFormat('#,##0', 'en_IN');
+
+String formatRupeeStat(double amount) {
+  if (amount == amount.truncateToDouble()) {
+    return '₹ ${_rupeeStatFormat.format(amount.toInt())}';
+  }
+  return '₹ ${NumberFormat('#,##0.00', 'en_IN').format(amount)}';
+}
+
+double _lastWeekEarnings(WalletDetailsModel wallet) {
+  final now = DateTime.now();
+  final thisWeekStart = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).subtract(Duration(days: now.weekday - 1));
+
+  var total = 0.0;
+  for (final tx in wallet.transactions) {
+    if (!tx.isCredit || tx.category != 'trip_earning') continue;
+    final date = tx.createdAt;
+    if (date == null || !date.isBefore(thisWeekStart)) continue;
+    final lastWeekStart = thisWeekStart.subtract(const Duration(days: 7));
+    if (!date.isBefore(lastWeekStart)) {
+      total += tx.amount;
+    }
+  }
+  return total;
+}
+
+String? _weekTrendLabel(double thisWeek, double lastWeek) {
+  if (thisWeek == 0 && lastWeek == 0) return null;
+  if (lastWeek == 0) return '↑ New earnings this week';
+  final pct = ((thisWeek - lastWeek) / lastWeek * 100).round();
+  if (pct > 0) return '↑ $pct% higher than last week';
+  if (pct < 0) return '↓ ${pct.abs()}% lower than last week';
+  return 'Same as last week';
+}
+
+List<WalletTransactionModel> _withdrawalTransactions(
+  WalletDetailsModel wallet,
+) {
+  return wallet.transactions.where((tx) {
+    final category = tx.category.toLowerCase();
+    return category.contains('withdraw') || category == 'bank_transfer';
+  }).toList();
+}
+
 class _EarningsHeader extends StatelessWidget {
   const _EarningsHeader({
     required this.balanceLabel,
@@ -92,85 +137,78 @@ class _EarningsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
+    final bottomRadius = context.rs(28);
 
     return Container(
-      color: _kEarningsHeaderBlue,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: kEarningsHeaderBlue,
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(bottomRadius),
+        ),
+      ),
       padding: EdgeInsets.fromLTRB(
         context.horizontalPadding,
-        topPadding + context.rs(12),
+        topPadding + context.rs(6),
         context.horizontalPadding,
         context.rs(20),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 70),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your total Balance',
-                      style: kCaption14R.copyWith(
-                        color: kWhite.withValues(alpha: 0.75),
-                        height: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      balanceLabel,
-                      style: kStyle(
-                        kSemiBold,
-                        kSize30,
-                        color: kWhite,
-                        height: 1.05,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Used to receive ride request',
-                      style: kCaption12R.copyWith(
-                        color: kWhite.withValues(alpha: 0.65),
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Your Wallet Balance',
+                  style: kEarningsBalanceLabelR.copyWith(
+                    color: kWhite.withValues(alpha: 0.72),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Material(
-                color: _kEarningsGold,
-                borderRadius: BorderRadius.circular(30),
-                child: InkWell(
-                  onTap: onAddBalance,
+                SizedBox(height: context.rs(2)),
+                Text(balanceLabel, style: kEarningsBalanceAmountB),
+                SizedBox(height: context.rs(12)),
+                Material(
+                  color: kEarningsGold,
                   borderRadius: BorderRadius.circular(30),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add, color: kWhite, size: 16),
-                        const SizedBox(width: 2),
-                        Text(
-                          'Add Balance',
-                          style: kStyle(
-                            kMedium,
-                            kSize12,
-                            color: kWhite,
-                            height: 1.1,
+                  child: InkWell(
+                    onTap: onAddBalance,
+                    borderRadius: BorderRadius.circular(30),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.rs(14),
+                        vertical: context.rs(9),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.add, color: kWhite, size: 15),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Add Balance',
+                            style: kStyle(
+                              kMedium,
+                              kSize12,
+                              color: kWhite,
+                              height: 1.1,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          SizedBox(width: context.rs(4)),
+          Image.asset(
+            'assets/pngs/earnigs_image.png',
+            width: context.rs(130),
+            height: context.rs(130),
+            fit: BoxFit.contain,
           ),
         ],
       ),
@@ -190,28 +228,42 @@ class _EarningsSegmentedTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      padding: EdgeInsets.fromLTRB(
+        context.horizontalPadding,
+        context.rs(12),
+        context.horizontalPadding,
+        0,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: kWhite,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: kCardBorder),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: kEarningsTabContainerBorder),
+          boxShadow: const [
+            BoxShadow(
+              color: kEarningsTabShadow,
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         padding: const EdgeInsets.all(4),
         child: Row(
           children: [
             Expanded(
               child: _SegmentTab(
-                label: 'Earnings',
-                isSelected: selected == _EarningsSection.earnings,
-                onTap: () => onChanged(_EarningsSection.earnings),
+                label: 'Wallet',
+                icon: _SegmentIcon.wallet,
+                isSelected: selected == _EarningsSection.wallet,
+                onTap: () => onChanged(_EarningsSection.wallet),
               ),
             ),
             Expanded(
               child: _SegmentTab(
-                label: 'Transactions',
-                isSelected: selected == _EarningsSection.transactions,
-                onTap: () => onChanged(_EarningsSection.transactions),
+                label: 'Earnings',
+                icon: _SegmentIcon.earnings,
+                isSelected: selected == _EarningsSection.earnings,
+                onTap: () => onChanged(_EarningsSection.earnings),
               ),
             ),
           ],
@@ -221,14 +273,18 @@ class _EarningsSegmentedTabs extends StatelessWidget {
   }
 }
 
+enum _SegmentIcon { wallet, earnings }
+
 class _SegmentTab extends StatelessWidget {
   const _SegmentTab({
     required this.label,
+    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
 
   final String label;
+  final _SegmentIcon icon;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -238,43 +294,62 @@ class _SegmentTab extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        padding: EdgeInsets.symmetric(vertical: context.rs(9)),
         decoration: BoxDecoration(
-          color: isSelected ? _kEarningsGold : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? kEarningsTabSelectedBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: kEarningsTabShadow,
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: kStyle(
-            isSelected ? kSemiBold : kMedium,
-            kSize14,
-            color: isSelected ? kWhite : kTextColor,
-            height: 1.1,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon == _SegmentIcon.wallet)
+              SvgPicture.asset(
+                'assets/svgs/wallet_icon.svg',
+                width: context.rs(17),
+                height: context.rs(15),
+                colorFilter: ColorFilter.mode(
+                  isSelected ? kEarningsHeaderBlue : kSecondaryTextColor,
+                  BlendMode.srcIn,
+                ),
+              )
+            else
+              Icon(
+                Icons.bar_chart_rounded,
+                size: context.rs(17),
+                color: isSelected ? kEarningsHeaderBlue : kSecondaryTextColor,
+              ),
+            SizedBox(width: context.rs(5)),
+            Text(
+              label,
+              style: isSelected ? kEarningsTabActiveM : kEarningsTabInactiveM,
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _EarningsTabContent extends StatelessWidget {
-  const _EarningsTabContent({required this.wallet});
+class _WalletTabContent extends StatelessWidget {
+  const _WalletTabContent({required this.wallet});
 
   final WalletDetailsModel wallet;
 
-  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
   @override
   Widget build(BuildContext context) {
-    final weekly = wallet.weeklyEarningsByWeekday();
-    final maxWeekly = weekly.values.fold<double>(0, (a, b) => a > b ? a : b);
-    final todayIndex = DateTime.now().weekday - 1;
-
     return ListView(
       padding: EdgeInsets.fromLTRB(
         context.horizontalPadding,
-        context.rs(14),
+        context.rs(12),
         context.horizontalPadding,
         context.scaffoldBottomPadding,
       ),
@@ -283,154 +358,304 @@ class _EarningsTabContent extends StatelessWidget {
           children: [
             Expanded(
               child: _StatSummaryCard(
-                value: formatRupeeCompact(wallet.totalTripEarnings),
-                label: 'Total Earnings',
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _StatSummaryCard(
-                value: '${wallet.completedTripCount}',
-                label: 'Total Trips',
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _StatSummaryCard(
-                value: formatRupeeCompact(wallet.summary.totalCredits),
+                value: formatRupeeStat(wallet.summary.totalCredits),
                 label: 'Total Credits',
+                iconAsset: 'assets/pngs/totalcredits.png',
+                backgroundColor: kEarningsCardPurpleBg,
+                valueColor: kEarningsStatValueBlue,
+              ),
+            ),
+            SizedBox(width: context.rs(8)),
+            Expanded(
+              child: _StatSummaryCard(
+                value: formatRupeeStat(wallet.summary.totalDebits),
+                label: 'Total Debits',
+                iconAsset: 'assets/pngs/totaldebits.png',
+                backgroundColor: kEarningsCardBlueBg,
+                valueColor: kEarningsStatValueBlue,
+              ),
+            ),
+            SizedBox(width: context.rs(8)),
+            Expanded(
+              child: _StatSummaryCard(
+                value: formatRupeeStat(wallet.walletBalance),
+                label: 'Current Balance',
+                iconAsset: 'assets/pngs/currentbalance.png',
+                backgroundColor: kEarningsCardGreenBg,
+                valueColor: kEarningsStatValueBlue,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-          decoration: BoxDecoration(
-            color: kWhite,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: kCardBorder),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(
-                        style: kCaption14R.copyWith(
-                          color: kTextColor,
-                          height: 1.3,
-                        ),
-                        children: [
-                          const TextSpan(text: 'This week - '),
-                          TextSpan(
-                            text:
-                                '${formatRupee(wallet.thisWeekEarnings)} total',
-                            style: kStyle(
-                              kSemiBold,
-                              kSize14,
-                              color: kTextColor,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: kSearchFieldBg,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: kCardBorder),
-                    ),
-                    child: Text(
-                      'This week',
-                      style: kCaption13R.copyWith(color: kTextColor),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              SizedBox(
-                height: 188,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: List.generate(7, (index) {
-                    final amount = weekly[index] ?? 0;
-                    final heightFactor = maxWeekly > 0
-                        ? (amount / maxWeekly).clamp(0.08, 1.0)
-                        : 0.08;
-
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: index == 0 ? 0 : 3,
-                          right: index == 6 ? 0 : 3,
-                        ),
-                        child: _WeeklyBar(
-                          heightFactor: heightFactor,
-                          dayLabel: _dayLabels[index],
-                          isHighlighted: index == todayIndex,
-                          amountLabel: amount > 0
-                              ? formatRupeeCompact(amount)
-                              : '₹ 0',
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-            ],
-          ),
+        SizedBox(height: context.rs(18)),
+        _SectionHeader(
+          title: 'Recent Transactions',
+          onViewAll: wallet.transactions.isEmpty ? null : () {},
         ),
+        SizedBox(height: context.rs(8)),
+        _TransactionsCard(transactions: wallet.transactions),
+      ],
+    );
+  }
+}
+
+class _EarningsTabContent extends ConsumerWidget {
+  const _EarningsTabContent({required this.wallet});
+
+  final WalletDetailsModel wallet;
+
+  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final rating = userAsync.maybeWhen(
+      data: (user) => displayRating(user),
+      orElse: () => '—',
+    );
+    final completedTrips = userAsync.maybeWhen(
+      data: (user) => '${user?.totalTrips ?? wallet.completedTripCount}',
+      orElse: () => '${wallet.completedTripCount}',
+    );
+
+    final weekly = wallet.weeklyEarningsByWeekday();
+    final maxWeekly = weekly.values.fold<double>(0, (a, b) => a > b ? a : b);
+    final todayIndex = DateTime.now().weekday - 1;
+    final thisWeek = wallet.thisWeekEarnings;
+    final lastWeek = _lastWeekEarnings(wallet);
+    final trendLabel = _weekTrendLabel(thisWeek, lastWeek);
+    final withdrawals = _withdrawalTransactions(wallet);
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        context.horizontalPadding,
+        context.rs(12),
+        context.horizontalPadding,
+        context.scaffoldBottomPadding,
+      ),
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _StatSummaryCard(
+                value: formatRupeeStat(wallet.totalTripEarnings),
+                label: 'Total Earned',
+                iconAsset: 'assets/pngs/totalearnerd.png',
+                backgroundColor: kEarningsCardPurpleBg,
+                valueColor: kEarningsCardPurpleValue,
+              ),
+            ),
+            SizedBox(width: context.rs(8)),
+            Expanded(
+              child: _StatSummaryCard(
+                value: rating,
+                label: 'Rating',
+                iconAsset: 'assets/pngs/rating.png',
+                backgroundColor: kEarningsCardYellowBg,
+                valueColor: kEarningsCardOrangeValue,
+              ),
+            ),
+            SizedBox(width: context.rs(8)),
+            Expanded(
+              child: _StatSummaryCard(
+                value: completedTrips,
+                label: 'Completed Trips',
+                iconAsset: 'assets/pngs/totaltrips.png',
+                backgroundColor: kEarningsCardGreenBg,
+                valueColor: kEarningsCardGreenValue,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: context.rs(12)),
+        _WeeklyEarningsChart(
+          thisWeekTotal: thisWeek,
+          trendLabel: trendLabel,
+          weekly: weekly,
+          maxWeekly: maxWeekly,
+          todayIndex: todayIndex,
+          dayLabels: _dayLabels,
+        ),
+        SizedBox(height: context.rs(12)),
+        _AvailableEarningsCard(amount: wallet.totalTripEarnings),
+        SizedBox(height: context.rs(18)),
+        _SectionHeader(
+          title: 'Recent Withdrawals',
+          onViewAll: withdrawals.isEmpty ? null : () {},
+        ),
+        SizedBox(height: context.rs(8)),
+        _WithdrawalsCard(withdrawals: withdrawals),
       ],
     );
   }
 }
 
 class _StatSummaryCard extends StatelessWidget {
-  const _StatSummaryCard({required this.value, required this.label});
+  const _StatSummaryCard({
+    required this.value,
+    required this.label,
+    required this.iconAsset,
+    required this.backgroundColor,
+    required this.valueColor,
+  });
 
   final String value;
   final String label;
+  final String iconAsset;
+  final Color backgroundColor;
+  final Color valueColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(8),
+        vertical: context.rs(14),
+      ),
       decoration: BoxDecoration(
-        color: kWhite,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _kEarningsGold.withValues(alpha: 0.55)),
+        border: Border.all(color: kEarningsStatCardBorder),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Image.asset(
+            iconAsset,
+            width: context.rs(40),
+            height: context.rs(40),
+            fit: BoxFit.contain,
+          ),
+          SizedBox(height: context.rs(8)),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: kStyle(
-                kSemiBold,
-                kSize17,
-                color: _kStatValueBlue,
-                height: 1.1,
-              ),
+              style: kEarningsStatValueSB.copyWith(color: valueColor),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: context.rs(4)),
           Text(
             label,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: kCaption11R.copyWith(color: kTextColor, height: 1.15),
+            style: kCaption11R.copyWith(
+              color: kSecondaryTextColor,
+              height: 1.15,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeeklyEarningsChart extends StatelessWidget {
+  const _WeeklyEarningsChart({
+    required this.thisWeekTotal,
+    required this.trendLabel,
+    required this.weekly,
+    required this.maxWeekly,
+    required this.todayIndex,
+    required this.dayLabels,
+  });
+
+  final double thisWeekTotal;
+  final String? trendLabel;
+  final Map<int, double> weekly;
+  final double maxWeekly;
+  final int todayIndex;
+  final List<String> dayLabels;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        context.rs(16),
+        context.rs(16),
+        context.rs(16),
+        context.rs(12),
+      ),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kCardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  'This Week Earnings',
+                  style: kEarningsSectionTitleSB,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.rs(10),
+                  vertical: context.rs(6),
+                ),
+                decoration: BoxDecoration(
+                  color: kSearchFieldBg,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: kCardBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'This week',
+                      style: kCaption13R.copyWith(color: kTextColor),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: context.rs(16),
+                      color: kTextColor,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: context.rs(10)),
+          Text(formatRupeeStat(thisWeekTotal), style: kEarningsChartTotalSB),
+          if (trendLabel != null) ...[
+            SizedBox(height: context.rs(4)),
+            Text(trendLabel!, style: kEarningsTrendR),
+          ],
+          SizedBox(height: context.rs(16)),
+          SizedBox(
+            height: context.rs(188),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(7, (index) {
+                final amount = weekly[index] ?? 0;
+                final heightFactor = maxWeekly > 0
+                    ? (amount / maxWeekly).clamp(0.08, 1.0)
+                    : 0.08;
+
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: index == 0 ? 0 : 3,
+                      right: index == 6 ? 0 : 3,
+                    ),
+                    child: _WeeklyBar(
+                      heightFactor: heightFactor,
+                      dayLabel: dayLabels[index],
+                      isHighlighted: index == todayIndex,
+                      amountLabel: amount > 0
+                          ? formatRupeeCompact(amount)
+                          : '₹ 0',
+                    ),
+                  ),
+                );
+              }),
+            ),
           ),
         ],
       ),
@@ -451,14 +676,12 @@ class _WeeklyBar extends StatelessWidget {
   final bool isHighlighted;
   final String amountLabel;
 
-  static const _maxBarHeight = 132.0;
-  static const _minBarHeight = 44.0;
-
   @override
   Widget build(BuildContext context) {
+    final maxBarHeight = context.rs(132);
+    final minBarHeight = context.rs(44);
     final barHeight =
-        _minBarHeight +
-        (_maxBarHeight - _minBarHeight) * heightFactor.clamp(0.0, 1.0);
+        minBarHeight + (maxBarHeight - minBarHeight) * heightFactor.clamp(0, 1);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -467,9 +690,11 @@ class _WeeklyBar extends StatelessWidget {
           height: barHeight,
           width: double.infinity,
           alignment: Alignment.bottomCenter,
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: EdgeInsets.only(bottom: context.rs(8)),
           decoration: BoxDecoration(
-            color: isHighlighted ? _kEarningsGold : _kChartBarInactive,
+            color: isHighlighted
+                ? kEarningsChartBarActive
+                : kEarningsChartBarInactive,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: FittedBox(
@@ -480,15 +705,13 @@ class _WeeklyBar extends StatelessWidget {
               style: kStyle(
                 kRegular,
                 kSize10,
-                color: isHighlighted
-                    ? kWhite.withValues(alpha: 0.9)
-                    : _kChartAmountMuted,
+                color: isHighlighted ? kWhite : kEarningsChartAmountMuted,
                 height: 1,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: context.rs(8)),
         Text(
           dayLabel,
           style: kCaption13R.copyWith(color: kTextColor, fontWeight: kMedium),
@@ -498,34 +721,207 @@ class _WeeklyBar extends StatelessWidget {
   }
 }
 
-class _TransactionsList extends StatelessWidget {
-  const _TransactionsList({required this.transactions});
+class _AvailableEarningsCard extends StatelessWidget {
+  const _AvailableEarningsCard({required this.amount});
+
+  final double amount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(context.rs(14)),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kCardBorder),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Available Earnings', style: kEarningsSectionTitleSB),
+                SizedBox(height: context.rs(4)),
+                Text(
+                  formatRupeeStat(amount),
+                  style: kStyle(
+                    kSemiBold,
+                    kSize20,
+                    color: kEarningsStatValueBlue,
+                    height: 1.1,
+                  ),
+                ),
+                SizedBox(height: context.rs(2)),
+                Text(
+                  'Withdraw anytime to your bank',
+                  style: kCaption12R.copyWith(height: 1.2),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: context.rs(8)),
+          Material(
+            color: kEarningsGold,
+            borderRadius: BorderRadius.circular(24),
+            child: InkWell(
+              onTap: () {},
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.rs(12),
+                  vertical: context.rs(10),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.account_balance_rounded,
+                        color: kWhite,
+                        size: 16,
+                      ),
+                      SizedBox(width: context.rs(4)),
+                      Text(
+                        'Withdraw Earnings',
+                        style: kStyle(
+                          kMedium,
+                          kSize12,
+                          color: kWhite,
+                          height: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.onViewAll});
+
+  final String title;
+  final VoidCallback? onViewAll;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(title, style: kEarningsSectionTitleSB)),
+        if (onViewAll != null)
+          GestureDetector(
+            onTap: onViewAll,
+            behavior: HitTestBehavior.opaque,
+            child: Text('View All', style: kEarningsViewAllM),
+          ),
+      ],
+    );
+  }
+}
+
+class _TransactionsCard extends StatelessWidget {
+  const _TransactionsCard({required this.transactions});
 
   final List<WalletTransactionModel> transactions;
 
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
-      return Center(
-        child: Text(
-          'No transactions yet',
-          style: kCaption14R.copyWith(color: kMutedText),
-        ),
-      );
+      return _EmptyListCard(message: 'No transactions yet');
     }
 
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(
-        context.horizontalPadding,
-        context.rs(14),
-        context.horizontalPadding,
-        context.scaffoldBottomPadding,
+    return Container(
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kCardBorder),
       ),
-      itemCount: transactions.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        return _TransactionTile(transaction: transactions[index]);
-      },
+      child: Column(
+        children: List.generate(transactions.length, (index) {
+          final tx = transactions[index];
+          return Column(
+            children: [
+              _TransactionTile(transaction: tx),
+              if (index < transactions.length - 1)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: kCardBorder,
+                  indent: context.rs(70),
+                  endIndent: context.rs(14),
+                ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _WithdrawalsCard extends StatelessWidget {
+  const _WithdrawalsCard({required this.withdrawals});
+
+  final List<WalletTransactionModel> withdrawals;
+
+  @override
+  Widget build(BuildContext context) {
+    if (withdrawals.isEmpty) {
+      return _EmptyListCard(message: 'No withdrawals yet');
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kCardBorder),
+      ),
+      child: Column(
+        children: List.generate(withdrawals.length, (index) {
+          final tx = withdrawals[index];
+          return Column(
+            children: [
+              _WithdrawalTile(transaction: tx),
+              if (index < withdrawals.length - 1)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: kCardBorder,
+                  indent: context.rs(70),
+                  endIndent: context.rs(14),
+                ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _EmptyListCard extends StatelessWidget {
+  const _EmptyListCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: context.rs(28)),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kCardBorder),
+      ),
+      alignment: Alignment.center,
+      child: Text(message, style: kCaption14R.copyWith(color: kMutedText)),
     );
   }
 }
@@ -537,55 +933,172 @@ class _TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = transaction.isCredit ? _kCreditGreen : _kDebitRed;
+    final isCredit = transaction.isCredit;
+    final color = isCredit ? kActiveGreen : kSosRed;
+    final iconBg = isCredit
+        ? kEarningsTransactionIconBg
+        : kEarningsPlatformFeeIconBg;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: kWhite,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: kCardBorder),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(14),
+        vertical: context.rs(11),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
+            height: context.rs(44),
+            width: context.rs(44),
+            decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
             child: Icon(
-              transaction.isCredit
-                  ? Icons.arrow_downward_rounded
-                  : Icons.arrow_upward_rounded,
+              isCredit
+                  ? Icons.account_balance_wallet_outlined
+                  : Icons.shield_outlined,
               color: color,
-              size: 20,
+              size: context.rs(21),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: context.rs(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   transaction.description,
-                  style: kCaption14B,
-                  maxLines: 2,
+                  style: kCaption14B.copyWith(height: 1.2),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: context.rs(3)),
                 Text(
-                  '${transaction.categoryLabel} • ${transaction.displayDate}',
-                  style: kCaption12R.copyWith(color: kMutedText),
+                  transaction.displayDate,
+                  style: kCaption12R.copyWith(
+                    color: kSecondaryTextColor,
+                    height: 1.2,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            transaction.displayAmount,
-            style: kStyle(kSemiBold, kSize14, color: color),
+          SizedBox(width: context.rs(10)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                transaction.displayAmount,
+                style: kStyle(kSemiBold, kSize14, color: color, height: 1.2),
+              ),
+              SizedBox(height: context.rs(3)),
+              Text(
+                transaction.displayDate,
+                style: kCaption12R.copyWith(
+                  color: kSecondaryTextColor,
+                  height: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WithdrawalTile extends StatelessWidget {
+  const _WithdrawalTile({required this.transaction});
+
+  final WalletTransactionModel transaction;
+
+  String get _statusLabel {
+    final status = transaction.status.toLowerCase();
+    if (status == 'failed') return 'Failed';
+    return 'Completed';
+  }
+
+  Color get _statusColor {
+    final status = transaction.status.toLowerCase();
+    if (status == 'failed') return kSosRed;
+    return kActiveGreen;
+  }
+
+  String get _displayDate {
+    final date = transaction.createdAt;
+    if (date == null) return '';
+    return DateFormat('MMM d, yyyy').format(date);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final amount = transaction.amount;
+    final amountLabel = amount == amount.truncateToDouble()
+        ? '₹ ${amount.toInt()}'
+        : '₹ ${amount.toStringAsFixed(2)}';
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(14),
+        vertical: context.rs(11),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: context.rs(44),
+            width: context.rs(44),
+            decoration: const BoxDecoration(
+              color: kEarningsWithdrawIconBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.account_balance_rounded,
+              color: kActiveGreen,
+              size: context.rs(21),
+            ),
+          ),
+          SizedBox(width: context.rs(12)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(amountLabel, style: kCaption14B.copyWith(height: 1.2)),
+                SizedBox(height: context.rs(3)),
+                Text(
+                  transaction.description.isNotEmpty
+                      ? transaction.description
+                      : transaction.categoryLabel,
+                  style: kCaption12R.copyWith(
+                    color: kSecondaryTextColor,
+                    height: 1.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: context.rs(10)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                _statusLabel,
+                style: kStyle(
+                  kSemiBold,
+                  kSize13,
+                  color: _statusColor,
+                  height: 1.2,
+                ),
+              ),
+              SizedBox(height: context.rs(3)),
+              Text(
+                _displayDate,
+                style: kCaption12R.copyWith(
+                  color: kSecondaryTextColor,
+                  height: 1.2,
+                ),
+              ),
+            ],
           ),
         ],
       ),

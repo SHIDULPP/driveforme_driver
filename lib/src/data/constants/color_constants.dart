@@ -71,6 +71,31 @@ const Color kTripCloseBtnBg = Color(0xFFE2EAED);
 const Color kTripSecureBannerBg = Color(0xFFE6F3EA);
 const Color kTripDarkText = Color(0xFF222222);
 const Color kTripStayCounter = Color(0xFF0C242A);
+const Color kTripRequestStatsBg = Color(0xFFEDF3F8);
+const Color kTripRequestAvatarRing = Color(0xFFD4E3EF);
+
+// ── Earnings / Wallet page ────────────────────────────────────────────────────
+
+const Color kEarningsHeaderBlue = Color(0xFF1A5288);
+const Color kEarningsGold = Color(0xFFC6934B);
+const Color kEarningsStatValueBlue = Color(0xFF205D91);
+const Color kEarningsChartBarInactive = Color(0xFFE8EFF8);
+const Color kEarningsChartBarActive = Color(0xFF1A5288);
+const Color kEarningsChartAmountMuted = Color(0xFF8BA4BE);
+const Color kEarningsTabSelectedBg = Color(0xFFDFEAF5);
+const Color kEarningsTabContainerBorder = Color(0xFFE4E8EE);
+const Color kEarningsTabShadow = Color(0x0F000000);
+const Color kEarningsStatCardBorder = Color(0xFFE6E8EC);
+const Color kEarningsCardPurpleBg = Color(0xFFF3EEFA);
+const Color kEarningsCardPurpleValue = Color(0xFF6C5FE6);
+const Color kEarningsCardBlueBg = Color(0xFFE8F0F8);
+const Color kEarningsCardGreenBg = Color(0xFFE8F5E9);
+const Color kEarningsCardGreenValue = Color(0xFF17A34A);
+const Color kEarningsCardYellowBg = Color(0xFFFFF8E8);
+const Color kEarningsCardOrangeValue = Color(0xFFE68C3A);
+const Color kEarningsWithdrawIconBg = Color(0xFFE4F3E7);
+const Color kEarningsTransactionIconBg = Color(0xFFE4F3E7);
+const Color kEarningsPlatformFeeIconBg = Color(0xFFFCE8E8);
 
 // ── SOS emergency ─────────────────────────────────────────────────────────────
 
