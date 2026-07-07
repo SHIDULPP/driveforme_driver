@@ -1,3 +1,10 @@
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/add_bank_account_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/bank_added_success_page.dart';
+import 'package:driveforme_driver/src/data/models/bank_account_ui_model.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/verify_bank_account_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_amount_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_earnings_page.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdrawal_success_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/chat/chat_screen.dart';
 import 'package:driveforme_driver/src/interfaces/components/location_permission_gate.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/nav_bar.dart';
@@ -377,6 +384,51 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       page = RaiseTicketPage(tripId: tripId);
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'withdrawEarnings':
+      page = const WithdrawEarningsPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'withdrawAmount':
+      page = const WithdrawAmountPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'addBankAccount':
+      page = const AddBankAccountPage();
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'verifyBankAccount':
+      final verifyArgs = settings?.arguments as Map?;
+      page = VerifyBankAccountPage(
+        account: verifyArgs?['account'] as BankAccountUiModel,
+      );
+      transitionToUse = TransitionType.slideFromRight;
+      transitionDuration = const Duration(milliseconds: 400);
+      break;
+
+    case 'bankAddedSuccess':
+      final successArgs = settings?.arguments as Map?;
+      page = BankAddedSuccessPage(
+        account: successArgs?['account'] as BankAccountUiModel,
+      );
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 350);
+      break;
+
+    case 'withdrawalSuccess':
+      final withdrawalArgs = settings?.arguments as Map?;
+      page = WithdrawalSuccessPage(
+        amount: (withdrawalArgs?['amount'] as num?)?.toDouble() ?? 0,
+      );
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 350);
       break;
 
     default:

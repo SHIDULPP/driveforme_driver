@@ -97,6 +97,17 @@ const Color kEarningsWithdrawIconBg = Color(0xFFE4F3E7);
 const Color kEarningsTransactionIconBg = Color(0xFFE4F3E7);
 const Color kEarningsPlatformFeeIconBg = Color(0xFFFCE8E8);
 
+// ── Bank & Withdraw flow ──────────────────────────────────────────────────────
+
+const Color kWithdrawCardBg = Color(0xFFFEFAF2);
+const Color kWithdrawSecureBadgeBg = Color(0xFFE4F3E7);
+const Color kWithdrawInputBorder = Color(0xFF04599C);
+const Color kWithdrawBankCardBg = Color(0xFFFEFAF2);
+const Color kWithdrawSelectedBankBorder = Color(0xFFC6934B);
+const Color kWithdrawSelectedBankBg = Color(0xFFFFF8E8);
+const Color kWithdrawDashedBorder = Color(0xFF04599C);
+const Color kWithdrawFieldBg = Color(0xFFF4F5F9);
+
 // ── SOS emergency ─────────────────────────────────────────────────────────────
 
 const Color kSosRed = Color(0xFFE32626);

@@ -3,6 +3,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/wallet_model.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning_pages/wallet_recharge_sheet.dart';
 import 'package:flutter/material.dart';
@@ -766,7 +767,7 @@ class _AvailableEarningsCard extends StatelessWidget {
             color: kEarningsGold,
             borderRadius: BorderRadius.circular(24),
             child: InkWell(
-              onTap: () {},
+              onTap: () => NavigationService().pushNamed('withdrawEarnings'),
               borderRadius: BorderRadius.circular(24),
               child: Padding(
                 padding: EdgeInsets.symmetric(
