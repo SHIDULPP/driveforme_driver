@@ -1,14 +1,14 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/withdrawal_ui_model.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/available_earnings_card.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
-import 'package:driveforme_driver/src/data/models/withdrawal_ui_model.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdrawal_list_tile.dart';
-import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdrawal_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,15 +24,18 @@ class _WithdrawEarningsPageState extends ConsumerState<WithdrawEarningsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncAvailableEarnings());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(withdrawFlowProvider.notifier).loadSavedBankAccount();
+      _syncFromWallet();
+    });
   }
 
-  void _syncAvailableEarnings() {
+  void _syncFromWallet() {
     final wallet = ref.read(walletProvider);
     wallet.whenData((details) {
       ref
           .read(withdrawFlowProvider.notifier)
-          .setAvailableEarnings(details.totalTripEarnings);
+          .setAvailableBalance(details.walletBalance);
     });
   }
 
@@ -42,11 +45,16 @@ class _WithdrawEarningsPageState extends ConsumerState<WithdrawEarningsPage> {
       next.whenData((details) {
         ref
             .read(withdrawFlowProvider.notifier)
-            .setAvailableEarnings(details.totalTripEarnings);
+            .setAvailableBalance(details.walletBalance);
       });
     });
 
     final flow = ref.watch(withdrawFlowProvider);
+    final walletAsync = ref.watch(walletProvider);
+    final withdrawals = walletAsync.maybeWhen(
+      data: (wallet) => withdrawalTransactionsFromWallet(wallet),
+      orElse: () => const <WithdrawalUiModel>[],
+    );
     final hasBank = flow.hasBankAccount;
 
     return WithdrawScaffold(
@@ -60,10 +68,10 @@ class _WithdrawEarningsPageState extends ConsumerState<WithdrawEarningsPage> {
           context.rs(24),
         ),
         children: [
-          AvailableEarningsCard(amount: flow.availableEarnings),
+          AvailableEarningsCard(amount: flow.availableBalance),
           SizedBox(height: context.rs(14)),
           if (hasBank) ...[
-            _WithdrawalsSection(withdrawals: flow.withdrawals),
+            _WithdrawalsSection(withdrawals: withdrawals),
           ] else ...[
             const NoBankEmptyState(),
           ],

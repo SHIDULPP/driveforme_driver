@@ -1,3 +1,4 @@
+import 'package:driveforme_driver/src/data/apis/wallet_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
@@ -6,15 +7,16 @@ import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/data/models/bank_account_ui_model.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddBankAccountPage extends StatefulWidget {
+class AddBankAccountPage extends ConsumerStatefulWidget {
   const AddBankAccountPage({super.key});
 
   @override
-  State<AddBankAccountPage> createState() => _AddBankAccountPageState();
+  ConsumerState<AddBankAccountPage> createState() => _AddBankAccountPageState();
 }
 
-class _AddBankAccountPageState extends State<AddBankAccountPage> {
+class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
   final _holderController = TextEditingController();
   final _bankController = TextEditingController();
   final _branchController = TextEditingController();
@@ -24,6 +26,8 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
 
   bool _obscureAccount = true;
   bool _obscureConfirm = true;
+
+  List<String> _cachedBanks = [];
 
   @override
   void dispose() {
@@ -48,7 +52,8 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
       return;
     }
 
-    if (_accountController.text.trim() != _confirmAccountController.text.trim()) {
+    if (_accountController.text.trim() !=
+        _confirmAccountController.text.trim()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Account numbers do not match.')),
       );
@@ -56,7 +61,7 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
     }
 
     final account = BankAccountUiModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: BankAccountUiModel.primaryId,
       bankName: _bankController.text.trim(),
       accountNumber: _accountController.text.trim(),
       holderName: _holderController.text.trim(),
@@ -68,6 +73,87 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
       'verifyBankAccount',
       arguments: {'account': account},
     );
+  }
+
+  Future<void> _selectBank() async {
+    if (_cachedBanks.isEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+      final res = await ref.read(walletApiProvider).getAvailableBanks();
+      if (mounted) {
+        Navigator.pop(context); // Dismiss loading dialog
+      }
+
+      if (res.success && res.data != null) {
+        _cachedBanks = res.data!;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(res.message ?? 'Failed to load banks.')),
+          );
+        }
+        return;
+      }
+    }
+
+    if (!mounted) return;
+    final selectedBank = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _SearchableSelectorDialog<String>(
+        title: 'Select Bank Name',
+        hintText: 'Search bank...',
+        initialItems: _cachedBanks,
+        itemLabel: (item) => item,
+      ),
+    );
+
+    if (selectedBank != null && selectedBank != _bankController.text) {
+      setState(() {
+        _bankController.text = selectedBank;
+        _branchController.clear();
+        _ifscController.clear();
+      });
+    }
+  }
+
+  Future<void> _selectBranch() async {
+    final selectedBank = _bankController.text;
+    if (selectedBank.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select your bank first.')),
+      );
+      return;
+    }
+
+    final selectedBranchMap = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _SearchableSelectorDialog<Map<String, dynamic>>(
+        title: 'Select Branch Name',
+        hintText: 'Search branch by name or location...',
+        itemLabel: (item) => item['branchName']?.toString() ?? '',
+        onSearch: (query) async {
+          final res = await ref
+              .read(walletApiProvider)
+              .getBranchesForBank(bankName: selectedBank, search: query);
+          return res.data ?? [];
+        },
+      ),
+    );
+
+    if (selectedBranchMap != null) {
+      setState(() {
+        _branchController.text =
+            selectedBranchMap['branchName']?.toString() ?? '';
+        _ifscController.text = selectedBranchMap['ifsc']?.toString() ?? '';
+      });
+    }
   }
 
   @override
@@ -115,12 +201,7 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
             hint: 'Select your bank',
             readOnly: true,
             suffix: const Icon(Icons.keyboard_arrow_down_rounded),
-            onTap: () => _pickOption(_bankController, const [
-              'HDFC Bank',
-              'SBI',
-              'ICICI Bank',
-              'Axis Bank',
-            ]),
+            onTap: _selectBank,
           ),
           _BankFormField(
             label: 'Branch Name',
@@ -128,11 +209,7 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
             hint: 'Select your branch',
             readOnly: true,
             suffix: const Icon(Icons.keyboard_arrow_down_rounded),
-            onTap: () => _pickOption(_branchController, const [
-              'MG Road Branch',
-              'Kochi Main Branch',
-              'Ernakulam Branch',
-            ]),
+            onTap: _selectBranch,
           ),
           _BankFormField(
             label: 'Account Number',
@@ -140,9 +217,12 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
             hint: 'Enter Account Number',
             obscure: _obscureAccount,
             suffix: IconButton(
-              onPressed: () => setState(() => _obscureAccount = !_obscureAccount),
+              onPressed: () =>
+                  setState(() => _obscureAccount = !_obscureAccount),
               icon: Icon(
-                _obscureAccount ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscureAccount
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: kMutedText,
               ),
             ),
@@ -153,9 +233,12 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
             hint: 'Re-enter account number',
             obscure: _obscureConfirm,
             suffix: IconButton(
-              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
               icon: Icon(
-                _obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscureConfirm
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: kMutedText,
               ),
             ),
@@ -177,35 +260,188 @@ class _AddBankAccountPageState extends State<AddBankAccountPage> {
         child: primaryButton(
           label: 'Verify Account',
           buttonColor: kBrandBlue,
-          icon: const Icon(Icons.verified_user_outlined, color: kWhite, size: 18),
+          icon: const Icon(
+            Icons.verified_user_outlined,
+            color: kWhite,
+            size: 18,
+          ),
           onPressed: _verifyAccount,
         ),
       ),
     );
   }
+}
 
-  Future<void> _pickOption(TextEditingController controller, List<String> options) async {
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: options
-                .map(
-                  (option) => ListTile(
-                    title: Text(option),
-                    onTap: () => Navigator.pop(context, option),
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      },
-    );
-    if (selected != null) {
-      controller.text = selected;
+class _SearchableSelectorDialog<T> extends StatefulWidget {
+  final String title;
+  final String hintText;
+  final List<T>? initialItems;
+  final Future<List<T>> Function(String)? onSearch;
+  final String Function(T) itemLabel;
+
+  const _SearchableSelectorDialog({
+    required this.title,
+    required this.hintText,
+    this.initialItems,
+    this.onSearch,
+    required this.itemLabel,
+  });
+
+  @override
+  State<_SearchableSelectorDialog<T>> createState() =>
+      _SearchableSelectorDialogState<T>();
+}
+
+class _SearchableSelectorDialogState<T>
+    extends State<_SearchableSelectorDialog<T>> {
+  final _searchController = TextEditingController();
+  List<T> _filteredItems = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialItems != null) {
+      _filteredItems = List.from(widget.initialItems!);
+    } else {
+      _performSearch('');
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (widget.onSearch != null) {
+      setState(() => _isLoading = true);
+      try {
+        final results = await widget.onSearch!(query);
+        if (mounted) {
+          setState(() {
+            _filteredItems = results;
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    } else if (widget.initialItems != null) {
+      setState(() {
+        _filteredItems = widget.initialItems!
+            .where(
+              (item) => widget
+                  .itemLabel(item)
+                  .toLowerCase()
+                  .contains(query.toLowerCase()),
+            )
+            .toList();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          SizedBox(height: context.rs(12)),
+          Container(
+            width: context.rs(40),
+            height: context.rs(5),
+            decoration: BoxDecoration(
+              color: kCardBorder,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          SizedBox(height: context.rs(16)),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.horizontalPadding,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.title,
+                  style: kStyle(kSemiBold, kSize18, color: kTextColor),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close_rounded, color: kMutedText),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: context.rs(12)),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.horizontalPadding,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: kWithdrawFieldBg,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: kCardBorder),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: context.rs(14)),
+              child: TextField(
+                controller: _searchController,
+                style: kStyle(kRegular, kSize14, color: kTextColor),
+                onChanged: _performSearch,
+                decoration: InputDecoration(
+                  hintText: widget.hintText,
+                  hintStyle: kCaption14R.copyWith(color: kMutedText),
+                  border: InputBorder.none,
+                  icon: const Icon(Icons.search_rounded, color: kMutedText),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: context.rs(14),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: context.rs(12)),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredItems.isEmpty
+                ? Center(
+                    child: Text(
+                      'No items found',
+                      style: kCaption14R.copyWith(color: kMutedText),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      final item = _filteredItems[index];
+                      return ListTile(
+                        title: Text(
+                          widget.itemLabel(item),
+                          style: kStyle(kRegular, kSize14, color: kTextColor),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: context.horizontalPadding,
+                          vertical: context.rs(4),
+                        ),
+                        onTap: () => Navigator.pop(context, item),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

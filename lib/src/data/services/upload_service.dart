@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:driveforme_driver/src/data/services/api_logger.dart';
 import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,15 +100,33 @@ class UploadService {
       ),
     );
 
+    final uri = request.url;
+    ApiLogger.request(
+      method: 'POST',
+      uri: uri,
+      headers: request.headers,
+      fields: request.fields,
+      body: 'multipart file: ${file.path.split('/').last} ($mimeType)',
+    );
+
+    final stopwatch = Stopwatch()..start();
     final streamedResponse = await request.send();
     final responseBody = await streamedResponse.stream.bytesToString();
+    stopwatch.stop();
+
+    ApiLogger.response(
+      method: 'POST',
+      uri: uri,
+      statusCode: streamedResponse.statusCode,
+      body: responseBody,
+      duration: stopwatch.elapsed,
+    );
 
     if (streamedResponse.statusCode >= 200 &&
         streamedResponse.statusCode < 300) {
       return _extractFileUrl(responseBody);
     }
 
-    log('Upload failed: $responseBody', name: 'UploadService');
     final message = _extractErrorMessage(responseBody);
     throw Exception(message);
   }

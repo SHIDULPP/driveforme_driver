@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+import 'package:driveforme_driver/src/data/services/api_logger.dart';
 import 'package:driveforme_driver/src/data/services/location_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -48,7 +49,20 @@ class DirectionsService {
     );
 
     try {
+      final stopwatch = Stopwatch()..start();
+      ApiLogger.request(method: 'GET', uri: uri);
+
       final response = await _client.get(uri);
+      stopwatch.stop();
+
+      ApiLogger.response(
+        method: 'GET',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: response.body,
+        duration: stopwatch.elapsed,
+      );
+
       if (response.statusCode != 200) return null;
 
       final body = json.decode(response.body);
@@ -107,7 +121,20 @@ class DirectionsService {
     );
 
     try {
+      final stopwatch = Stopwatch()..start();
+      ApiLogger.request(method: 'GET', uri: uri);
+
       final response = await _client.get(uri);
+      stopwatch.stop();
+
+      ApiLogger.response(
+        method: 'GET',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: response.body,
+        duration: stopwatch.elapsed,
+      );
+
       if (response.statusCode != 200) return const [];
 
       final body = json.decode(response.body);

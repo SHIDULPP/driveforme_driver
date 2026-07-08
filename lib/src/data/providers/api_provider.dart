@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:driveforme_driver/src/data/models/api_response.dart';
+import 'package:driveforme_driver/src/data/services/api_logger.dart';
 import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,22 +57,37 @@ class ApiProvider {
     bool requireAuth = false,
     Map<String, String>? queryParams,
   }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final requestUri = queryParams != null && queryParams.isNotEmpty
+        ? uri.replace(queryParameters: queryParams)
+        : uri;
+
     try {
       final headers = await _buildHeaders(
         requireUserId: requireUserId,
         requireAuth: requireAuth,
       );
-      final uri = Uri.parse('$baseUrl$endpoint');
-      final requestUri = queryParams != null && queryParams.isNotEmpty
-          ? uri.replace(queryParameters: queryParams)
-          : uri;
+
+      final stopwatch = Stopwatch()..start();
+      ApiLogger.request(method: 'GET', uri: requestUri, headers: headers);
 
       final response = await _client.get(requestUri, headers: headers);
+
+      stopwatch.stop();
+      ApiLogger.response(
+        method: 'GET',
+        uri: requestUri,
+        statusCode: response.statusCode,
+        body: response.body,
+        duration: stopwatch.elapsed,
+      );
+
       return _parseResponse(response);
     } on StateError catch (e) {
+      ApiLogger.error(method: 'GET', uri: requestUri, error: e);
       return ApiResponse.error(e.message);
     } catch (e) {
-      log('GET $endpoint failed: $e', name: 'ApiProvider');
+      ApiLogger.error(method: 'GET', uri: requestUri, error: e);
       return ApiResponse.error('Failed to connect to the server.');
     }
   }
@@ -83,21 +98,44 @@ class ApiProvider {
     bool requireUserId = false,
     bool requireAuth = false,
   }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final encodedBody = json.encode(data);
+
     try {
       final headers = await _buildHeaders(
         requireUserId: requireUserId,
         requireAuth: requireAuth,
       );
-      final response = await _client.patch(
-        Uri.parse('$baseUrl$endpoint'),
+
+      final stopwatch = Stopwatch()..start();
+      ApiLogger.request(
+        method: 'PATCH',
+        uri: uri,
         headers: headers,
-        body: json.encode(data),
+        body: encodedBody,
       );
+
+      final response = await _client.patch(
+        uri,
+        headers: headers,
+        body: encodedBody,
+      );
+
+      stopwatch.stop();
+      ApiLogger.response(
+        method: 'PATCH',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: response.body,
+        duration: stopwatch.elapsed,
+      );
+
       return _parseResponse(response);
     } on StateError catch (e) {
+      ApiLogger.error(method: 'PATCH', uri: uri, error: e);
       return ApiResponse.error(e.message);
     } catch (e) {
-      log('PATCH $endpoint failed: $e', name: 'ApiProvider');
+      ApiLogger.error(method: 'PATCH', uri: uri, error: e);
       return ApiResponse.error('Failed to connect to the server.');
     }
   }
@@ -107,20 +145,34 @@ class ApiProvider {
     bool requireUserId = false,
     bool requireAuth = false,
   }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+
     try {
       final headers = await _buildHeaders(
         requireUserId: requireUserId,
         requireAuth: requireAuth,
       );
-      final response = await _client.delete(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: headers,
+
+      final stopwatch = Stopwatch()..start();
+      ApiLogger.request(method: 'DELETE', uri: uri, headers: headers);
+
+      final response = await _client.delete(uri, headers: headers);
+
+      stopwatch.stop();
+      ApiLogger.response(
+        method: 'DELETE',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: response.body,
+        duration: stopwatch.elapsed,
       );
+
       return _parseResponse(response);
     } on StateError catch (e) {
+      ApiLogger.error(method: 'DELETE', uri: uri, error: e);
       return ApiResponse.error(e.message);
     } catch (e) {
-      log('DELETE $endpoint failed: $e', name: 'ApiProvider');
+      ApiLogger.error(method: 'DELETE', uri: uri, error: e);
       return ApiResponse.error('Failed to connect to the server.');
     }
   }
@@ -131,21 +183,44 @@ class ApiProvider {
     bool requireUserId = false,
     bool requireAuth = false,
   }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final encodedBody = json.encode(data);
+
     try {
       final headers = await _buildHeaders(
         requireUserId: requireUserId,
         requireAuth: requireAuth,
       );
-      final response = await _client.post(
-        Uri.parse('$baseUrl$endpoint'),
+
+      final stopwatch = Stopwatch()..start();
+      ApiLogger.request(
+        method: 'POST',
+        uri: uri,
         headers: headers,
-        body: json.encode(data),
+        body: encodedBody,
       );
+
+      final response = await _client.post(
+        uri,
+        headers: headers,
+        body: encodedBody,
+      );
+
+      stopwatch.stop();
+      ApiLogger.response(
+        method: 'POST',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: response.body,
+        duration: stopwatch.elapsed,
+      );
+
       return _parseResponse(response);
     } on StateError catch (e) {
+      ApiLogger.error(method: 'POST', uri: uri, error: e);
       return ApiResponse.error(e.message);
     } catch (e) {
-      log('POST $endpoint failed: $e', name: 'ApiProvider');
+      ApiLogger.error(method: 'POST', uri: uri, error: e);
       return ApiResponse.error('Failed to connect to the server.');
     }
   }
@@ -181,12 +256,6 @@ class ApiProvider {
 final apiProviderProvider = Provider<ApiProvider>((ref) {
   final baseUrl = dotenv.env['BASE_URL'] ?? '';
   final apiKey = dotenv.env['API_KEY'] ?? '';
-  if (baseUrl.isEmpty) {
-    log('BASE_URL is missing from .env', name: 'ApiProvider');
-  }
-  if (apiKey.isEmpty) {
-    log('API_KEY is missing from .env', name: 'ApiProvider');
-  }
 
   return ApiProvider(
     baseUrl: baseUrl,

@@ -5,9 +5,11 @@ import 'package:driveforme_driver/src/data/models/wallet_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/data/services/razorpay_checkout_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 const _kRechargeGold = Color(0xFFC6934B);
 
@@ -32,11 +34,14 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   static const _presetAmounts = [100.0, 500.0, 1000.0, 2000.0];
 
   final _amountController = TextEditingController();
+  final _razorpayCheckout = RazorpayCheckoutService();
   double? _selectedAmount;
+  bool _isProcessing = false;
 
   @override
   void dispose() {
     _amountController.dispose();
+    _razorpayCheckout.dispose();
     super.dispose();
   }
 
@@ -51,13 +56,28 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
       _showMessage('Enter a valid recharge amount.');
       return;
     }
+    if (_isProcessing) return;
 
+    setState(() => _isProcessing = true);
     ref.read(loadingProvider.notifier).startLoading();
+
+    if (_razorpayCheckout.isConfigured) {
+      await _payWithRazorpay(amount);
+    } else {
+      await _payWithDemoRecharge(amount);
+    }
+
+    if (mounted) {
+      setState(() => _isProcessing = false);
+    }
+    ref.read(loadingProvider.notifier).stopLoading();
+  }
+
+  Future<void> _payWithDemoRecharge(double amount) async {
     final response = await ref.read(walletApiProvider).rechargeWallet(
           amount: amount,
-          description: 'Dummy UPI recharge',
+          description: 'Wallet recharge',
         );
-    ref.read(loadingProvider.notifier).stopLoading();
 
     if (!mounted) return;
 
@@ -72,6 +92,82 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     _showMessage('₹ ${amount.toStringAsFixed(0)} added to your wallet.');
   }
 
+  Future<void> _payWithRazorpay(double amount) async {
+    final orderResponse = await ref.read(walletApiProvider).createRazorpayOrder(
+          amount: amount,
+        );
+
+    if (!mounted) return;
+
+    if (!orderResponse.success || orderResponse.data == null) {
+      _showMessage(orderResponse.message ?? 'Failed to start payment.');
+      return;
+    }
+
+    final order = orderResponse.data!;
+    final user = await ref.read(userProvider.future);
+    final contact = user?.phoneNumber ?? '';
+    final name = user?.profile.fullName.trim().isNotEmpty == true
+        ? user!.profile.fullName.trim()
+        : 'Driver';
+
+    try {
+      _razorpayCheckout.open(
+        orderId: order.orderId,
+        amount: order.amount,
+        name: name,
+        contact: contact,
+        onSuccess: (response) => _handleRazorpaySuccess(
+          response: response,
+          transactionId: order.transactionId,
+          amount: amount,
+        ),
+        onFailure: _handleRazorpayFailure,
+      );
+    } catch (error) {
+      _showMessage(error.toString());
+    }
+  }
+
+  Future<void> _handleRazorpaySuccess({
+    required PaymentSuccessResponse response,
+    required String transactionId,
+    required double amount,
+  }) async {
+    ref.read(loadingProvider.notifier).startLoading();
+
+    final verifyResponse =
+        await ref.read(walletApiProvider).verifyRazorpayPayment(
+              razorpayOrderId: response.orderId ?? '',
+              razorpayPaymentId: response.paymentId ?? '',
+              razorpaySignature: response.signature ?? '',
+              transactionId: transactionId,
+            );
+
+    ref.read(loadingProvider.notifier).stopLoading();
+    if (!mounted) return;
+
+    if (!verifyResponse.success) {
+      _showMessage(verifyResponse.message ?? 'Payment verification failed.');
+      return;
+    }
+
+    ref.invalidate(walletProvider);
+    ref.invalidate(userProvider);
+    Navigator.of(context).pop();
+    _showMessage('₹ ${amount.toStringAsFixed(0)} added to your wallet.');
+  }
+
+  void _handleRazorpayFailure(PaymentFailureResponse response) {
+    if (!mounted) return;
+    final message = response.message?.trim();
+    _showMessage(
+      message == null || message.isEmpty
+          ? 'Payment cancelled or failed.'
+          : message,
+    );
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
@@ -79,6 +175,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final usesRazorpay = _razorpayCheckout.isConfigured;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
@@ -106,7 +203,9 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
             Text('Add Balance', style: kStyle(kSemiBold, kSize20, color: kTextColor)),
             const SizedBox(height: 6),
             Text(
-              'Payment gateway coming soon. This demo recharge credits your wallet instantly.',
+              usesRazorpay
+                  ? 'Pay securely with Razorpay to add balance to your wallet.'
+                  : 'Razorpay is not configured. This recharge credits your wallet instantly.',
               style: kCaption13R.copyWith(color: kMutedText, height: 1.35),
             ),
             const SizedBox(height: 18),
@@ -155,7 +254,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
             ),
             const SizedBox(height: 18),
             ElevatedButton(
-              onPressed: _submitRecharge,
+              onPressed: _isProcessing ? null : _submitRecharge,
               style: ElevatedButton.styleFrom(
                 backgroundColor: kBrandBlue,
                 foregroundColor: kWhite,
@@ -166,7 +265,11 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
                 ),
               ),
               child: Text(
-                'Pay via UPI (Demo)',
+                _isProcessing
+                    ? 'Processing...'
+                    : usesRazorpay
+                        ? 'Pay with Razorpay'
+                        : 'Recharge Wallet',
                 style: kStyle(kSemiBold, kSize15, color: kWhite),
               ),
             ),

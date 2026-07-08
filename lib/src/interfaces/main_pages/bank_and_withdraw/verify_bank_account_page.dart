@@ -5,42 +5,74 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/data/models/bank_account_ui_model.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class VerifyBankAccountPage extends StatefulWidget {
+class VerifyBankAccountPage extends ConsumerStatefulWidget {
   const VerifyBankAccountPage({super.key, required this.account});
 
   final BankAccountUiModel account;
 
   @override
-  State<VerifyBankAccountPage> createState() => _VerifyBankAccountPageState();
+  ConsumerState<VerifyBankAccountPage> createState() =>
+      _VerifyBankAccountPageState();
 }
 
-class _VerifyBankAccountPageState extends State<VerifyBankAccountPage> {
+class _VerifyBankAccountPageState extends ConsumerState<VerifyBankAccountPage> {
   double _progress = 0;
   Timer? _timer;
+  bool _verificationStarted = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startVerification());
+  }
+
+  Future<void> _startVerification() async {
+    if (_verificationStarted) return;
+    _verificationStarted = true;
+
     _timer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
       if (!mounted) return;
       setState(() {
-        _progress += 0.01;
-        if (_progress >= 1) {
-          _progress = 1;
-          timer.cancel();
-          Future.delayed(const Duration(milliseconds: 400), () {
-            if (!mounted) return;
-            NavigationService().pushNamedReplacement(
-              'bankAddedSuccess',
-              arguments: {'account': widget.account},
-            );
-          });
-        }
+        _progress = (_progress + 0.008).clamp(0, 0.9);
       });
     });
+
+    final error = await ref.read(withdrawFlowProvider.notifier).saveBankAccount(
+          accountHolderName: widget.account.holderName,
+          bankName: widget.account.bankName,
+          accountNumber: widget.account.accountNumber,
+          confirmAccountNumber: widget.account.accountNumber,
+          ifscCode: widget.account.ifscCode,
+          branchName: widget.account.branchName,
+        );
+
+    _timer?.cancel();
+    if (!mounted) return;
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
+    setState(() => _progress = 1);
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+
+    final savedAccount = ref.read(withdrawFlowProvider).selectedBank ??
+        widget.account.copyWith(id: BankAccountUiModel.primaryId);
+
+    NavigationService().pushNamedReplacement(
+      'bankAddedSuccess',
+      arguments: {'account': savedAccount},
+    );
   }
 
   @override

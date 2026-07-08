@@ -170,6 +170,72 @@ class WalletDetailsModel {
   }
 }
 
+class RazorpayOrderModel {
+  const RazorpayOrderModel({
+    required this.orderId,
+    required this.amount,
+    required this.currency,
+    required this.transactionId,
+  });
+
+  final String orderId;
+  final double amount;
+  final String currency;
+  final String transactionId;
+
+  factory RazorpayOrderModel.fromJson(Map<String, dynamic> json) {
+    final order = json['order'] as Map<String, dynamic>? ?? {};
+    final rawAmount = order['amount'];
+    final amountInPaise = rawAmount is num ? rawAmount.toDouble() : 0;
+    return RazorpayOrderModel(
+      orderId: order['id']?.toString() ?? '',
+      amount: amountInPaise / 100,
+      currency: order['currency']?.toString() ?? 'INR',
+      transactionId: json['transactionId']?.toString() ?? '',
+    );
+  }
+}
+
+class WalletActionResult {
+  const WalletActionResult({
+    required this.walletBalance,
+    this.transaction,
+  });
+
+  final double walletBalance;
+  final WalletTransactionModel? transaction;
+
+  factory WalletActionResult.fromJson(Map<String, dynamic> json) {
+    WalletTransactionModel? transaction;
+    final rawTransaction = json['transaction'];
+    if (rawTransaction is Map<String, dynamic>) {
+      transaction = WalletTransactionModel.fromJson(rawTransaction);
+    }
+
+    return WalletActionResult(
+      walletBalance: (json['walletBalance'] as num?)?.toDouble() ?? 0,
+      transaction: transaction,
+    );
+  }
+}
+
+class ApplyReferralResult {
+  const ApplyReferralResult({
+    required this.bonusAwarded,
+    required this.bonusAmount,
+  });
+
+  final bool bonusAwarded;
+  final double bonusAmount;
+
+  factory ApplyReferralResult.fromJson(Map<String, dynamic> json) {
+    return ApplyReferralResult(
+      bonusAwarded: json['bonusAwarded'] as bool? ?? false,
+      bonusAmount: (json['bonusAmount'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
 String formatRupee(double amount) {
   if (amount == amount.truncateToDouble()) {
     return '₹ ${amount.toInt()}';

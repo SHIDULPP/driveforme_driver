@@ -9,6 +9,8 @@ class BankAccountUiModel {
     this.isVerified = true,
   });
 
+  static const primaryId = 'primary';
+
   final String id;
   final String bankName;
   final String accountNumber;
@@ -16,6 +18,32 @@ class BankAccountUiModel {
   final String ifscCode;
   final String branchName;
   final bool isVerified;
+
+  factory BankAccountUiModel.fromJson(Map<String, dynamic> json) {
+    return BankAccountUiModel(
+      id: json['id']?.toString() ?? primaryId,
+      bankName: json['bankName']?.toString() ?? '',
+      accountNumber: json['accountNumber']?.toString() ?? '',
+      holderName: json['accountHolderName']?.toString() ??
+          json['holderName']?.toString() ??
+          '',
+      ifscCode: json['ifscCode']?.toString() ?? '',
+      branchName: json['branchName']?.toString() ?? '',
+      isVerified: json['isVerified'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'bankName': bankName,
+      'accountNumber': accountNumber,
+      'accountHolderName': holderName,
+      'ifscCode': ifscCode,
+      'branchName': branchName,
+      'isVerified': isVerified,
+    };
+  }
 
   String get maskedAccountNumber {
     final digits = accountNumber.replaceAll(RegExp(r'\s'), '');

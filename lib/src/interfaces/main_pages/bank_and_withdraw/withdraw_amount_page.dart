@@ -1,14 +1,16 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
-import 'package:driveforme_driver/src/data/models/withdrawal_ui_model.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/select_bank_sheet.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/bank_account_card.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/select_bank_sheet.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_amount_field.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,7 +42,7 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
     await SelectBankSheet.show(context);
   }
 
-  void _withdrawNow() {
+  Future<void> _withdrawNow() async {
     final amount = _amount;
     final flow = ref.read(withdrawFlowProvider);
     final bank = flow.selectedBank;
@@ -49,25 +51,30 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
       _showMessage('Enter a valid withdrawal amount.');
       return;
     }
-    if (amount > flow.availableEarnings) {
-      _showMessage('Amount exceeds available earnings.');
+    if (amount > flow.availableBalance) {
+      _showMessage('Amount exceeds available balance.');
       return;
     }
     if (bank == null) {
       _showMessage('Please select a bank account.');
       return;
     }
+    if (flow.isSubmitting) return;
 
-    ref.read(withdrawFlowProvider.notifier).addWithdrawal(
-          WithdrawalUiModel(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            amount: amount,
-            bankName: bank.bankName,
-            maskedAccount: bank.maskedAccountShort,
-            status: 'Completed',
-            date: DateTime.now(),
-          ),
-        );
+    ref.read(loadingProvider.notifier).startLoading();
+    final error = await ref
+        .read(withdrawFlowProvider.notifier)
+        .withdrawFunds(amount);
+    ref.read(loadingProvider.notifier).stopLoading();
+
+    if (!mounted) return;
+    if (error != null) {
+      _showMessage(error);
+      return;
+    }
+
+    ref.invalidate(walletProvider);
+    ref.invalidate(userProvider);
 
     NavigationService().pushNamed(
       'withdrawalSuccess',
@@ -146,9 +153,9 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
           context.rs(16),
         ),
         child: primaryButton(
-          label: 'Withdraw Now',
+          label: flow.isSubmitting ? 'Processing...' : 'Withdraw Now',
           buttonColor: kBrandBlue,
-          onPressed: _withdrawNow,
+          onPressed: flow.isSubmitting ? null : _withdrawNow,
         ),
       ),
     );

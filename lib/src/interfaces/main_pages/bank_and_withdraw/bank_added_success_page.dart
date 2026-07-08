@@ -6,17 +6,15 @@ import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/data/models/bank_account_ui_model.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/bank_account_card.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BankAddedSuccessPage extends ConsumerWidget {
+class BankAddedSuccessPage extends StatelessWidget {
   const BankAddedSuccessPage({super.key, required this.account});
 
   final BankAccountUiModel account;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return WithdrawScaffold(
       title: 'Verifying Account',
       body: ListView(
@@ -80,7 +78,6 @@ class BankAddedSuccessPage extends ConsumerWidget {
               label: 'Withdraw Earnings',
               buttonColor: kBrandBlue,
               onPressed: () {
-                ref.read(withdrawFlowProvider.notifier).addBankAccount(account);
                 Navigator.of(context).popUntil(
                   (route) =>
                       route.settings.name == 'withdrawEarnings' ||
@@ -91,7 +88,6 @@ class BankAddedSuccessPage extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () {
-                ref.read(withdrawFlowProvider.notifier).addBankAccount(account);
                 Navigator.of(context).popUntil(
                   (route) =>
                       route.settings.name == 'withdrawEarnings' ||

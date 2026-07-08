@@ -7,6 +7,7 @@ class SecureStorageService {
   static const _authTokenKey = 'auth_token';
   static const _activeTripIdKey = 'active_trip_id';
   static const _driverOnlineKey = 'driver_online';
+  static const _bankAccountKey = 'bank_account';
 
   final FlutterSecureStorage _storage;
 
@@ -46,12 +47,20 @@ class SecureStorageService {
 
   Future<void> clearDriverOnline() => _storage.delete(key: _driverOnlineKey);
 
+  Future<void> saveBankAccountJson(String json) =>
+      _storage.write(key: _bankAccountKey, value: json);
+
+  Future<String?> getBankAccountJson() => _storage.read(key: _bankAccountKey);
+
+  Future<void> clearBankAccount() => _storage.delete(key: _bankAccountKey);
+
   Future<void> clearSession() async {
     await _storage.delete(key: _userIdKey);
     await _storage.delete(key: _phoneNumberKey);
     await _storage.delete(key: _authTokenKey);
     await _storage.delete(key: _activeTripIdKey);
     await _storage.delete(key: _driverOnlineKey);
+    await _storage.delete(key: _bankAccountKey);
   }
 }
 
