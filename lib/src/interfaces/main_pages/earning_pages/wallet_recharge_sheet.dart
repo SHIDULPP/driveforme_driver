@@ -74,10 +74,9 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   }
 
   Future<void> _payWithDemoRecharge(double amount) async {
-    final response = await ref.read(walletApiProvider).rechargeWallet(
-          amount: amount,
-          description: 'Wallet recharge',
-        );
+    final response = await ref
+        .read(walletApiProvider)
+        .rechargeWallet(amount: amount, description: 'Wallet recharge');
 
     if (!mounted) return;
 
@@ -93,9 +92,9 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   }
 
   Future<void> _payWithRazorpay(double amount) async {
-    final orderResponse = await ref.read(walletApiProvider).createRazorpayOrder(
-          amount: amount,
-        );
+    final orderResponse = await ref
+        .read(walletApiProvider)
+        .createRazorpayOrder(amount: amount);
 
     if (!mounted) return;
 
@@ -110,6 +109,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     final name = user?.profile.fullName.trim().isNotEmpty == true
         ? user!.profile.fullName.trim()
         : 'Driver';
+    final email = user?.profile.email.trim();
 
     try {
       _razorpayCheckout.open(
@@ -117,6 +117,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
         amount: order.amount,
         name: name,
         contact: contact,
+        email: email,
         onSuccess: (response) => _handleRazorpaySuccess(
           response: response,
           transactionId: order.transactionId,
@@ -136,13 +137,14 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   }) async {
     ref.read(loadingProvider.notifier).startLoading();
 
-    final verifyResponse =
-        await ref.read(walletApiProvider).verifyRazorpayPayment(
-              razorpayOrderId: response.orderId ?? '',
-              razorpayPaymentId: response.paymentId ?? '',
-              razorpaySignature: response.signature ?? '',
-              transactionId: transactionId,
-            );
+    final verifyResponse = await ref
+        .read(walletApiProvider)
+        .verifyRazorpayPayment(
+          razorpayOrderId: response.orderId ?? '',
+          razorpayPaymentId: response.paymentId ?? '',
+          razorpaySignature: response.signature ?? '',
+          transactionId: transactionId,
+        );
 
     ref.read(loadingProvider.notifier).stopLoading();
     if (!mounted) return;
@@ -169,7 +171,9 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -200,7 +204,10 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Add Balance', style: kStyle(kSemiBold, kSize20, color: kTextColor)),
+            Text(
+              'Add Balance',
+              style: kStyle(kSemiBold, kSize20, color: kTextColor),
+            ),
             const SizedBox(height: 6),
             Text(
               usesRazorpay
@@ -268,8 +275,8 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
                 _isProcessing
                     ? 'Processing...'
                     : usesRazorpay
-                        ? 'Pay with Razorpay'
-                        : 'Recharge Wallet',
+                    ? 'Pay with Razorpay'
+                    : 'Recharge Wallet',
                 style: kStyle(kSemiBold, kSize15, color: kWhite),
               ),
             ),

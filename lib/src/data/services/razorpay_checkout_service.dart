@@ -12,11 +12,20 @@ class RazorpayCheckoutService {
 
   bool get isConfigured => keyId.isNotEmpty;
 
+  String _normalizeContact(String contact) {
+    final digitsOnly = contact.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsOnly.length >= 10) {
+      return digitsOnly.substring(digitsOnly.length - 10);
+    }
+    return digitsOnly;
+  }
+
   void open({
     required String orderId,
     required double amount,
     required String name,
     required String contact,
+    String? email,
     required void Function(PaymentSuccessResponse response) onSuccess,
     required void Function(PaymentFailureResponse response) onFailure,
   }) {
@@ -31,21 +40,34 @@ class RazorpayCheckoutService {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handleFailure);
 
-    _razorpay.open({
+    final normalizedContact = _normalizeContact(contact);
+    final normalizedEmail = email?.trim();
+
+    final options = <String, dynamic>{
       'key': keyId,
       'amount': (amount * 100).round(),
-      'currency': 'INR',
       'name': 'Drive For Me',
       'order_id': orderId,
       'description': 'Wallet recharge',
-      'prefill': {
-        'contact': contact,
+      // Explicitly enable all primary methods to match full checkout experience.
+      'method': <String, bool>{
+        'upi': true,
+        'card': true,
+        'netbanking': true,
+        'wallet': true,
+        'paylater': true,
+        'emi': true,
+      },
+      'prefill': <String, String>{
+        if (normalizedContact.isNotEmpty) 'contact': normalizedContact,
         'name': name,
+        if (normalizedEmail != null && normalizedEmail.isNotEmpty)
+          'email': normalizedEmail,
       },
-      'theme': {
-        'color': '#1F4FD8',
-      },
-    });
+      'theme': {'color': '#1F4FD8'},
+    };
+
+    _razorpay.open(options);
   }
 
   void _handleSuccess(PaymentSuccessResponse response) {
