@@ -4,6 +4,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 const _kExamplePhotos = [
   'assets/pngs/person1.png',
@@ -55,28 +56,28 @@ class SelfieScreen extends StatelessWidget {
                     Text('Instructions', style: kTripSectionTitleSB),
                     const SizedBox(height: 16),
                     const _InstructionItem(
-                      icon: Icons.center_focus_strong_outlined,
+                      iconPath: 'assets/svgs/facevisible.svg',
                       title: 'Face Clearly Visible',
                       description:
                           'Make sure your entire face is visible within the frame.',
                     ),
                     const SizedBox(height: 16),
                     const _InstructionItem(
-                      icon: Icons.wb_sunny_outlined,
+                      iconPath: 'assets/svgs/goodlighting.svg',
                       title: 'Good Lighting',
                       description:
                           'Use proper lighting and avoid dark or backlit areas.',
                     ),
                     const SizedBox(height: 16),
                     const _InstructionItem(
-                      icon: Icons.checkroom_outlined,
+                      iconPath: 'assets/svgs/removeaccessories.svg',
                       title: 'Remove Accessories',
                       description:
                           'Please remove sunglasses, hats, and marks',
                     ),
                     const SizedBox(height: 16),
                     const _InstructionItem(
-                      icon: Icons.smartphone_outlined,
+                      iconPath: 'assets/svgs/holdsteady.svg',
                       title: 'Hold Steady',
                       description:
                           'Hold your phone steady and looks straight at the camera.',
@@ -190,12 +191,12 @@ class _GalleryPhoto extends StatelessWidget {
 
 class _InstructionItem extends StatelessWidget {
   const _InstructionItem({
-    required this.icon,
+    required this.iconPath,
     required this.title,
     required this.description,
   });
 
-  final IconData icon;
+  final String iconPath;
   final String title;
   final String description;
 
@@ -211,7 +212,13 @@ class _InstructionItem extends StatelessWidget {
             color: kTripCreamBg,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 22, color: kGold),
+          child: Center(
+            child: SvgPicture.asset(
+              iconPath,
+              height: 22,
+              width: 22,
+            ),
+          ),
         ),
         const SizedBox(width: 14),
         Expanded(
