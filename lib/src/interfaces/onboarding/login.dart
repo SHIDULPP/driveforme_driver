@@ -16,6 +16,7 @@ import 'package:driveforme_driver/src/interfaces/animations/animated_widget_wrap
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -99,6 +100,9 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                               if (!RegExp(r'^[0-9]+$').hasMatch(phone.number)) {
                                 return 'Mobile number must contain only digits';
                               }
+                              if (phone.number.length != 10) {
+                                return 'Mobile number must be exactly 10 digits';
+                              }
                               return null;
                             },
                             style: kSubHeadingR.copyWith(
@@ -106,7 +110,13 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                               color: kGreyDark,
                             ),
                             controller: _mobileController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
                             disableLengthCheck: true,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             showCountryFlag: false,
                             cursorColor: kBlack,
                             decoration: InputDecoration(
@@ -199,6 +209,11 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
     final digits = _mobileController.text.trim();
     if (digits.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(digits)) {
       _showMessage('Please enter a valid mobile number');
+      return;
+    }
+
+    if (digits.length != 10) {
+      _showMessage('Mobile number must be exactly 10 digits');
       return;
     }
 
