@@ -25,11 +25,11 @@ class _DateInputFormatter extends TextInputFormatter {
       return oldValue;
     }
 
-    // Format with hyphens
+    // Format with slashes
     String formatted = '';
     for (int i = 0; i < digitsOnly.length; i++) {
       if (i == 2 || i == 4) {
-        formatted += '-';
+        formatted += '/';
       }
       formatted += digitsOnly[i];
     }
@@ -77,8 +77,8 @@ class InputField extends StatelessWidget {
 
   DateTime? _parseDate(String dateStr) {
     try {
-      // Remove hyphens and parse dd-mm-yyyy format
-      final cleanStr = dateStr.replaceAll('-', '');
+      // Remove slashes and parse dd/mm/yyyy format
+      final cleanStr = dateStr.replaceAll('/', '');
       if (cleanStr.length != 8) return null;
 
       final day = int.parse(cleanStr.substring(0, 2));
@@ -104,6 +104,7 @@ class InputField extends StatelessWidget {
       initialDate: initialDate,
       firstDate: minDate,
       lastDate: maxDate,
+      locale: const Locale('en', 'GB'),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -119,7 +120,7 @@ class InputField extends StatelessWidget {
     );
 
     if (picked != null) {
-      controller.text = DateFormat('dd-MM-yyyy').format(picked);
+      controller.text = DateFormat('dd/MM/yyyy').format(picked);
       onDateSelected?.call(picked);
     }
   }

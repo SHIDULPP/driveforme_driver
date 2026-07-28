@@ -86,7 +86,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
       ref.invalidate(userProvider);
       NavigationService().pushNamedAndRemoveUntil('documentsUpload');
     } on FormatException {
-      _showMessage('Please enter date of birth as DD-MM-YYYY');
+      _showMessage('Please enter date of birth as DD/MM/YYYY');
     } finally {
       ref.read(loadingProvider.notifier).stopLoading();
     }
@@ -217,7 +217,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         delayMilliseconds: 250,
                         child: InputField(
                           type: CustomFieldType.date,
-                          hint: 'DD-MM-YYYY',
+                          hint: 'DD/MM/YYYY',
                           controller: _dobController,
                           validator: (v) => (v == null || v.trim().isEmpty)
                               ? 'Date of birth is required'

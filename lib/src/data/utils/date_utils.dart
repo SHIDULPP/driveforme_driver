@@ -1,7 +1,7 @@
 String dobUiToApi(String ddMmYyyy) {
-  final parts = ddMmYyyy.split('-');
+  final parts = ddMmYyyy.split('/');
   if (parts.length != 3) {
-    throw FormatException('Date must be in DD-MM-YYYY format');
+    throw FormatException('Date must be in DD/MM/YYYY format');
   }
 
   final day = parts[0].padLeft(2, '0');
