@@ -157,6 +157,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                                 'Phone number changed: ${phone.completeNumber}',
                                 name: 'PhoneNumberScreen',
                               );
+                              setState(() {});
                             },
                             showDropdownIcon: false,
                             dropdownTextStyle: const TextStyle(
@@ -187,7 +188,11 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                           width: double.infinity,
                           child: primaryButton(
                             label: 'Get OTP',
-                            onPressed: isLoading ? null : _requestOtp,
+                            onPressed:
+                                (isLoading ||
+                                    _mobileController.text.trim().length != 10)
+                                ? null
+                                : _requestOtp,
                             isLoading: isLoading,
                           ),
                         ),
