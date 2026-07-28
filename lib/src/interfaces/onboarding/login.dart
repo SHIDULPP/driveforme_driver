@@ -150,9 +150,10 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                             },
                             showDropdownIcon: false,
                             dropdownTextStyle: const TextStyle(
+                              fontFamily: 'ClashGrotesk',
                               color: kTextColor,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
+                              fontSize: 25,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
