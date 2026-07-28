@@ -22,7 +22,7 @@ const _kLicenseCategories = [
   'Transport Vehicle',
 ];
 
-const _kTransmissionTypes = ['Manual', 'Automatic'];
+const _kTransmissionTypes = ['Manual', 'Automatic', 'Both'];
 
 class DrivingLicenseUploadPage extends ConsumerStatefulWidget {
   const DrivingLicenseUploadPage({super.key});
