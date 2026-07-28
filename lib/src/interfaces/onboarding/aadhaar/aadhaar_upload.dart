@@ -14,7 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AadhaarUploadPage extends ConsumerStatefulWidget {
-  const AadhaarUploadPage({super.key});
+  final DocumentUploadResult? initialData;
+  const AadhaarUploadPage({super.key, this.initialData});
 
   @override
   ConsumerState<AadhaarUploadPage> createState() => _AadhaarUploadPageState();
@@ -36,6 +37,13 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialData != null) {
+      _imageUrl = widget.initialData!.imageUrl;
+      _localImagePath = widget.initialData!.localPath;
+      if (widget.initialData!.payload.containsKey('aadhaarNumber')) {
+        _aadhaarController.text = widget.initialData!.payload['aadhaarNumber'];
+      }
+    }
     _aadhaarController.addListener(_onAadhaarChanged);
   }
 
@@ -169,6 +177,9 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
                           DocumentUploadResult(
                             imageUrl: _imageUrl!,
                             localPath: _localImagePath ?? '',
+                            payload: {
+                              'aadhaarNumber': _aadhaarController.text.trim(),
+                            },
                           ),
                         );
                       }

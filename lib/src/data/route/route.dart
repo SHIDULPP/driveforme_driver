@@ -22,6 +22,7 @@ import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_deta
     show TripDetailsPage, TripTicketInfo;
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_request_details_page.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
 import 'package:driveforme_driver/src/interfaces/onboarding/aadhaar/aadhaar_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onboarding/driving_license/driving_license_upload.dart';
 import 'package:driveforme_driver/src/interfaces/onboarding/live_photo/selfie_screen.dart';
@@ -180,12 +181,16 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
       transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'aadhaarUpload':
-      page = const AadhaarUploadPage();
+      page = AadhaarUploadPage(
+        initialData: settings?.arguments as DocumentUploadResult?,
+      );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;
     case 'drivingLicenseUpload':
-      page = const DrivingLicenseUploadPage();
+      page = DrivingLicenseUploadPage(
+        initialData: settings?.arguments as DocumentUploadResult?,
+      );
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

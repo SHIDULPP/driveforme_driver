@@ -29,6 +29,9 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
   String? _licenseImageUrl;
   String? _livePhotoUrl;
 
+  DocumentUploadResult? _aadhaarResult;
+  DocumentUploadResult? _licenseResult;
+
   @override
   void initState() {
     super.initState();
@@ -69,11 +72,13 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
     ref.read(loadingProvider.notifier).startLoading();
 
     try {
-      final response = await ref.read(onboardingApiProvider).submitDriverIdentity(
-        aadhaarImageUrl: _aadhaarImageUrl!,
-        drivingLicenseImageUrl: _licenseImageUrl!,
-        livePhotoUrl: _livePhotoUrl!,
-      );
+      final response = await ref
+          .read(onboardingApiProvider)
+          .submitDriverIdentity(
+            aadhaarImageUrl: _aadhaarImageUrl!,
+            drivingLicenseImageUrl: _licenseImageUrl!,
+            livePhotoUrl: _livePhotoUrl!,
+          );
 
       if (!mounted) return;
 
@@ -90,9 +95,9 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -165,8 +170,9 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         title: 'Aadhaar',
                         description: 'Government ID proof',
                         isUploaded: _aadhaarUploaded,
-                        actionLabel:
-                            _aadhaarUploaded ? 'Uploaded' : 'Tap to Upload',
+                        actionLabel: _aadhaarUploaded
+                            ? 'Uploaded'
+                            : 'Tap to Upload',
                         actionIcon: _aadhaarUploaded
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
@@ -174,9 +180,13 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                           final result = await Navigator.pushNamed(
                             context,
                             'aadhaarUpload',
+                            arguments: _aadhaarResult,
                           );
                           if (result is DocumentUploadResult && mounted) {
-                            setState(() => _aadhaarImageUrl = result.imageUrl);
+                            setState(() {
+                              _aadhaarResult = result;
+                              _aadhaarImageUrl = result.imageUrl;
+                            });
                           }
                         },
                       ),
@@ -193,8 +203,9 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         title: 'Driving License',
                         description: 'Required for driver verification',
                         isUploaded: _licenseUploaded,
-                        actionLabel:
-                            _licenseUploaded ? 'Uploaded' : 'Tap to Upload',
+                        actionLabel: _licenseUploaded
+                            ? 'Uploaded'
+                            : 'Tap to Upload',
                         actionIcon: _licenseUploaded
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
@@ -202,9 +213,13 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                           final result = await Navigator.pushNamed(
                             context,
                             'drivingLicenseUpload',
+                            arguments: _licenseResult,
                           );
                           if (result is DocumentUploadResult && mounted) {
-                            setState(() => _licenseImageUrl = result.imageUrl);
+                            setState(() {
+                              _licenseResult = result;
+                              _licenseImageUrl = result.imageUrl;
+                            });
                           }
                         },
                       ),
@@ -233,7 +248,9 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                             'selfieScreen',
                           );
                           if (result is DocumentUploadResult && mounted) {
-                            setState(() => _livePhotoUrl = result.imageUrl);
+                            setState(() {
+                              _livePhotoUrl = result.imageUrl;
+                            });
                           }
                         },
                       ),
@@ -257,7 +274,9 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                   buttonColor: _canContinue ? kBrandBlue : _kContinueDisabled,
                   labelColor: kWhite,
                   isLoading: isLoading,
-                  onPressed: _canContinue && !isLoading ? _submitDocuments : null,
+                  onPressed: _canContinue && !isLoading
+                      ? _submitDocuments
+                      : null,
                 ),
               ),
             ),

@@ -26,7 +26,8 @@ const _kLicenseCategories = [
 const _kTransmissionTypes = ['Manual', 'Automatic', 'Both'];
 
 class DrivingLicenseUploadPage extends ConsumerStatefulWidget {
-  const DrivingLicenseUploadPage({super.key});
+  final DocumentUploadResult? initialData;
+  const DrivingLicenseUploadPage({super.key, this.initialData});
 
   @override
   ConsumerState<DrivingLicenseUploadPage> createState() =>
@@ -69,6 +70,23 @@ class _DrivingLicenseUploadPageState
   @override
   void initState() {
     super.initState();
+    if (widget.initialData != null) {
+      _imageUrl = widget.initialData!.imageUrl;
+      _localImagePath = widget.initialData!.localPath;
+      final payload = widget.initialData!.payload;
+      if (payload.containsKey('licenseNumber')) {
+        _licenseNumberController.text = payload['licenseNumber'];
+      }
+      if (payload.containsKey('licenseCategory')) {
+        _licenseCategory = payload['licenseCategory'];
+      }
+      if (payload.containsKey('expiryDate')) {
+        _expiryDateController.text = payload['expiryDate'];
+      }
+      if (payload.containsKey('transmissionType')) {
+        _transmissionType = payload['transmissionType'];
+      }
+    }
     _licenseNumberController.addListener(_onFormChanged);
     _expiryDateController.addListener(_onFormChanged);
   }
@@ -254,6 +272,12 @@ class _DrivingLicenseUploadPageState
                           DocumentUploadResult(
                             imageUrl: _imageUrl!,
                             localPath: _localImagePath ?? '',
+                            payload: {
+                              'licenseNumber': _licenseNumberController.text.trim(),
+                              'licenseCategory': _licenseCategory,
+                              'expiryDate': _expiryDateController.text.trim(),
+                              'transmissionType': _transmissionType,
+                            },
                           ),
                         );
                       }
