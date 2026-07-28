@@ -115,7 +115,11 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                     anim.AnimatedWidgetWrapper(
                       animationType: anim.AppAnimationType.fadeSlideInFromLeft,
                       duration: anim.AnimationDuration.normal,
-                      child: const AppBackButton(),
+                      child: AppBackButton(
+                        onTap: () {
+                          Navigator.pushNamed(context, 'registration');
+                        },
+                      ),
                     ),
                     const SizedBox(height: 28),
 

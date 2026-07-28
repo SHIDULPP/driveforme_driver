@@ -2,6 +2,7 @@ import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
+import 'package:driveforme_driver/src/data/models/user_model.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/date_utils.dart';
 import 'package:driveforme_driver/src/interfaces/animations/index.dart' as anim;
@@ -11,6 +12,7 @@ import 'package:driveforme_driver/src/interfaces/components/input_field.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class RegistrationPage extends ConsumerStatefulWidget {
   const RegistrationPage({super.key});
@@ -39,6 +41,46 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
     'gender': GlobalKey(),
     'location': GlobalKey(),
   };
+
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final user = ref.read(userProvider).value;
+        if (user != null) {
+          _populateFields(user);
+        }
+      }
+    });
+  }
+
+  void _populateFields(UserModel user) {
+    if (_initialized) return;
+    setState(() {
+      _initialized = true;
+      _nameController.text = user.profile.fullName;
+      _emailController.text = user.profile.email;
+      if (user.profile.dateOfBirth != null) {
+        _dobController.text = DateFormat(
+          'dd/MM/yyyy',
+        ).format(user.profile.dateOfBirth!);
+      }
+      if (user.profile.gender.isNotEmpty) {
+        selectedGender = _capitalize(user.profile.gender);
+      }
+      if (user.profile.location.isNotEmpty) {
+        selectedLocation = _capitalize(user.profile.location);
+      }
+    });
+  }
+
+  String _capitalize(String s) {
+    if (s.isEmpty) return '';
+    return s[0].toUpperCase() + s.substring(1).toLowerCase();
+  }
 
   @override
   void dispose() {
@@ -101,6 +143,13 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(loadingProvider);
+
+    ref.listen<AsyncValue<UserModel?>>(userProvider, (previous, next) {
+      final user = next.value;
+      if (user != null && !_initialized) {
+        _populateFields(user);
+      }
+    });
 
     return Scaffold(
       backgroundColor: kWhite,
