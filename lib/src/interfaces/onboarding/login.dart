@@ -435,7 +435,14 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                             backgroundColor: Colors.transparent,
                             enableActiveFill: true,
                             controller: _otpController,
-                            onChanged: (value) {},
+                            onChanged: (value) {
+                              setState(() {});
+                            },
+                            onCompleted: (value) {
+                              if (!isLoading) {
+                                _verifyOtp();
+                              }
+                            },
                           );
                         },
                       ),
@@ -452,7 +459,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                           const SizedBox(
                             width: double.infinity,
                             child: Text(
-                              "Didi'nt get SMS?",
+                              "Didn't get SMS?",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'ClashGrotesk',
@@ -516,7 +523,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                   label: 'Verify OTP',
                   buttonHeight: MediaQuery.of(context).size.height * 0.065,
                   fontSize: 16,
-                  onPressed: isLoading ? null : _verifyOtp,
+                  onPressed:
+                      (!isLoading && _otpController.text.trim().length == 6)
+                      ? _verifyOtp
+                      : null,
                   isLoading: isLoading,
                 ),
               ),

@@ -79,7 +79,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 300,
                 child: Text(
-                  'Drive when your want,Get paid weekly,\nNo vehicle needed',
+                  'Drive when you want,Get paid weekly,\nNo vehicle needed',
                   style: kCaption14R.copyWith(height: 1.4, color: kChevronGrey),
                 ),
               ),

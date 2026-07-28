@@ -93,9 +93,9 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -171,8 +171,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) =>
                               FocusScope.of(context).requestFocus(_emailFocus),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty)
+                          validator: (v) => (v == null || v.trim().isEmpty)
                               ? 'Full name is required'
                               : null,
                         ),
@@ -220,8 +219,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           type: CustomFieldType.date,
                           hint: 'DD-MM-YYYY',
                           controller: _dobController,
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty)
+                          validator: (v) => (v == null || v.trim().isEmpty)
                               ? 'Date of birth is required'
                               : null,
                         ),
@@ -380,13 +378,28 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        fontFamily: 'ClashGrotesk',
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: kTextColor,
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: label,
+            style: const TextStyle(
+              fontFamily: 'ClashGrotesk',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: kTextColor,
+            ),
+          ),
+          const TextSpan(
+            text: ' *',
+            style: TextStyle(
+              fontFamily: 'ClashGrotesk',
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+        ],
       ),
     );
   }
