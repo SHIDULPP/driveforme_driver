@@ -13,6 +13,7 @@ import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 const _kLicenseCategories = [
   'LMV (Light Motor Vehicle)',
@@ -45,11 +46,24 @@ class _DrivingLicenseUploadPageState
 
   bool get _hasImage => _imageUrl != null && _imageUrl!.isNotEmpty;
 
+  bool _isExpiryDateValid() {
+    final text = _expiryDateController.text.trim();
+    if (text.length != 10) return false;
+    try {
+      final date = DateFormat('dd/MM/yyyy').parseStrict(text);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      return !date.isBefore(today);
+    } catch (e) {
+      return false;
+    }
+  }
+
   bool get _canSubmit =>
       _hasImage &&
       _licenseNumberController.text.trim().isNotEmpty &&
       _licenseCategory != null &&
-      _expiryDateController.text.trim().isNotEmpty &&
+      _isExpiryDateValid() &&
       _transmissionType != null;
 
   @override
@@ -203,6 +217,7 @@ class _DrivingLicenseUploadPageState
                       type: CustomFieldType.date,
                       hint: 'DD/MM/YY',
                       controller: _expiryDateController,
+                      firstDate: DateTime.now(),
                       lastDate: DateTime(2040, 12, 31),
                       onDateSelected: (_) => setState(() {}),
                     ),
