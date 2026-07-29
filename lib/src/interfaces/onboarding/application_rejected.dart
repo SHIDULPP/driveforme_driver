@@ -19,9 +19,8 @@ class ApplicationRejectedPage extends ConsumerWidget {
     final size = MediaQuery.sizeOf(context);
 
     return userAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, _) => Scaffold(
         body: Center(
           child: TextButton(
@@ -35,14 +34,14 @@ class ApplicationRejectedPage extends ConsumerWidget {
         final fallbackReason = user?.adminReview.notes.trim().isNotEmpty == true
             ? user!.adminReview.notes.trim()
             : verification?.aiVerificationNotes.trim().isNotEmpty == true
-                ? verification!.aiVerificationNotes.trim()
-                : 'We could not verify your documents. Please upload clearer copies.';
-        final licenseReason = verification?.drivingLicenseCheck
-                .rejectionReason(fallbackReason) ??
+            ? verification!.aiVerificationNotes.trim()
+            : 'We could not verify your documents. Please upload clearer copies.';
+        final licenseReason =
+            verification?.drivingLicenseCheck.rejectionReason(fallbackReason) ??
             fallbackReason;
         final aadhaarReason =
             verification?.aadhaarCheck.rejectionReason(fallbackReason) ??
-                fallbackReason;
+            fallbackReason;
 
         return Scaffold(
           backgroundColor: kSosScreenBg,
@@ -54,9 +53,24 @@ class ApplicationRejectedPage extends ConsumerWidget {
                   child: Column(
                     children: [
                       const SizedBox(height: 18),
-                      const Align(
+                      Align(
                         alignment: Alignment.centerLeft,
-                        child: AppBackButton(),
+                        child: AppBackButton(
+                          onTap: () {
+                            final nav = Navigator.of(context);
+                            if (nav.canPop()) {
+                              nav.pop();
+                            } else {
+                              // This screen is typically opened via
+                              // `pushNamedAndRemoveUntil`, so there's no route
+                              // to pop back to. Take the user to re-upload.
+                              nav.pushNamedAndRemoveUntil(
+                                'documentsUpload',
+                                (route) => false,
+                              );
+                            }
+                          },
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Image.asset(
@@ -133,8 +147,7 @@ class ApplicationRejectedPage extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Center(
                             child: TextButton(
-                              onPressed: () =>
-                                  launchPhoneCall(_supportPhone),
+                              onPressed: () => launchPhoneCall(_supportPhone),
                               style: TextButton.styleFrom(
                                 foregroundColor: kBrandBlue,
                                 padding: const EdgeInsets.symmetric(
@@ -201,11 +214,12 @@ class _RejectedDocumentCard extends StatelessWidget {
                 child: Image.asset(imagePath, fit: BoxFit.contain),
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(title, style: kProfileNameB),
-              ),
+              Expanded(child: Text(title, style: kProfileNameB)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: kSosCardBg,
                   borderRadius: BorderRadius.circular(20),
@@ -232,10 +246,7 @@ class _RejectedDocumentCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             reason,
-            style: kCaption14R.copyWith(
-              color: kTextColor,
-              height: 1.4,
-            ),
+            style: kCaption14R.copyWith(color: kTextColor, height: 1.4),
           ),
         ],
       ),
