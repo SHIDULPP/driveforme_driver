@@ -237,12 +237,6 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
         return;
       }
 
-      final data = nestedData(response.data);
-      final otpCode = data?['otpCode'] as String?;
-      if (otpCode != null) {
-        log('Dev OTP: $otpCode', name: 'PhoneNumberScreen');
-      }
-
       final countryCode = ref.read(countryCodeProvider) ?? '91';
 
       Navigator.push(
@@ -552,12 +546,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
         return;
       }
 
-      final otpCode = nestedData(response.data)?['otpCode'] as String?;
-      if (otpCode != null) {
-        log('Dev OTP: $otpCode', name: 'OTPScreen');
-      }
-
-      _showMessage('OTP sent again');
+      _showMessage(response.message ?? 'OTP sent to your phone');
     } finally {
       ref.read(loadingProvider.notifier).stopLoading();
     }
