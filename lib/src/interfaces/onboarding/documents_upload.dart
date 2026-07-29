@@ -4,6 +4,7 @@ import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
+import 'package:driveforme_driver/src/data/models/user_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
@@ -35,10 +36,23 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
   DocumentUploadResult? _licenseResult;
   DocumentUploadResult? _livePhotoResult;
 
+  bool _isReuploadMode = false;
+  bool _aadhaarNeedsReupload = false;
+  bool _licenseNeedsReupload = false;
+  bool _livePhotoNeedsReupload = false;
+
   @override
   void initState() {
     super.initState();
     _loadExistingDocuments();
+  }
+
+  bool _needsReupload(DocumentAiCheck check) {
+    // When the AI check reports issues/notes, the document needs reupload.
+    return check.isBlurred ||
+        check.isPartial ||
+        check.hasSunglasses ||
+        check.notes.trim().isNotEmpty;
   }
 
   Future<void> _loadExistingDocuments() async {
@@ -47,6 +61,8 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
 
     final verification = user.driverVerification;
     setState(() {
+      _isReuploadMode = user.isOnboardingRejected;
+
       if (verification.aadhaarImageUrl.isNotEmpty) {
         _aadhaarImageUrl = verification.aadhaarImageUrl;
       }
@@ -56,6 +72,10 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
       if (verification.livePhotoUrl.isNotEmpty) {
         _livePhotoUrl = verification.livePhotoUrl;
       }
+
+      _aadhaarNeedsReupload = _needsReupload(verification.aadhaarCheck);
+      _licenseNeedsReupload = _needsReupload(verification.drivingLicenseCheck);
+      _livePhotoNeedsReupload = _needsReupload(verification.livePhotoCheck);
     });
   }
 
@@ -106,6 +126,15 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(loadingProvider);
+    final aadhaarIsVerified = _isReuploadMode
+        ? !_aadhaarNeedsReupload
+        : _aadhaarUploaded;
+    final licenseIsVerified = _isReuploadMode
+        ? !_licenseNeedsReupload
+        : _licenseUploaded;
+    final livePhotoIsVerified = _isReuploadMode
+        ? !_livePhotoNeedsReupload
+        : _livePhotoCaptured;
 
     return Scaffold(
       backgroundColor: kWhite,
@@ -172,28 +201,32 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         imagePath: 'assets/pngs/aadhar_image.png',
                         title: 'Aadhaar',
                         description: 'Government ID proof',
-                        isUploaded: _aadhaarUploaded,
-                        actionLabel: _aadhaarUploaded
-                            ? 'Uploaded'
-                            : 'Tap to Upload',
-                        actionIcon: _aadhaarUploaded
+                        isUploaded: aadhaarIsVerified,
+                        actionLabel: _isReuploadMode
+                            ? (_aadhaarNeedsReupload
+                                  ? 'Tap to Reupload'
+                                  : 'Verified')
+                            : (_aadhaarUploaded ? 'Uploaded' : 'Tap to Upload'),
+                        actionIcon: aadhaarIsVerified
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
                         uploadedLocalPath: _aadhaarResult?.localPath,
                         uploadedImageUrl: _aadhaarImageUrl,
-                        onActionTap: () async {
-                          final result = await Navigator.pushNamed(
-                            context,
-                            'aadhaarUpload',
-                            arguments: _aadhaarResult,
-                          );
-                          if (result is DocumentUploadResult && mounted) {
-                            setState(() {
-                              _aadhaarResult = result;
-                              _aadhaarImageUrl = result.imageUrl;
-                            });
-                          }
-                        },
+                        onActionTap: _isReuploadMode && aadhaarIsVerified
+                            ? null
+                            : () async {
+                                final result = await Navigator.pushNamed(
+                                  context,
+                                  'aadhaarUpload',
+                                  arguments: _aadhaarResult,
+                                );
+                                if (result is DocumentUploadResult && mounted) {
+                                  setState(() {
+                                    _aadhaarResult = result;
+                                    _aadhaarImageUrl = result.imageUrl;
+                                  });
+                                }
+                              },
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -207,28 +240,32 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         imagePath: 'assets/pngs/drivin_license_image.png',
                         title: 'Driving License',
                         description: 'Required for driver verification',
-                        isUploaded: _licenseUploaded,
-                        actionLabel: _licenseUploaded
-                            ? 'Uploaded'
-                            : 'Tap to Upload',
-                        actionIcon: _licenseUploaded
+                        isUploaded: licenseIsVerified,
+                        actionLabel: _isReuploadMode
+                            ? (_licenseNeedsReupload
+                                  ? 'Tap to Reupload'
+                                  : 'Verified')
+                            : (_licenseUploaded ? 'Uploaded' : 'Tap to Upload'),
+                        actionIcon: licenseIsVerified
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
                         uploadedLocalPath: _licenseResult?.localPath,
                         uploadedImageUrl: _licenseImageUrl,
-                        onActionTap: () async {
-                          final result = await Navigator.pushNamed(
-                            context,
-                            'drivingLicenseUpload',
-                            arguments: _licenseResult,
-                          );
-                          if (result is DocumentUploadResult && mounted) {
-                            setState(() {
-                              _licenseResult = result;
-                              _licenseImageUrl = result.imageUrl;
-                            });
-                          }
-                        },
+                        onActionTap: _isReuploadMode && licenseIsVerified
+                            ? null
+                            : () async {
+                                final result = await Navigator.pushNamed(
+                                  context,
+                                  'drivingLicenseUpload',
+                                  arguments: _licenseResult,
+                                );
+                                if (result is DocumentUploadResult && mounted) {
+                                  setState(() {
+                                    _licenseResult = result;
+                                    _licenseImageUrl = result.imageUrl;
+                                  });
+                                }
+                              },
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -242,27 +279,33 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         imagePath: 'assets/pngs/live_photo_image.png',
                         title: 'Live Photo',
                         description: 'Capture a real-time photo',
-                        isUploaded: _livePhotoCaptured,
-                        actionLabel: _livePhotoCaptured
-                            ? 'Captured'
-                            : 'Capture Photo',
-                        actionIcon: _livePhotoCaptured
+                        isUploaded: livePhotoIsVerified,
+                        actionLabel: _isReuploadMode
+                            ? (_livePhotoNeedsReupload
+                                  ? 'Tap to Reupload'
+                                  : 'Verified')
+                            : (_livePhotoCaptured
+                                  ? 'Captured'
+                                  : 'Capture Photo'),
+                        actionIcon: livePhotoIsVerified
                             ? Icons.check_circle_outline
                             : Icons.camera_alt_outlined,
                         uploadedLocalPath: _livePhotoResult?.localPath,
                         uploadedImageUrl: _livePhotoUrl,
-                        onActionTap: () async {
-                          final result = await Navigator.pushNamed(
-                            context,
-                            'selfieScreen',
-                          );
-                          if (result is DocumentUploadResult && mounted) {
-                            setState(() {
-                              _livePhotoResult = result;
-                              _livePhotoUrl = result.imageUrl;
-                            });
-                          }
-                        },
+                        onActionTap: _isReuploadMode && livePhotoIsVerified
+                            ? null
+                            : () async {
+                                final result = await Navigator.pushNamed(
+                                  context,
+                                  'selfieScreen',
+                                );
+                                if (result is DocumentUploadResult && mounted) {
+                                  setState(() {
+                                    _livePhotoResult = result;
+                                    _livePhotoUrl = result.imageUrl;
+                                  });
+                                }
+                              },
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -305,7 +348,7 @@ class _DocumentUploadCard extends StatelessWidget {
     required this.isUploaded,
     required this.actionLabel,
     required this.actionIcon,
-    required this.onActionTap,
+    this.onActionTap,
     this.uploadedLocalPath,
     this.uploadedImageUrl,
   });
@@ -316,9 +359,11 @@ class _DocumentUploadCard extends StatelessWidget {
   final bool isUploaded;
   final String actionLabel;
   final IconData actionIcon;
-  final VoidCallback onActionTap;
+  final VoidCallback? onActionTap;
+
   /// Local file path of the uploaded image (preferred for display — no network needed)
   final String? uploadedLocalPath;
+
   /// Remote URL of the uploaded image (fallback when local path unavailable)
   final String? uploadedImageUrl;
 
@@ -326,7 +371,11 @@ class _DocumentUploadCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Determine which image to show in the thumbnail
     Widget thumbnailChild;
-    if (isUploaded && uploadedLocalPath != null && File(uploadedLocalPath!).existsSync()) {
+    final hasLocal =
+        uploadedLocalPath != null && File(uploadedLocalPath!).existsSync();
+    final hasRemote = uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty;
+
+    if (hasLocal) {
       thumbnailChild = ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.file(
@@ -336,7 +385,7 @@ class _DocumentUploadCard extends StatelessWidget {
           height: double.infinity,
         ),
       );
-    } else if (isUploaded && uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty) {
+    } else if (hasRemote) {
       thumbnailChild = ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
@@ -368,7 +417,9 @@ class _DocumentUploadCard extends StatelessWidget {
           Container(
             width: 96,
             height: 72,
-            padding: isUploaded && (uploadedLocalPath != null || uploadedImageUrl != null)
+            padding:
+                isUploaded &&
+                    (uploadedLocalPath != null || uploadedImageUrl != null)
                 ? EdgeInsets.zero
                 : const EdgeInsets.all(8),
             decoration: BoxDecoration(
