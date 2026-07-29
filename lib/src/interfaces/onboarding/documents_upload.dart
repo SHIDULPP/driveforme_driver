@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
@@ -31,6 +33,7 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
 
   DocumentUploadResult? _aadhaarResult;
   DocumentUploadResult? _licenseResult;
+  DocumentUploadResult? _livePhotoResult;
 
   @override
   void initState() {
@@ -176,6 +179,8 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         actionIcon: _aadhaarUploaded
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
+                        uploadedLocalPath: _aadhaarResult?.localPath,
+                        uploadedImageUrl: _aadhaarImageUrl,
                         onActionTap: () async {
                           final result = await Navigator.pushNamed(
                             context,
@@ -209,6 +214,8 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         actionIcon: _licenseUploaded
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
+                        uploadedLocalPath: _licenseResult?.localPath,
+                        uploadedImageUrl: _licenseImageUrl,
                         onActionTap: () async {
                           final result = await Navigator.pushNamed(
                             context,
@@ -242,6 +249,8 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         actionIcon: _livePhotoCaptured
                             ? Icons.check_circle_outline
                             : Icons.camera_alt_outlined,
+                        uploadedLocalPath: _livePhotoResult?.localPath,
+                        uploadedImageUrl: _livePhotoUrl,
                         onActionTap: () async {
                           final result = await Navigator.pushNamed(
                             context,
@@ -249,6 +258,7 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                           );
                           if (result is DocumentUploadResult && mounted) {
                             setState(() {
+                              _livePhotoResult = result;
                               _livePhotoUrl = result.imageUrl;
                             });
                           }
@@ -296,6 +306,8 @@ class _DocumentUploadCard extends StatelessWidget {
     required this.actionLabel,
     required this.actionIcon,
     required this.onActionTap,
+    this.uploadedLocalPath,
+    this.uploadedImageUrl,
   });
 
   final String imagePath;
@@ -305,9 +317,44 @@ class _DocumentUploadCard extends StatelessWidget {
   final String actionLabel;
   final IconData actionIcon;
   final VoidCallback onActionTap;
+  /// Local file path of the uploaded image (preferred for display — no network needed)
+  final String? uploadedLocalPath;
+  /// Remote URL of the uploaded image (fallback when local path unavailable)
+  final String? uploadedImageUrl;
 
   @override
   Widget build(BuildContext context) {
+    // Determine which image to show in the thumbnail
+    Widget thumbnailChild;
+    if (isUploaded && uploadedLocalPath != null && File(uploadedLocalPath!).existsSync()) {
+      thumbnailChild = ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.file(
+          File(uploadedLocalPath!),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      );
+    } else if (isUploaded && uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty) {
+      thumbnailChild = ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          uploadedImageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          loadingBuilder: (_, child, progress) => progress == null
+              ? child
+              : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          errorBuilder: (_, __, ___) =>
+              Image.asset(imagePath, fit: BoxFit.contain),
+        ),
+      );
+    } else {
+      thumbnailChild = Image.asset(imagePath, fit: BoxFit.contain);
+    }
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -321,13 +368,15 @@ class _DocumentUploadCard extends StatelessWidget {
           Container(
             width: 96,
             height: 72,
-            padding: const EdgeInsets.all(8),
+            padding: isUploaded && (uploadedLocalPath != null || uploadedImageUrl != null)
+                ? EdgeInsets.zero
+                : const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: _kImageBg,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: _kImageBorder, width: 1.2),
             ),
-            child: Image.asset(imagePath, fit: BoxFit.contain),
+            child: thumbnailChild,
           ),
           const SizedBox(width: 14),
           Expanded(
