@@ -826,6 +826,17 @@ class _TripOptionTile extends StatelessWidget {
 class _PromoBannerCard extends StatelessWidget {
   const _PromoBannerCard();
 
+  static Future<void> _openLearnMore(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return const _PromoLearnMoreSheet();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageWidth = context.rs(118);
@@ -897,20 +908,173 @@ class _PromoBannerCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  'Learn more',
-                  style: kStyle(
-                    kMedium,
-                    kSize14,
-                    color: kBrandBlue,
-                    height: 1.2,
-                  ).copyWith(decoration: TextDecoration.underline),
+                GestureDetector(
+                  onTap: () => _openLearnMore(context),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: context.rs(2)),
+                    child: Text(
+                      'Learn more',
+                      style: kStyle(
+                        kMedium,
+                        kSize14,
+                        color: kBrandBlue,
+                        height: 1.2,
+                      ).copyWith(decoration: TextDecoration.underline),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PromoLearnMoreSheet extends StatelessWidget {
+  const _PromoLearnMoreSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+        context.rs(20),
+        context.rs(12),
+        context.rs(20),
+        bottomInset + context.rs(20),
+      ),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(context.rs(24)),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: context.rs(40),
+              height: context.rs(4),
+              decoration: BoxDecoration(
+                color: kCardBorder,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          SizedBox(height: context.rs(18)),
+          Text(
+            'Drive More. Earn More!',
+            style: kStyle(kSemiBold, kSize20, color: kTextColor, height: 1.2),
+          ),
+          SizedBox(height: context.rs(10)),
+          Text(
+            'Complete 20 trips this week and earn an extra ₹1,000 bonus '
+            'credited to your wallet.',
+            style: kCaption14R.copyWith(
+              color: kSecondaryTextColor,
+              height: 1.45,
+            ),
+          ),
+          SizedBox(height: context.rs(16)),
+          _PromoDetailRow(
+            icon: Icons.route_outlined,
+            title: 'How it works',
+            body:
+                'Stay online, accept trip requests, and complete 20 trips '
+                'within the current week (Monday–Sunday).',
+          ),
+          SizedBox(height: context.rs(12)),
+          _PromoDetailRow(
+            icon: Icons.account_balance_wallet_outlined,
+            title: 'Bonus payout',
+            body:
+                'Once you hit the target, ₹1,000 is added to your wallet '
+                'automatically. You can withdraw it to your bank account.',
+          ),
+          SizedBox(height: context.rs(12)),
+          _PromoDetailRow(
+            icon: Icons.info_outline_rounded,
+            title: 'Note',
+            body:
+                'Cancelled trips do not count. Only completed trips in your '
+                'selected trip preference are eligible.',
+          ),
+          SizedBox(height: context.rs(22)),
+          SizedBox(
+            width: double.infinity,
+            height: context.rs(52),
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kBrandBlue,
+                foregroundColor: kWhite,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(context.rs(26)),
+                ),
+              ),
+              child: Text(
+                'Got it',
+                style: kStyle(kSemiBold, kSize16, color: kWhite),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PromoDetailRow extends StatelessWidget {
+  const _PromoDetailRow({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: context.rs(36),
+          width: context.rs(36),
+          decoration: BoxDecoration(
+            color: kBrandBlue.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(context.rs(10)),
+          ),
+          child: Icon(icon, size: context.rs(18), color: kBrandBlue),
+        ),
+        SizedBox(width: context.rs(12)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: kCaption14B),
+              SizedBox(height: context.rs(4)),
+              Text(
+                body,
+                style: kCaption13R.copyWith(
+                  color: kSecondaryTextColor,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
