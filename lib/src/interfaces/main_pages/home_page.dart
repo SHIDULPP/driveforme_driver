@@ -837,7 +837,7 @@ class _TripPreferenceCard extends StatelessWidget {
               SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  'You will recieve requestes based on your preferences',
+                  'You will receive requests based on your preferences',
                   style: TextStyle(
                     fontFamily: 'ClashGrotesk',
                     fontWeight: FontWeight.w400,
@@ -953,80 +953,84 @@ class _PromoBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Figma Frame 2147227124: 361×112 — text column 146×76 @ (19,18), car on right.
     return Container(
       height: 112,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _kPromoCardBg,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: kGoldAccent.withValues(alpha: 0.45)),
-        boxShadow: [
-          BoxShadow(
-            color: kBlack.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: kGoldAccent.withValues(alpha: 0.35)),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: 3,
-            top: 12,
-            bottom: 11,
-            width: 190,
-            child: Stack(
-              alignment: Alignment.centerRight,
-              children: [
-                Positioned(
-                  right: 8,
-                  bottom: 0,
-                  child: Image.asset(
-                    'assets/pngs/car_shadow.png',
-                    width: 100,
-                    fit: BoxFit.contain,
-                  ),
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.0,
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(19, 18, 8, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Drive More. Earn More!',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'ClashGrotesk',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: kDarkText,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Complete 20 trips this week and get 1,000 extra',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'ClashGrotesk',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        color: kDarkText.withValues(alpha: 0.55),
+                        height: 1.15,
+                      ),
+                    ),
+                    const Spacer(),
+                    const _PromoLearnMoreLink(),
+                  ],
                 ),
-                Image.asset(
-                  'assets/pngs/car_image.png',
-                  fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
-                ),
-              ],
+              ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(19, 18, 200, 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Drive More. Earn More!',
-                  style: TextStyle(
-                    fontFamily: 'ClashGrotesk',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: kTextColor,
-                    height: 1.2,
+            SizedBox(
+              width: 168,
+              height: double.infinity,
+              child: Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  Positioned(
+                    right: 8,
+                    bottom: 4,
+                    child: Image.asset(
+                      'assets/pngs/car_shadow.png',
+                      width: 100,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Complete 20 trips this week and get 1,000 extra',
-                  style: TextStyle(
-                    fontFamily: 'ClashGrotesk',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12,
-                    color: kSecondaryTextColor,
-                    height: 1.15,
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4, top: 8, bottom: 4),
+                    child: Image.asset(
+                      'assets/pngs/car_image.png',
+                      fit: BoxFit.contain,
+                      alignment: Alignment.centerRight,
+                    ),
                   ),
-                ),
-                SizedBox(height: 9),
-                _PromoLearnMoreLink(),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
