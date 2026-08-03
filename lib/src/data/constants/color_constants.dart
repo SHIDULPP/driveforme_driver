@@ -10,8 +10,8 @@ const kStrokeColor = Color(0xFF1E3C72); // thin borders
 const Color kTertiary = Color(0xFFE8EAED);
 const Color kBorder = Color(0xFFD8DADC);
 
-//background colour
-const Color kBackgroundColor = Color(0xFFF9FBF4);
+//background colour — Figma `--drive-for-me/-neutral`
+const Color kBackgroundColor = Color(0xFFF6F9F2);
 
 //Common Colors
 const Color kWhite = Color(0xFFFFFFFF);
@@ -37,10 +37,14 @@ const Color kLightGreen = Color.fromARGB(255, 192, 252, 194);
 
 // ── Main app screens (home, trips, nav) ───────────────────────────────────────
 
-const Color kScreenBg = Color(0xFFF2F4F7);
-const Color kBrandBlue = Color(0xFF04599C);
+const Color kScreenBg = Color(0xFFF6F9F2);
+/// Figma `--drive-for-me/primary`
+const Color kBrandBlue = Color(0xFF1D5C92);
 const Color kGold = Color(0xFFB77728);
-const Color kGoldAccent = Color(0xFFC58A38);
+/// Figma `--drive-for-me/accent`
+const Color kGoldAccent = Color(0xFFCE9141);
+/// Figma `--drive-for-me/-neutral`
+const Color kFigmaNeutral = Color(0xFFF6F9F2);
 
 const Color kActiveGreen = Color(0xFF17A34A);
 const Color kActiveGreenBg = Color(0xFFE4F3E7);
@@ -76,23 +80,25 @@ const Color kTripRequestAvatarRing = Color(0xFFD4E3EF);
 
 // ── Earnings / Wallet page ────────────────────────────────────────────────────
 
-const Color kEarningsHeaderBlue = Color(0xFF1A5288);
-const Color kEarningsGold = Color(0xFFC6934B);
-const Color kEarningsStatValueBlue = Color(0xFF205D91);
+/// Figma `--drive-for-me/primary` — matches [kBrandBlue]
+const Color kEarningsHeaderBlue = Color(0xFF1D5C92);
+/// Figma `--drive-for-me/accent` — matches [kGoldAccent]
+const Color kEarningsGold = Color(0xFFCE9141);
+const Color kEarningsStatValueBlue = Color(0xFF1D5C92);
 const Color kEarningsChartBarInactive = Color(0xFFE8EFF8);
-const Color kEarningsChartBarActive = Color(0xFF1A5288);
+const Color kEarningsChartBarActive = Color(0xFF1D5C92);
 const Color kEarningsChartAmountMuted = Color(0xFF8BA4BE);
-const Color kEarningsTabSelectedBg = Color(0xFFDFEAF5);
+const Color kEarningsTabSelectedBg = Color(0xFFEBEEFF);
 const Color kEarningsTabContainerBorder = Color(0xFFE4E8EE);
 const Color kEarningsTabShadow = Color(0x0F000000);
 const Color kEarningsStatCardBorder = Color(0xFFE6E8EC);
-const Color kEarningsCardPurpleBg = Color(0xFFF3EEFA);
-const Color kEarningsCardPurpleValue = Color(0xFF6C5FE6);
+const Color kEarningsCardPurpleBg = Color(0xFFF7F9FE);
+const Color kEarningsCardPurpleValue = Color(0xFF4B3FD8);
 const Color kEarningsCardBlueBg = Color(0xFFE8F0F8);
-const Color kEarningsCardGreenBg = Color(0xFFE8F5E9);
+const Color kEarningsCardGreenBg = Color(0xFFF5FDFA);
 const Color kEarningsCardGreenValue = Color(0xFF17A34A);
-const Color kEarningsCardYellowBg = Color(0xFFFFF8E8);
-const Color kEarningsCardOrangeValue = Color(0xFFE68C3A);
+const Color kEarningsCardYellowBg = Color(0xFFFFFDF9);
+const Color kEarningsCardOrangeValue = Color(0xFFF59E0B);
 const Color kEarningsWithdrawIconBg = Color(0xFFE4F3E7);
 const Color kEarningsTransactionIconBg = Color(0xFFE4F3E7);
 const Color kEarningsPlatformFeeIconBg = Color(0xFFFCE8E8);
@@ -113,6 +119,28 @@ const Color kWithdrawFieldBg = Color(0xFFF4F5F9);
 const Color kSosRed = Color(0xFFE32626);
 const Color kSosRedDark = Color(0xFF9B1F1F);
 const Color kSosCardBg = Color(0xFFF9E6E6);
-const Color kSosScreenBg = Color(0xFFF7F9F2);
+const Color kSosScreenBg = Color(0xFFF6F9F2);
 const Color kSosRefCardBg = Color(0xFFFCE8E8);
 const Color kSosSupportIconBg = Color(0xFFE8F0F8);
+
+// ── Trip status chips (Figma NOW / SCHEDULED / COMPLETED / CANCELLED) ─────────
+
+const Color kStatusNowBg = Color(0xFFE4F3E7);
+const Color kStatusNowText = Color(0xFF17A34A);
+const Color kStatusScheduledBg = Color(0xFFFFF3E8);
+const Color kStatusScheduledText = Color(0xFFCE9141);
+const Color kStatusCompletedBg = Color(0xFFE8F2FA);
+const Color kStatusCompletedText = Color(0xFF1D5C92);
+const Color kStatusCancelledBg = Color(0xFFFEECEC);
+const Color kStatusCancelledText = Color(0xFFE32626);
+
+// ── Shared chrome ─────────────────────────────────────────────────────────────
+
+const Color kBackButtonBg = Color(0xFFE7E7F1);
+const Color kDarkText = Color(0xFF0E0D1A);
+const double kFigmaCtaHeight = 56;
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+
+/// Figma `semantic/danger` — profile Logout / Delete Account.
+const Color kDangerRed = Color(0xFFDC2626);

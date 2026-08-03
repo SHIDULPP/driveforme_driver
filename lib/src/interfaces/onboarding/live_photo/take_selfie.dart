@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/services/upload_service.dart';
 import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
+import 'package:driveforme_driver/src/interfaces/components/appbackbutton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -196,7 +195,7 @@ class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage>
                       Positioned(
                         top: 4,
                         left: 20,
-                        child: _CameraBackButton(
+                        child: AppBackButton(
                           onTap: () => Navigator.pop(context),
                         ),
                       ),
@@ -374,36 +373,6 @@ class _OvalCutoutOverlayPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _OvalCutoutOverlayPainter oldDelegate) {
     return oldDelegate.ovalRect != ovalRect;
-  }
-}
-
-// ── Back button ───────────────────────────────────────────────────────────────
-
-class _CameraBackButton extends StatelessWidget {
-  const _CameraBackButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 44,
-        width: 44,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE7E7F1),
-          shape: BoxShape.circle,
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20,
-            color: kTextColor,
-          ),
-        ),
-      ),
-    );
   }
 }
 

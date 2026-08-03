@@ -2,6 +2,7 @@ import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
 
@@ -19,11 +20,17 @@ class NewTripRequestCard extends StatelessWidget {
   final VoidCallback onDecline;
   final VoidCallback? onTap;
 
+  Future<void> _confirmDecline(BuildContext context) async {
+    final confirmed = await showRejectTripDialog(context);
+    if (confirmed) onDecline();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cardRadius = context.rs(18);
     final buttonRadius = context.rs(12);
     final buttonHeight = context.rs(46);
+    final isScheduled = trip.isScheduled;
 
     return Material(
       color: Colors.transparent,
@@ -46,22 +53,30 @@ class NewTripRequestCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'New Trip request',
+                      isScheduled ? 'Scheduled Trip Request' : 'New Trip request',
                       style: kTripSubSectionSB,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  SizedBox(width: context.rs(6)),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: context.rs(10),
                       vertical: context.rs(4),
                     ),
                     decoration: BoxDecoration(
-                      color: kChipGreyBg,
+                      color: isScheduled ? kStatusScheduledBg : kChipGreyBg,
                       borderRadius: BorderRadius.circular(context.rs(20)),
                     ),
                     child: Text(
-                      trip.tripTypeChipLabel,
-                      style: kTripChipR.copyWith(color: kSecondaryTextColor),
+                      isScheduled ? 'Scheduled' : trip.tripTypeChipLabel,
+                      style: kTripChipR.copyWith(
+                        color: isScheduled
+                            ? kStatusScheduledText
+                            : kSecondaryTextColor,
+                        fontWeight: isScheduled ? kSemiBold : kRegular,
+                      ),
                     ),
                   ),
                 ],
@@ -93,6 +108,12 @@ class NewTripRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (isScheduled && trip.pickupAt != null) ...[
+                SizedBox(height: context.rs(10)),
+                _ScheduledPickupRow(
+                  label: trip.formatDateTime(trip.pickupAt),
+                ),
+              ],
               SizedBox(height: context.rs(12)),
               _TripStatsBar(trip: trip),
               SizedBox(height: context.rs(12)),
@@ -100,7 +121,7 @@ class NewTripRequestCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: onDecline,
+                      onPressed: () => _confirmDecline(context),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: kSosRed,
                         side: BorderSide(color: kSosRed, width: context.rs(1)),
@@ -145,6 +166,47 @@ class NewTripRequestCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ScheduledPickupRow extends StatelessWidget {
+  const _ScheduledPickupRow({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(10),
+        vertical: context.rs(8),
+      ),
+      decoration: BoxDecoration(
+        color: kStatusScheduledBg,
+        borderRadius: BorderRadius.circular(context.rs(10)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.schedule_rounded,
+            size: context.rs(14),
+            color: kStatusScheduledText,
+          ),
+          SizedBox(width: context.rs(6)),
+          Expanded(
+            child: Text(
+              'Pickup: $label',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: kTripChipR.copyWith(
+                color: kStatusScheduledText,
+                fontWeight: kSemiBold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

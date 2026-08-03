@@ -7,15 +7,9 @@ import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-const _kNavigateBlue = Color(0xFF205D91);
-const _kShortTripBadgeBg = Color(0xFFF3F4EE);
-const _kDropPinBlue = Color(0xFF2B74E1);
-const _kScheduledBadgeBg = Color(0xFFFFF3E8);
-const _kScheduledBadgeText = Color(0xFFC6934B);
-const _kCompletedBadgeBg = Color(0xFFE8F2FA);
-const _kCompletedBadgeText = Color(0xFF2B74E1);
-const _kCancelledBadgeBg = Color(0xFFFEECEC);
-const _kCancelledBadgeText = Color(0xFFE32626);
+const _kNavigateBlue = kBrandBlue;
+const _kShortTripBadgeBg = kFigmaNeutral;
+const _kDropPinBlue = kDropBlue;
 
 enum TripCardStatus { ongoing, upcoming, completed, cancelled }
 
@@ -346,10 +340,10 @@ class TripCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(19, 16, 19, 16),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.05),
@@ -409,10 +403,10 @@ class TripCard extends StatelessWidget {
                           data.earningsAmount!,
                           maxLines: 1,
                           style: kStyle(
-                            kSemiBold,
-                            kSize26,
-                            color: _kNavigateBlue,
-                            height: 1.05,
+                            kMedium,
+                            kSize20,
+                            color: kBrandBlue,
+                            height: 1.2,
                           ),
                         ),
                       ),
@@ -420,7 +414,9 @@ class TripCard extends StatelessWidget {
                       Text(
                         'you earn',
                         maxLines: 1,
-                        style: kCaption12R.copyWith(color: kMutedText),
+                        style: kCaption12R.copyWith(
+                          color: kDarkText.withValues(alpha: 0.5),
+                        ),
                       ),
                     ],
                   ),
@@ -523,9 +519,9 @@ class TripCard extends StatelessWidget {
           const SizedBox(height: 16),
           primaryButton(
             label: data.buttonLabel,
-            buttonHeight: 52,
-            fontSize: kSize16,
-            buttonColor: _kNavigateBlue,
+            buttonHeight: 42,
+            fontSize: kSize14,
+            buttonColor: kBrandBlue,
             labelColor: kWhite,
             icon: data.buttonIcon,
             onPressed: onButtonPressed,
@@ -580,28 +576,32 @@ class _StatusBadge extends StatelessWidget {
     switch (status) {
       case TripCardStatus.ongoing:
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          height: 26,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: kActiveGreenBg,
-            borderRadius: BorderRadius.circular(20),
+            color: const Color(0x1A16A34A),
+            borderRadius: BorderRadius.circular(100),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 height: 6,
                 width: 6,
                 decoration: const BoxDecoration(
-                  color: kActiveGreen,
+                  color: Color(0xFF16A34A),
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  'NOW',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: kTripBadgeSB,
+              const SizedBox(width: 4),
+              Text(
+                'NOW',
+                maxLines: 1,
+                style: kStyle(
+                  kMedium,
+                  kSize14,
+                  color: const Color(0xFF16A34A),
+                  height: 1.2,
                 ),
               ),
             ],
@@ -610,23 +610,23 @@ class _StatusBadge extends StatelessWidget {
       case TripCardStatus.upcoming:
         return _DotStatusBadge(
           label: 'SCHEDULED',
-          backgroundColor: _kScheduledBadgeBg,
-          dotColor: _kScheduledBadgeText,
-          textColor: _kScheduledBadgeText,
+          backgroundColor: kStatusScheduledBg,
+          dotColor: kStatusScheduledText,
+          textColor: kStatusScheduledText,
         );
       case TripCardStatus.completed:
         return _DotStatusBadge(
           label: 'COMPLETED',
-          backgroundColor: _kCompletedBadgeBg,
-          dotColor: _kCompletedBadgeText,
-          textColor: _kCompletedBadgeText,
+          backgroundColor: kStatusCompletedBg,
+          dotColor: kStatusCompletedText,
+          textColor: kStatusCompletedText,
         );
       case TripCardStatus.cancelled:
         return _DotStatusBadge(
           label: 'CANCELLED',
-          backgroundColor: _kCancelledBadgeBg,
-          dotColor: _kCancelledBadgeText,
-          textColor: _kCancelledBadgeText,
+          backgroundColor: kStatusCancelledBg,
+          dotColor: kStatusCancelledText,
+          textColor: kStatusCancelledText,
         );
     }
   }
@@ -683,25 +683,26 @@ class _ShortTripBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: _kShortTripBadgeBg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.sync_alt_rounded,
             size: 14,
-            color: kTextColor.withValues(alpha: 0.7),
+            color: kDarkText.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 8),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: kStyle(kMedium, kSize11, color: kTextColor, height: 1.1),
+              style: kStyle(kMedium, kSize14, color: kDarkText, height: 1.2),
             ),
           ),
         ],

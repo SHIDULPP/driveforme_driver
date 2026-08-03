@@ -11,10 +11,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
-const _kDateHeaderBg = Color(0xFFF2F4F7);
-const _kUnreadDotColor = Color(0xFF1D5C92);
+const _kDateHeaderBg = kFigmaNeutral;
+const _kUnreadDotColor = kBrandBlue;
 const _kTimestampColor = Color(0xFF5A7A9A);
-const _kTitleColor = Color(0xFF0A1F33);
+const _kTitleColor = kDarkText;
 
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});

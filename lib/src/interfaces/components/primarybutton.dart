@@ -7,14 +7,14 @@ Widget primaryButton({
   required String label,
   required VoidCallback? onPressed,
   Color labelColor = kWhite,
-  double fontSize = 14,
-  double buttonHeight = 48,
+  double fontSize = 16,
+  double buttonHeight = 56,
   bool isLoading = false,
-  Color buttonColor = kPrimaryColor,
+  Color buttonColor = kBrandBlue,
   Color sideColor = Colors.transparent,
   Widget? icon,
 }) {
-  final BorderRadius borderRadius = BorderRadius.circular(56);
+  final BorderRadius borderRadius = BorderRadius.circular(100);
 
   return SizedBox(
     height: buttonHeight,
@@ -146,9 +146,11 @@ class _InteractiveButtonState extends State<_InteractiveButton> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
+                          fontFamily: 'ClashGrotesk',
                           fontWeight: FontWeight.w600,
                           color: widget.labelColor,
                           fontSize: widget.fontSize,
+                          height: 1.2,
                         ),
                       ),
                     ],

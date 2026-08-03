@@ -16,7 +16,7 @@ class BankAddedSuccessPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WithdrawScaffold(
-      title: 'Verifying Account',
+      title: 'Bank Account Added',
       body: ListView(
         padding: EdgeInsets.fromLTRB(
           context.horizontalPadding,

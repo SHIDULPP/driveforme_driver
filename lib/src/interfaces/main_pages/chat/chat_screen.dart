@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-const _chipBg = Color(0xFFF2F3F7);
-const _inputBorder = Color(0xFFE2E2EC);
+const _chipBg = kFigmaNeutral;
+const _inputBorder = kTripBorder;
 const _pollInterval = Duration(seconds: 5);
 
 class ChatScreen extends ConsumerStatefulWidget {

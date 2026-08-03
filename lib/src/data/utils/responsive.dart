@@ -25,18 +25,14 @@ double responsiveHorizontalPadding(BuildContext context) =>
 /// Bottom padding for scrollable main-tab content above the floating nav bar.
 double responsiveScaffoldBottomPadding(BuildContext context) {
   final bottomInset = MediaQuery.paddingOf(context).bottom;
-  return responsiveSize(context, 64) +
-      responsiveSize(context, 16) +
-      bottomInset +
-      responsiveSize(context, 12);
+  // Figma Driver nav = 80, bottom gap ≈ 20.
+  return 80 + 20 + bottomInset + 12;
 }
 
 /// Total height occupied by the floating bottom navigation bar (including safe area gap).
 double responsiveFloatingNavTotalHeight(BuildContext context) {
   final bottomInset = MediaQuery.paddingOf(context).bottom;
-  return responsiveSize(context, 64) +
-      responsiveSize(context, 16) +
-      bottomInset;
+  return 80 + 20 + bottomInset;
 }
 
 /// Applies width-based text scaling and clamps system accessibility scaling so

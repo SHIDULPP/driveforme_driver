@@ -1,5 +1,6 @@
 import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
+import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/data/models/user_model.dart';
@@ -178,12 +179,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         duration: anim.AnimationDuration.normal,
                         child: Text(
                           'Personal Details',
-                          style: const TextStyle(
-                            fontFamily: 'ClashGrotesk',
-                            fontSize: 30,
-                            fontWeight: FontWeight.w500,
-                            color: kTextColor,
-                          ),
+                          style: kStyle(kRegular, kSize30, color: kDarkText),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -192,14 +188,9 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                             anim.AppAnimationType.fadeSlideInFromLeft,
                         duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 80,
-                        child: const Text(
+                        child: Text(
                           "Let's get you started",
-                          style: TextStyle(
-                            fontFamily: 'ClashGrotesk',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: kSecondaryTextColor,
-                          ),
+                          style: kStyle(kLight, kSize16, color: kMutedText),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -432,21 +423,11 @@ class _FieldLabel extends StatelessWidget {
         children: [
           TextSpan(
             text: label,
-            style: const TextStyle(
-              fontFamily: 'ClashGrotesk',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: kTextColor,
-            ),
+            style: kStyle(kRegular, kSize16, color: kDarkText),
           ),
-          const TextSpan(
+          TextSpan(
             text: ' *',
-            style: TextStyle(
-              fontFamily: 'ClashGrotesk',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.red,
-            ),
+            style: kStyle(kRegular, kSize16, color: Colors.red),
           ),
         ],
       ),

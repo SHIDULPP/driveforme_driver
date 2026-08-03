@@ -9,8 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
 const _kVerifiedBadgeBg = Color(0xFFE8F5EA);
-const _kPendingBadgeBg = Color(0xFFFFF3E8);
-const _kPendingBadgeText = Color(0xFFC6934B);
+const _kPendingBadgeBg = kStatusScheduledBg;
+const _kPendingBadgeText = kStatusScheduledText;
 
 class DocumentsPage extends ConsumerWidget {
   const DocumentsPage({super.key});

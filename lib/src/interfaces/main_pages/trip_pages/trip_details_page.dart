@@ -17,12 +17,6 @@ const _kPageBg = Color(0xFFF8FAF5);
 const _kNavigateBlue = Color(0xFF205D91);
 const _kShortTripBadgeBg = Color(0xFFF3F4EE);
 const _kDropPinBlue = Color(0xFF2B74E1);
-const _kScheduledBadgeBg = Color(0xFFFFF3E8);
-const _kScheduledBadgeText = Color(0xFFC6934B);
-const _kCompletedBadgeBg = Color(0xFFE8F2FA);
-const _kCompletedBadgeText = Color(0xFF2B74E1);
-const _kCancelledBadgeBg = Color(0xFFFEECEC);
-const _kCancelledBadgeText = Color(0xFFE32626);
 const _kInvoiceButtonBg = Color(0xFFE6EEF5);
 const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
@@ -465,23 +459,23 @@ class _StatusBadge extends StatelessWidget {
       case TripCardStatus.upcoming:
         return _DotStatusBadge(
           label: 'SCHEDULED',
-          backgroundColor: _kScheduledBadgeBg,
-          dotColor: _kScheduledBadgeText,
-          textColor: _kScheduledBadgeText,
+          backgroundColor: kStatusScheduledBg,
+          dotColor: kStatusScheduledText,
+          textColor: kStatusScheduledText,
         );
       case TripCardStatus.completed:
         return _DotStatusBadge(
           label: 'COMPLETED',
-          backgroundColor: _kCompletedBadgeBg,
-          dotColor: _kCompletedBadgeText,
-          textColor: _kCompletedBadgeText,
+          backgroundColor: kStatusCompletedBg,
+          dotColor: kStatusCompletedText,
+          textColor: kStatusCompletedText,
         );
       case TripCardStatus.cancelled:
         return _DotStatusBadge(
           label: 'CANCELLED',
-          backgroundColor: _kCancelledBadgeBg,
-          dotColor: _kCancelledBadgeText,
-          textColor: _kCancelledBadgeText,
+          backgroundColor: kStatusCancelledBg,
+          dotColor: kStatusCancelledText,
+          textColor: kStatusCancelledText,
         );
       case TripCardStatus.ongoing:
         return _DotStatusBadge(

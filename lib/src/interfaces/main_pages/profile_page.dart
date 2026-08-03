@@ -14,10 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 const _kMenuItems = [
   'Personal Details',
   'Documents',
-  'Help & Support',
   'Notifications',
-  'Refer & Earn',
-  'About us',
+  'Refer and Earn',
   'FAQ',
 ];
 
@@ -37,52 +35,28 @@ class ProfilePage extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: kScreenBg,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  context.horizontalPadding,
-                  context.rs(8),
-                  context.horizontalPadding,
-                  0,
-                ),
-                child: Text(
-                  'Profile',
-                  style: kStyle(
-                    kMedium,
-                    kSize30,
-                    color: kTextColor,
-                    height: 1.15,
-                  ),
-                ),
+          child: userAsync.when(
+            data: (user) => ListView(
+              padding: EdgeInsets.fromLTRB(
+                context.horizontalPadding,
+                context.rs(22),
+                context.horizontalPadding,
+                context.scaffoldBottomPadding,
               ),
-              Expanded(
-                child: userAsync.when(
-                  data: (user) => ListView(
-                    padding: EdgeInsets.fromLTRB(
-                      context.horizontalPadding,
-                      context.rs(20),
-                      context.horizontalPadding,
-                      context.scaffoldBottomPadding,
-                    ),
-                    children: [
-                      _ProfileSummaryCard(user: user),
-                      const SizedBox(height: 14),
-                      const _ProfileMenuCard(),
-                      const SizedBox(height: 14),
-                      const _ProfileLogoutCard(),
-                      const SizedBox(height: 32),
-                      const _ProfileFooter(),
-                    ],
-                  ),
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => _ProfileErrorState(
-                    onRetry: () => ref.invalidate(userProvider),
-                  ),
-                ),
-              ),
-            ],
+              children: [
+                _ProfileSummaryCard(user: user),
+                const SizedBox(height: 8),
+                const _ProfileMenuCard(),
+                const SizedBox(height: 8),
+                const _ProfileLogoutCard(),
+                const SizedBox(height: 24),
+                const _ProfileFooter(),
+              ],
+            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => _ProfileErrorState(
+              onRetry: () => ref.invalidate(userProvider),
+            ),
           ),
         ),
       ),
@@ -97,13 +71,15 @@ class _ProfileSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatarSize = context.rs(64);
+    final avatarSize = context.rs(60);
+    final isVerified = user?.onboardingStatus == 'approved';
 
     return Container(
       padding: EdgeInsets.all(context.rs(16)),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(context.rs(18)),
+        borderRadius: BorderRadius.circular(context.rs(12)),
+        border: Border.all(color: kCardBorder, width: 0.6),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.04),
@@ -114,12 +90,34 @@ class _ProfileSummaryCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ProfileAvatar(
-            imageUrl: profilePhotoUrl(user),
-            size: avatarSize,
-            borderRadius: BorderRadius.circular(avatarSize / 2),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ProfileAvatar(
+                imageUrl: profilePhotoUrl(user),
+                size: avatarSize,
+                borderRadius: BorderRadius.circular(avatarSize / 2),
+              ),
+              if (isVerified)
+                Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(1.5),
+                    decoration: const BoxDecoration(
+                      color: kWhite,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.verified_rounded,
+                      size: context.rs(18),
+                      color: kActiveGreen,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          SizedBox(width: context.rs(14)),
+          SizedBox(width: context.rs(16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,39 +127,38 @@ class _ProfileSummaryCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: kStyle(
-                    kSemiBold,
+                    kMedium,
                     kSize18,
                     color: kTextColor,
-                    height: 1.15,
+                    height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: context.rs(3)),
                 Row(
                   children: [
                     Text(
                       displayRating(user),
-                      style: kCaption14M.copyWith(
-                        color: kTextColor,
-                        fontWeight: kSemiBold,
+                      style: kStyle(kLight, kSize12, color: kDarkText),
+                    ),
+                    SizedBox(width: context.rs(5)),
+                    ProfileRatingStars(
+                      rating: user?.rating ?? 5.0,
+                      size: context.rs(13),
+                    ),
+                    SizedBox(width: context.rs(5)),
+                    Container(
+                      height: context.rs(4),
+                      width: context.rs(4),
+                      decoration: const BoxDecoration(
+                        color: kMutedText,
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    ProfileRatingStars(rating: user?.rating ?? 5.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Container(
-                        height: 4,
-                        width: 4,
-                        decoration: const BoxDecoration(
-                          color: kMutedText,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
+                    SizedBox(width: context.rs(5)),
                     Flexible(
                       child: Text(
                         displayTotalTrips(user),
-                        style: kCaption13R.copyWith(color: kMutedText),
+                        style: kStyle(kLight, kSize12, color: kDarkText),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -182,14 +179,10 @@ void _onMenuTap(BuildContext context, String title) {
       Navigator.pushNamed(context, 'personalInfo');
     case 'Documents':
       Navigator.pushNamed(context, 'documentsPage');
-    case 'Help & Support':
-      Navigator.pushNamed(context, 'helpAndSupportPage');
     case 'Notifications':
       Navigator.pushNamed(context, 'notificationsPage');
-    case 'Refer & Earn':
+    case 'Refer and Earn':
       Navigator.pushNamed(context, 'referPage');
-    case 'About us':
-      Navigator.pushNamed(context, 'aboutUsPage');
     case 'FAQ':
       Navigator.pushNamed(context, 'faqPage');
   }
@@ -203,9 +196,13 @@ class _ProfileMenuCard extends ConsumerWidget {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(20),
+        vertical: context.rs(20),
+      ),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(context.rs(18)),
+        borderRadius: BorderRadius.circular(context.rs(12)),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.04),
@@ -225,14 +222,7 @@ class _ProfileMenuCard extends ConsumerWidget {
                     _kMenuItems[index] == 'Notifications' ? unreadCount : 0,
                 onTap: () => _onMenuTap(context, _kMenuItems[index]),
               ),
-              if (!isLast)
-                const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: kCardBorder,
-                  indent: 16,
-                  endIndent: 16,
-                ),
+              if (!isLast) SizedBox(height: context.rs(24)),
             ],
           );
         }),
@@ -246,11 +236,13 @@ class _ProfileMenuTile extends StatelessWidget {
     required this.title,
     required this.onTap,
     this.badgeCount = 0,
+    this.titleColor,
   });
 
   final String title;
   final VoidCallback onTap;
   final int badgeCount;
+  final Color? titleColor;
 
   @override
   Widget build(BuildContext context) {
@@ -258,12 +250,9 @@ class _ProfileMenuTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: context.rs(16),
-            vertical: context.rs(16),
-          ),
+          padding: EdgeInsets.symmetric(vertical: context.rs(2)),
           child: Row(
             children: [
               Expanded(
@@ -271,7 +260,9 @@ class _ProfileMenuTile extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: kMenuItemM,
+                  style: titleColor == null
+                      ? kMenuItemM
+                      : kMenuItemM.copyWith(color: titleColor),
                 ),
               ),
               if (badgeCount > 0) ...[
@@ -310,9 +301,13 @@ class _ProfileLogoutCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(20),
+        vertical: context.rs(20),
+      ),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(context.rs(18)),
+        borderRadius: BorderRadius.circular(context.rs(12)),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.04),
@@ -321,9 +316,20 @@ class _ProfileLogoutCard extends ConsumerWidget {
           ),
         ],
       ),
-      child: _ProfileMenuTile(
-        title: 'Logout',
-        onTap: () => _confirmLogout(context, ref),
+      child: Column(
+        children: [
+          _ProfileMenuTile(
+            title: 'Logout',
+            titleColor: kDangerRed,
+            onTap: () => _confirmLogout(context, ref),
+          ),
+          SizedBox(height: context.rs(24)),
+          _ProfileMenuTile(
+            title: 'Delete Account',
+            titleColor: kDangerRed,
+            onTap: () => _confirmDeleteAccount(context),
+          ),
+        ],
       ),
     );
   }
@@ -352,6 +358,29 @@ class _ProfileLogoutCard extends ConsumerWidget {
     await ref.read(authLogoutServiceProvider).logout(ref);
     if (!context.mounted) return;
     NavigationService().pushNamedAndRemoveUntil('Phone');
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete account?'),
+        content: const Text(
+          'This will permanently delete your account and all associated '
+          'data. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Delete', style: TextStyle(color: kDangerRed)),
+          ),
+        ],
+      ),
+    );
   }
 }
 

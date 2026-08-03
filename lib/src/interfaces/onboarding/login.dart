@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:driveforme_driver/src/data/apis/auth_api.dart';
 import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
@@ -19,12 +18,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:pin_code_fields/pin_code_fields.dart'
-    show PinCodeTextField, PinTheme, PinCodeFieldShape, AnimationType
-// ignore: library_prefixes
-;
 import 'package:pin_code_fields/pin_code_fields.dart';
+
+/// Figma `--drive-for-me/dark-text-color` placeholder grey used for
+/// unfilled underline inputs (Verify Number, OTP).
+const Color _kFieldPlaceholderGrey = Color(0xFF9E9E9E);
 
 final countryCodeProvider = StateProvider<String?>((ref) => '91');
 
@@ -39,7 +37,6 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
   late TextEditingController _mobileController;
   late FocusNode _phoneFocusNode;
   bool _showPhoneError = false;
-  String _fullPhoneNumber = '';
 
   @override
   void initState() {
@@ -61,10 +58,10 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
     final isLoading = ref.watch(loadingProvider);
 
     return Scaffold(
-      backgroundColor: kBackgroundColor,
+      backgroundColor: kWhite,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -72,103 +69,130 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
               anim.AnimatedWidgetWrapper(
                 animationType: anim.AppAnimationType.fadeSlideInFromLeft,
                 duration: anim.AnimationDuration.normal,
-                child: Text('Verify Your Number', style: kHeadTitleR),
+                child: Text(
+                  'Verify Your Number',
+                  style: kStyle(kRegular, kSize30, color: kDarkText),
+                ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 40),
 
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.only(bottom: bottomInset),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        anim.AnimatedWidgetWrapper(
-                          animationType:
-                              anim.AppAnimationType.fadeSlideInFromBottom,
-                          duration: anim.AnimationDuration.normal,
-                          delayMilliseconds: 200,
-                          child: IntlPhoneField(
-                            focusNode: _phoneFocusNode,
-                            validator: (phone) {
-                              if (!_showPhoneError) {
-                                return null;
-                              }
-                              if (phone == null || phone.number.isEmpty) {
-                                return 'Mobile number is required';
-                              }
-                              if (!RegExp(r'^[0-9]+$').hasMatch(phone.number)) {
-                                return 'Mobile number must contain only digits';
-                              }
-                              if (phone.number.length != 10) {
-                                return 'Mobile number must be exactly 10 digits';
-                              }
-                              return null;
-                            },
-                            style: kSubHeadingR.copyWith(
-                              fontSize: 25,
-                              color: kGreyDark,
-                            ),
-                            controller: _mobileController,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10),
-                            ],
-                            disableLengthCheck: true,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            showCountryFlag: false,
-                            cursorColor: kBlack,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: kBackgroundColor,
-                              hintText: 'Mobile Number',
-                              hintStyle: kSubHeadingR.copyWith(
-                                fontSize: 25,
-                                color: kGreyDark,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: const BorderSide(
-                                  color: Colors.red,
-                                  width: 1.5,
+                    child: anim.AnimatedWidgetWrapper(
+                      animationType:
+                          anim.AppAnimationType.fadeSlideInFromBottom,
+                      duration: anim.AnimationDuration.normal,
+                      delayMilliseconds: 200,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Fixed dial code — kept as a read-only underline
+                          // field so its baseline matches the mobile number
+                          // field exactly (Figma: "+ 91" underlined blue).
+                          IgnorePointer(
+                            child: SizedBox(
+                              width: 56,
+                              child: TextFormField(
+                                initialValue: '+ 91',
+                                textAlign: TextAlign.center,
+                                style: kStyle(
+                                  kRegular,
+                                  kSize24,
+                                  color: kDarkText,
+                                ),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  border: const UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: kBrandBlue,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  enabledBorder: const UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: kBrandBlue,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  focusedBorder: const UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: kBrandBlue,
+                                      width: 1.5,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: const BorderSide(
-                                  color: Colors.red,
-                                  width: 2.0,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 16.0,
-                                horizontal: 10.0,
-                              ),
-                            ),
-                            onCountryChanged: (value) {
-                              ref.read(countryCodeProvider.notifier).state =
-                                  value.dialCode;
-                            },
-                            initialCountryCode: 'IN',
-                            onChanged: (phone) {
-                              _fullPhoneNumber = phone.completeNumber;
-                              log(
-                                'Phone number changed: ${phone.completeNumber}',
-                                name: 'PhoneNumberScreen',
-                              );
-                              setState(() {});
-                            },
-                            showDropdownIcon: false,
-                            dropdownTextStyle: const TextStyle(
-                              fontFamily: 'ClashGrotesk',
-                              color: kTextColor,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _mobileController,
+                              focusNode: _phoneFocusNode,
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(10),
+                              ],
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (!_showPhoneError) {
+                                  return null;
+                                }
+                                final number = value?.trim() ?? '';
+                                if (number.isEmpty) {
+                                  return 'Mobile number is required';
+                                }
+                                if (!RegExp(r'^[0-9]+$').hasMatch(number)) {
+                                  return 'Mobile number must contain only digits';
+                                }
+                                if (number.length != 10) {
+                                  return 'Mobile number must be exactly 10 digits';
+                                }
+                                return null;
+                              },
+                              style: kStyle(kRegular, kSize24, color: kDarkText),
+                              cursorColor: kBrandBlue,
+                              onChanged: (_) => setState(() {}),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                                hintText: 'Mobile Number',
+                                hintStyle: kStyle(
+                                  kRegular,
+                                  kSize24,
+                                  color: _kFieldPlaceholderGrey,
+                                ),
+                                enabledBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: _kFieldPlaceholderGrey,
+                                  ),
+                                ),
+                                focusedBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: kBrandBlue,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                errorBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                                focusedErrorBorder:
+                                    const UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.red,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -181,22 +205,14 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                     animationType: anim.AppAnimationType.fadeScaleUp,
                     duration: anim.AnimationDuration.normal,
                     delayMilliseconds: 400,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 55,
-                          width: double.infinity,
-                          child: primaryButton(
-                            label: 'Get OTP',
-                            onPressed:
-                                (isLoading ||
-                                    _mobileController.text.trim().length != 10)
-                                ? null
-                                : _requestOtp,
-                            isLoading: isLoading,
-                          ),
-                        ),
-                      ],
+                    child: primaryButton(
+                      label: 'Get OTP',
+                      onPressed:
+                          (isLoading ||
+                              _mobileController.text.trim().length != 10)
+                          ? null
+                          : _requestOtp,
+                      isLoading: isLoading,
                     ),
                   ),
                 ),
@@ -222,9 +238,8 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
       return;
     }
 
-    final phoneNumber = _fullPhoneNumber.isNotEmpty
-        ? _fullPhoneNumber
-        : '+${ref.read(countryCodeProvider)}$digits';
+    final countryCode = ref.read(countryCodeProvider) ?? '91';
+    final phoneNumber = '+$countryCode$digits';
 
     ref.read(loadingProvider.notifier).startLoading();
 
@@ -236,8 +251,6 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
         _showMessage(response.message ?? 'Failed to send OTP');
         return;
       }
-
-      final countryCode = ref.read(countryCodeProvider) ?? '91';
 
       Navigator.push(
         context,
@@ -346,9 +359,12 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                     anim.AnimatedWidgetWrapper(
                       animationType: anim.AppAnimationType.fadeSlideInFromLeft,
                       duration: anim.AnimationDuration.normal,
-                      child: Text('Enter OTP', style: kHeadTitleR),
+                      child: Text(
+                        'Enter OTP',
+                        style: kStyle(kRegular, kSize30, color: kDarkText),
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
                     anim.AnimatedWidgetWrapper(
                       animationType: anim.AppAnimationType.fadeSlideInFromLeft,
@@ -356,12 +372,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                       delayMilliseconds: 100,
                       child: RichText(
                         text: TextSpan(
-                          style: const TextStyle(
-                            fontFamily: 'ClashGrotesk',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: kSecondaryTextColor,
-                            height: 1.5,
+                          style: kStyle(
+                            kLight,
+                            kSize16,
+                            color: kDarkText,
+                            height: 1.4,
                           ),
                           children: [
                             const TextSpan(
@@ -369,10 +384,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                             ),
                             TextSpan(
                               text: _maskedPhone(),
-                              style: const TextStyle(
-                                color: kPrimaryColor,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: kStyle(kRegular, kSize16, color: kBrandBlue),
                             ),
                             const TextSpan(
                               text: ' number and you can use to login',
@@ -407,17 +419,17 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                             animationType: AnimationType.scale,
                             textStyle: TextStyle(
                               fontFamily: 'ClashGrotesk',
-                              color: kTextColor,
+                              color: kBrandBlue,
                               fontSize: fontSize,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: kRegular,
                             ),
                             pinTheme: PinTheme(
                               shape: PinCodeFieldShape.underline,
                               fieldHeight: 56,
                               fieldWidth: fieldWidth,
-                              selectedColor: kPrimaryColor,
-                              activeColor: kPrimaryColor,
-                              inactiveColor: kBorder,
+                              selectedColor: kBrandBlue,
+                              activeColor: kBrandBlue,
+                              inactiveColor: _kFieldPlaceholderGrey,
                               activeFillColor: Colors.transparent,
                               selectedFillColor: Colors.transparent,
                               inactiveFillColor: Colors.transparent,
@@ -450,37 +462,32 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             width: double.infinity,
                             child: Text(
                               "Didn't get SMS?",
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'ClashGrotesk',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: kSecondaryTextColor,
-                              ),
+                              style: kStyle(kLight, kSize16, color: kDarkText),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           if (_isButtonDisabled)
                             RichText(
                               text: TextSpan(
-                                style: const TextStyle(
-                                  fontFamily: 'ClashGrotesk',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: kSecondaryTextColor,
+                                style: kStyle(
+                                  kLight,
+                                  kSize16,
+                                  color: kDarkText,
                                 ),
                                 children: [
                                   const TextSpan(text: 'Get a new OTP in '),
                                   TextSpan(
                                     text:
                                         '00:${_start.toString().padLeft(2, '0')}',
-                                    style: const TextStyle(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.w600,
+                                    style: kStyle(
+                                      kRegular,
+                                      kSize16,
+                                      color: kBrandBlue,
                                     ),
                                   ),
                                 ],
@@ -489,14 +496,13 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                           else
                             GestureDetector(
                               onTap: _resendOtp,
-                              child: const Text(
+                              child: Text(
                                 'Resend OTP',
-                                style: TextStyle(
-                                  fontFamily: 'ClashGrotesk',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: kPrimaryColor,
-                                ),
+                                style: kStyle(
+                                  kRegular,
+                                  kSize16,
+                                  color: kBrandBlue,
+                                ).copyWith(decoration: TextDecoration.underline),
                               ),
                             ),
                         ],
@@ -515,8 +521,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                 delayMilliseconds: 400,
                 child: primaryButton(
                   label: 'Verify OTP',
-                  buttonHeight: MediaQuery.of(context).size.height * 0.065,
-                  fontSize: 16,
                   onPressed:
                       (!isLoading && _otpController.text.trim().length == 6)
                       ? _verifyOtp

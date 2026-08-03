@@ -78,7 +78,9 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
     await navigateToActiveTrip(ref, acceptedTrip);
   }
 
-  void _handleDecline() {
+  Future<void> _handleDecline() async {
+    final confirmed = await showRejectTripDialog(context);
+    if (!confirmed || !mounted) return;
     dismissTripRequest(ref, _trip.id);
     if (mounted) NavigationService().pop();
   }
@@ -179,6 +181,7 @@ class _RequestSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final isScheduled = trip.isScheduled;
 
     return Container(
       width: double.infinity,
@@ -192,13 +195,18 @@ class _RequestSheet extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: const BoxDecoration(
-              color: _kHeaderBlue,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            decoration: BoxDecoration(
+              color: isScheduled ? kGoldAccent : _kHeaderBlue,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Text(
-              'New Request ${trip.countdownLabel} min',
+              isScheduled
+                  ? 'Scheduled Trip • ${trip.formatDateTime(trip.pickupAt)}'
+                  : 'New Request ${trip.countdownLabel} min',
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: kStyle(kSemiBold, kSize15, color: kWhite),
             ),
           ),
@@ -273,13 +281,18 @@ class _RequestSheet extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _kTripTypeBadgeBg,
+                          color: isScheduled
+                              ? kStatusScheduledBg
+                              : _kTripTypeBadgeBg,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          trip.tripTypeBadgeLabel,
+                          isScheduled ? 'SCHEDULED' : trip.tripTypeBadgeLabel,
                           style: kCaption12R.copyWith(
-                            color: kSecondaryTextColor,
+                            color: isScheduled
+                                ? kStatusScheduledText
+                                : kSecondaryTextColor,
+                            fontWeight: isScheduled ? kSemiBold : kRegular,
                           ),
                         ),
                       ),

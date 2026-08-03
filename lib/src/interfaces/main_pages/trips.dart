@@ -12,9 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _kTripsStatusBarBlue = Color(0xFF1A5288);
-const _kTripsPageBg = Color(0xFFF8FAF5);
-const _kTabActiveGold = Color(0xFFC19A6B);
+const _kTripsStatusBarBlue = kBrandBlue;
+const _kTripsPageBg = kFigmaNeutral;
 
 class TripsPage extends ConsumerStatefulWidget {
   const TripsPage({super.key});
@@ -212,55 +211,45 @@ class _TripsTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: kWhite,
-        border: Border(
-          bottom: BorderSide(color: kCardBorder, width: 1),
-        ),
-      ),
-      child: Row(
-        children: _tabs.map((tab) {
-          final isSelected = selectedTab == tab;
-          return Expanded(
-            child: GestureDetector(
+    // Figma: white tab bar, active = kGoldAccent Medium 14 + bottom border
+    return ColoredBox(
+      color: kWhite,
+      child: SizedBox(
+        height: 55,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _tabs.map((tab) {
+            final isSelected = selectedTab == tab;
+            return GestureDetector(
               onTap: () => onTabSelected(tab),
               behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: context.rs(14)),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        _labelFor(tab),
-                        maxLines: 1,
-                        softWrap: false,
-                        style: kStyle(
-                          isSelected ? kSemiBold : kMedium,
-                          kSize14,
-                          color: isSelected ? _kTabActiveGold : kTextColor,
-                          height: 1.1,
-                        ),
-                      ),
+              child: Container(
+                width: tab == TripHistoryTab.upcoming ? 78 : 91,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isSelected ? kGoldAccent : Colors.transparent,
+                      width: 1,
                     ),
-                    SizedBox(height: context.rs(8)),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      height: 2,
-                      width: isSelected ? context.rs(28) : 0,
-                      decoration: BoxDecoration(
-                        color: _kTabActiveGold,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+                child: Text(
+                  _labelFor(tab),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: kStyle(
+                    kMedium,
+                    kSize14,
+                    color: isSelected ? kGoldAccent : kDarkText,
+                    height: 1.2,
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

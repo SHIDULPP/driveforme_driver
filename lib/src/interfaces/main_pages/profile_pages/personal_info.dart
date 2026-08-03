@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
-const _kIconCircleBg = Color(0xFFF2F2F2);
-const _kRowIconColor = Color(0xFF8E8E93);
+const _kIconCircleBg = kFigmaNeutral;
+const _kRowIconColor = kChevronGrey;
 
 class PersonalInfoPage extends ConsumerWidget {
   const PersonalInfoPage({super.key});

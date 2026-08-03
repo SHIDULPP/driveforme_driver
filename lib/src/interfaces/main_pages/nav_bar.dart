@@ -1,5 +1,4 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/providers/nav_provider.dart';
 import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
@@ -10,7 +9,6 @@ import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/services/trip_socket_service.dart';
 import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
-import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/home_page.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/earning.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/profile_page.dart';
@@ -19,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Inactive nav icon tint — darker charcoal per Figma (#5A5E60 family).
+/// Inactive nav icon tint — Figma charcoal.
 const _kNavInactiveIcon = Color(0xFF5A5E60);
 
 class NavBar extends ConsumerStatefulWidget {
@@ -40,29 +38,29 @@ class _NavBarState extends ConsumerState<NavBar> {
       label: 'Home',
       iconPath: 'assets/svgs/home_icon.svg',
       activeGif: 'assets/gifs/home_icon.gif',
-      iconWidth: 22,
-      iconHeight: 22,
+      iconWidth: 24,
+      iconHeight: 24,
     ),
     _NavBarItemData(
       label: 'Trips',
       iconPath: 'assets/svgs/trips_icon.svg',
       activeGif: 'assets/gifs/trips.gif',
-      iconWidth: 20,
-      iconHeight: 22,
+      iconWidth: 24,
+      iconHeight: 24,
     ),
     _NavBarItemData(
       label: 'Earnings',
       iconPath: 'assets/svgs/wallet_icon.svg',
       activeGif: 'assets/gifs/wallet.gif',
-      iconWidth: 22,
-      iconHeight: 18,
+      iconWidth: 24,
+      iconHeight: 24,
     ),
     _NavBarItemData(
       label: 'Profile',
       iconPath: 'assets/svgs/profie_icon.svg',
       activeGif: 'assets/gifs/profile.gif',
-      iconWidth: 22,
-      iconHeight: 22,
+      iconWidth: 24,
+      iconHeight: 24,
     ),
   ];
 
@@ -127,8 +125,8 @@ class _NavBarState extends ConsumerState<NavBar> {
 
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final horizontalMargin = _NavBarMetrics.horizontalMargin(context);
-    final barHeight = _NavBarMetrics.barHeight(context);
-    final bottomGap = _NavBarMetrics.bottomGap(context);
+    final barHeight = _NavBarMetrics.barHeight;
+    final bottomGap = _NavBarMetrics.bottomGap;
 
     return Scaffold(
       backgroundColor: kScreenBg,
@@ -156,18 +154,17 @@ class _NavBarState extends ConsumerState<NavBar> {
 }
 
 class _NavBarMetrics {
-  static double barHeight(BuildContext context) => context.rs(64);
-  static double bottomGap(BuildContext context) => context.rs(16);
-  static double horizontalPadding(BuildContext context) => context.rs(12);
-  static double verticalPadding(BuildContext context) => context.rs(6);
-  static double activeCircleSize(BuildContext context) => context.rs(36);
-  static double activeIconTextGap(BuildContext context) => context.rs(8);
-  static double activePillRadius(BuildContext context) => context.rs(28);
-  static double inactiveTapSize(BuildContext context) => context.rs(44);
+  /// Figma Driver nav height = 80.
+  static const double barHeight = 80;
+  static const double bottomGap = 20;
+  static const double activeCircleSize = 43;
+  static const double activeIconTextGap = 11;
+  static const double inactiveSlotWidth = 75;
+  static const double inactiveIconSize = 30;
 
   static double horizontalMargin(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    return (width * 0.051).clamp(16.0, 24.0);
+    // Figma: 16 inset on 393-wide frame.
+    return (MediaQuery.sizeOf(context).width * (16 / 393)).clamp(16.0, 24.0);
   }
 }
 
@@ -202,41 +199,45 @@ class _FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = barHeight / 2;
-
     return Material(
       color: Colors.transparent,
       elevation: 0,
       child: Container(
         height: barHeight,
-        padding: EdgeInsets.symmetric(
-          horizontal: _NavBarMetrics.horizontalPadding(context),
-          vertical: _NavBarMetrics.verticalPadding(context),
-        ),
         decoration: BoxDecoration(
           color: kWhite,
-          borderRadius: BorderRadius.circular(radius),
+          borderRadius: BorderRadius.circular(100),
           boxShadow: const [
+            // Figma: 0px 0px 15.3px rgba(0,0,0,0.07)
             BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 16,
-              offset: Offset(0, 4),
+              color: Color(0x12000000),
+              blurRadius: 15.3,
+              offset: Offset.zero,
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(items.length, (index) {
             final item = items[index];
             final isSelected = currentIndex == index;
 
-            return Expanded(
-              child: Center(
-                child: _NavBarTab(
+            if (isSelected) {
+              return Flexible(
+                fit: FlexFit.loose,
+                child: _ActiveNavPill(
                   item: item,
-                  isSelected: isSelected,
                   onTap: () => onItemSelected(index),
                 ),
+              );
+            }
+
+            return SizedBox(
+              width: _NavBarMetrics.inactiveSlotWidth,
+              height: barHeight,
+              child: _InactiveTabIcon(
+                item: item,
+                onTap: () => onItemSelected(index),
               ),
             );
           }),
@@ -246,86 +247,78 @@ class _FloatingNavBar extends StatelessWidget {
   }
 }
 
-class _NavBarTab extends StatelessWidget {
-  const _NavBarTab({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-  });
+class _ActiveNavPill extends StatelessWidget {
+  const _ActiveNavPill({required this.item, required this.onTap});
 
   final _NavBarItemData item;
-  final bool isSelected;
   final VoidCallback onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    final pillRadius = _NavBarMetrics.activePillRadius(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(pillRadius),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          padding: isSelected
-              ? EdgeInsets.symmetric(
-                  horizontal: context.rs(10),
-                  vertical: context.rs(4),
-                )
-              : EdgeInsets.zero,
-          decoration: BoxDecoration(
-            color: isSelected ? kBrandBlue : Colors.transparent,
-            borderRadius: BorderRadius.circular(pillRadius),
-          ),
-          child: isSelected
-              ? _ActiveTabContent(item: item)
-              : _InactiveTabIcon(item: item),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActiveTabContent extends StatelessWidget {
-  const _ActiveTabContent({required this.item});
-
-  final _NavBarItemData item;
+  static final _labelStyle = TextStyle(
+    fontFamily: 'ClashGrotesk',
+    fontWeight: FontWeight.w600,
+    fontSize: 12,
+    color: kWhite,
+    height: 1.0,
+    letterSpacing: 0.12,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final circleSize = _NavBarMetrics.activeCircleSize(context);
-    final iconGap = _NavBarMetrics.activeIconTextGap(context);
-
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: circleSize,
-            width: circleSize,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(100),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
             decoration: BoxDecoration(
-              color: kWhite.withValues(alpha: 0.22),
-              shape: BoxShape.circle,
+              color: kBrandBlue,
+              borderRadius: BorderRadius.circular(100),
+              boxShadow: [
+                BoxShadow(
+                  color: kBrandBlue.withValues(alpha: 0.25),
+                  blurRadius: 2,
+                  offset: Offset.zero,
+                ),
+              ],
             ),
-            alignment: Alignment.center,
-            child: _NavGifIcon(
-              asset: item.activeGif,
-              width: context.rs(item.iconWidth),
-              height: context.rs(item.iconHeight),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: _NavBarMetrics.activeCircleSize,
+                  width: _NavBarMetrics.activeCircleSize,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF6F9F2).withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: kWhite.withValues(alpha: 0.13),
+                      width: 0.63,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: _NavGifIcon(
+                    asset: item.activeGif,
+                    width: item.iconWidth.toDouble(),
+                    height: item.iconHeight.toDouble(),
+                  ),
+                ),
+                const SizedBox(width: _NavBarMetrics.activeIconTextGap),
+                Flexible(
+                  child: Text(
+                    item.label,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: _labelStyle,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(width: iconGap),
-          Text(
-            item.label,
-            maxLines: 1,
-            overflow: TextOverflow.fade,
-            softWrap: false,
-            style: kStyle(kSemiBold, kSize14, color: kWhite, height: 1.0),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -356,22 +349,21 @@ class _NavGifIcon extends StatelessWidget {
 }
 
 class _InactiveTabIcon extends StatelessWidget {
-  const _InactiveTabIcon({required this.item});
+  const _InactiveTabIcon({required this.item, required this.onTap});
 
   final _NavBarItemData item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final tapSize = _NavBarMetrics.inactiveTapSize(context);
-
-    return SizedBox(
-      height: tapSize,
-      width: tapSize,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
       child: Center(
         child: SvgPicture.asset(
           item.iconPath,
-          width: context.rs(item.iconWidth),
-          height: context.rs(item.iconHeight),
+          width: _NavBarMetrics.inactiveIconSize,
+          height: _NavBarMetrics.inactiveIconSize,
           fit: BoxFit.contain,
           colorFilter: const ColorFilter.mode(
             _kNavInactiveIcon,

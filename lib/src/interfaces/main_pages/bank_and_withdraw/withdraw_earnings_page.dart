@@ -139,13 +139,12 @@ class _WithdrawalsSection extends StatelessWidget {
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: context.rs(10),
+                    horizontal: context.rs(12),
                     vertical: context.rs(6),
                   ),
                   decoration: BoxDecoration(
-                    color: kSearchFieldBg,
+                    color: kFigmaNeutral,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: kCardBorder),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

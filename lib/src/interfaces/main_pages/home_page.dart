@@ -17,23 +17,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-const _kHomeHeaderBlue = Color(0xFF1E518B);
-const _kOnlineCardBg = Color(0xFF164A72);
+/// Figma header / primary blue (`#1D5C92` family used on this screen).
+const _kHomeHeaderBlue = Color(0xFF1D5C92);
 const _kPromoCardBg = Color(0xFFFEFAF2);
-const _kToggleOrange = Color(0xFFE68C3A);
-const _kEarningsBarBlue = Color(0xFF1E5C8D);
+const _kToggleAccent = Color(0xFFCE9141);
+const _kEarningsBarBlue = Color(0xFF1D5C92);
+const _kEarningsBarTrack = Color(0xFFE8EFF8);
 
 /// Content height inside the blue header (greeting + online card + inner padding).
-double _headerContentHeight(BuildContext context) => context.rs(148);
+/// Figma header frame ≈ 258 including status bar; content area below status ≈ 214.
+double _headerContentHeight(BuildContext context) => 188;
 
 /// How far the center of the header curve extends below the content box.
-double _headerCurveDepth(BuildContext context) => context.rs(64);
+double _headerCurveDepth(BuildContext context) => 56;
 
 /// Visible gap between the online status card and today's earnings card.
-double _onlineToEarningsGap(BuildContext context) => context.rs(12);
+double _onlineToEarningsGap(BuildContext context) => 12;
 
-/// Height of the online status row at the bottom of the header.
-double _onlineCardHeight(BuildContext context) => context.rs(58);
+/// Height of the online status row at the bottom of the header (Figma = 62).
+double _onlineCardHeight(BuildContext context) => 62;
 
 double _onlineCardTop(BuildContext context, double topPadding) =>
     topPadding +
@@ -98,12 +100,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
-    final horizontal = context.horizontalPadding;
+    final horizontal = 16.0;
     final headerContentHeight = _headerContentHeight(context);
     final headerCurveDepth = _headerCurveDepth(context);
     final earningsCardTop = _earningsCardTop(context, topPadding);
     final scrollTopPadding = earningsCardTop;
-    final mapTop = topPadding + headerContentHeight - context.rs(12);
+    final mapTop = topPadding + headerContentHeight - 12;
     final bottomPadding = context.scaffoldBottomPadding;
     final isOnline = ref.watch(driverOnlineProvider);
     final isShortTrip = ref.watch(tripPreferenceProvider) == 'short_trip';
@@ -159,12 +161,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Column(
                   children: [
                     const _TodaysEarningsCard(),
-                    SizedBox(height: context.rs(10)),
+                    const SizedBox(height: 8),
                     _TripPreferenceCard(
                       isShortTrip: isShortTrip,
                       onChanged: (isShort) => setTripPreference(ref, isShort),
                     ),
-                    SizedBox(height: context.rs(10)),
+                    const SizedBox(height: 8),
                     const _PromoBannerCard(),
                   ],
                 ),
@@ -192,12 +194,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             Positioned(
-              top: topPadding + context.rs(6),
-              right: context.rs(18),
+              top: topPadding + 26,
+              right: 16,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => NavigationService().pushNamed('notificationsPage'),
-                child: SizedBox(width: context.rs(44), height: context.rs(44)),
+                child: const SizedBox(width: 40, height: 40),
               ),
             ),
           ],
@@ -238,8 +240,8 @@ class _HomeHeaderBackground extends ConsumerWidget {
 
     final topPadding = MediaQuery.paddingOf(context).top;
     final totalHeight =
-        topPadding + contentHeight + curveDepth + context.rs(20);
-    final horizontal = context.horizontalPadding;
+        topPadding + contentHeight + curveDepth + 20;
+    final horizontal = 16.0;
 
     return SizedBox(
       height: totalHeight,
@@ -249,9 +251,9 @@ class _HomeHeaderBackground extends ConsumerWidget {
           color: _kHomeHeaderBlue,
           padding: EdgeInsets.fromLTRB(
             horizontal,
-            topPadding + context.rs(8),
+            topPadding + 26,
             horizontal,
-            curveDepth + context.rs(18),
+            curveDepth + 18,
           ),
           child: SizedBox(
             height: contentHeight,
@@ -269,57 +271,39 @@ class _HomeHeaderBackground extends ConsumerWidget {
                             greeting,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: kStyle(
-                              kSemiBold,
-                              kSize22,
+                            style: const TextStyle(
+                              fontFamily: 'ClashGrotesk',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20,
                               color: kWhite,
-                              height: 1.15,
+                              height: 1.2,
                             ),
                           ),
-                          SizedBox(height: context.rs(4)),
+                          const SizedBox(height: 0),
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.location_on,
-                                size: context.rs(15),
-                                color: kWhite.withValues(alpha: 0.9),
+                                size: 16,
+                                color: kFigmaNeutral,
                               ),
-                              SizedBox(width: context.rs(4)),
+                              const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   location,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: kCaption14R.copyWith(
-                                    color: kWhite.withValues(alpha: 0.85),
+                                  style: const TextStyle(
+                                    fontFamily: 'ClashGrotesk',
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 14,
+                                    color: kFigmaNeutral,
                                     height: 1.2,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: context.rs(6)),
-                          // Row(
-                          //   children: [
-                          //     SvgPicture.asset(
-                          //       'assets/svgs/wallet_icon.svg',
-                          //       width: 15,
-                          //       height: 13,
-                          //       colorFilter: ColorFilter.mode(
-                          //         kWhite.withValues(alpha: 0.9),
-                          //         BlendMode.srcIn,
-                          //       ),
-                          //     ),
-                          //     const SizedBox(width: 4),
-                          //     Text(
-                          //       walletBalance,
-                          //       style: kCaption14R.copyWith(
-                          //         color: kWhite.withValues(alpha: 0.85),
-                          //         height: 1.2,
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
                         ],
                       ),
                     ),
@@ -327,17 +311,21 @@ class _HomeHeaderBackground extends ConsumerWidget {
                       clipBehavior: Clip.none,
                       children: [
                         Container(
-                          height: context.rs(40),
-                          width: context.rs(40),
+                          height: 40,
+                          width: 40,
                           decoration: BoxDecoration(
-                            color: kWhite.withValues(alpha: 0.18),
+                            color: kWhite.withValues(alpha: 0.1),
+                            border: Border.all(
+                              color: kWhite.withValues(alpha: 0.1),
+                              width: 0.5,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
                           child: Image.asset(
                             'assets/gifs/notification.gif',
-                            width: context.rs(22),
-                            height: context.rs(22),
+                            width: 24,
+                            height: 24,
                             fit: BoxFit.contain,
                             gaplessPlayback: true,
                           ),
@@ -361,9 +349,11 @@ class _HomeHeaderBackground extends ConsumerWidget {
                                     ? '9+'
                                     : '$unreadNotificationCount',
                                 textAlign: TextAlign.center,
-                                style: kCaption11R.copyWith(
+                                style: const TextStyle(
+                                  fontFamily: 'ClashGrotesk',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
                                   color: kWhite,
-                                  fontWeight: kSemiBold,
                                   height: 1,
                                 ),
                               ),
@@ -373,7 +363,7 @@ class _HomeHeaderBackground extends ConsumerWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: context.rs(12)),
+                const SizedBox(height: 12),
                 const Spacer(),
                 SizedBox(height: onlineCardHeight),
               ],
@@ -429,96 +419,148 @@ class _HomeHeaderClipper extends CustomClipper<Path> {
       oldClipper.curveDepth != curveDepth;
 }
 
-class _OnlineStatusCard extends StatelessWidget {
+class _OnlineStatusCard extends ConsumerWidget {
   const _OnlineStatusCard({required this.isOnline, required this.onChanged});
 
   final bool isOnline;
   final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final photoUrl = profilePhotoUrl(ref.watch(userProvider).value);
+
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.rs(12),
-        vertical: context.rs(7),
-      ),
+      height: 62,
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: _kOnlineCardBg.withValues(alpha: 0.68),
-        borderRadius: BorderRadius.circular(context.rs(18)),
+        color: kWhite.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: kWhite.withValues(alpha: 0.11)),
       ),
       child: Row(
         children: [
           Stack(
             clipBehavior: Clip.none,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(context.rs(22)),
-                child: Image.asset(
-                  'assets/pngs/live_photo_image.png',
-                  width: context.rs(40),
-                  height: context.rs(40),
-                  fit: BoxFit.cover,
-                ),
+              ClipOval(
+                child: photoUrl != null
+                    ? Image.network(
+                        photoUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, error, stackTrace) => Image.asset(
+                          'assets/pngs/live_photo_image.png',
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Image.asset(
+                        'assets/pngs/live_photo_image.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
               ),
               Positioned(
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  height: context.rs(10),
-                  width: context.rs(10),
+                  height: 9,
+                  width: 9,
                   decoration: BoxDecoration(
                     color: isOnline ? kActiveGreen : kMutedText,
                     shape: BoxShape.circle,
-                    border: Border.all(color: kWhite, width: 2),
+                    border: Border.all(color: _kHomeHeaderBlue, width: 1.5),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(width: context.rs(10)),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   isOnline ? 'You are Online' : 'You are Offline',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: kStyle(
-                    kSemiBold,
-                    kSize14,
+                  style: const TextStyle(
+                    fontFamily: 'ClashGrotesk',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
                     color: kWhite,
-                    height: 1.15,
+                    height: 1.2,
                   ),
                 ),
-                SizedBox(height: context.rs(2)),
                 Text(
                   isOnline
                       ? 'Ready to accept requests'
                       : 'You will not receive requests',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: kCaption12R.copyWith(
-                    color: kWhite.withValues(alpha: 0.7),
+                  style: TextStyle(
+                    fontFamily: 'ClashGrotesk',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    color: kWhite.withValues(alpha: 0.47),
                     height: 1.2,
                   ),
                 ),
               ],
             ),
           ),
-          Transform.scale(
-            scale: 0.84,
-            child: Switch(
-              value: isOnline,
-              onChanged: onChanged,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              activeThumbColor: kWhite,
-              activeTrackColor: _kToggleOrange,
-              inactiveThumbColor: kWhite,
-              inactiveTrackColor: kMutedText.withValues(alpha: 0.5),
+          _OnlineToggle(value: isOnline, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _OnlineToggle extends StatelessWidget {
+  const _OnlineToggle({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        width: 44,
+        height: 24.444,
+        padding: const EdgeInsets.all(2.44),
+        decoration: BoxDecoration(
+          color: value ? _kToggleAccent : kFigmaNeutral,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 19.556,
+            height: 19.556,
+            decoration: BoxDecoration(
+              color: value ? kFigmaNeutral : const Color(0xFFA5A7A2),
+              shape: BoxShape.circle,
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1A272727),
+                  blurRadius: 4.889,
+                  offset: Offset(0, 2.444),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -527,110 +569,135 @@ class _OnlineStatusCard extends StatelessWidget {
 class _TodaysEarningsCard extends ConsumerWidget {
   const _TodaysEarningsCard();
 
-  static const _barHeights = [0.38, 0.58, 0.45, 0.82, 0.52, 0.68, 0.62];
+  /// Relative solid fill heights matching Figma bar solids (visual approximation).
+  static const _barHeights = [0.50, 0.21, 1.0, 0.50, 0.36, 0.23, 1.0];
+  static const _barTrackHeights = [0.75, 1.0, 0.39, 0.75, 0.62, 1.0, 0.82];
   static const _earningsTabIndex = 2;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final earningsLabel = ref
-        .watch(userProvider)
-        .when(
-          data: (user) => formatTodayEarnings(user),
-          loading: () => '₹ —',
-          error: (_, _) => formatTodayEarnings(null),
+    final amount = ref.watch(userProvider).when(
+          data: (user) => user?.todayEarnings ?? 0,
+          loading: () => null,
+          error: (_, _) => 0.0,
         );
+    final amountText = amount == null
+        ? '—'
+        : (amount == amount.truncateToDouble()
+            ? amount.toInt().toString()
+            : amount.toStringAsFixed(2));
 
     return Material(
       color: Colors.transparent,
-      elevation: 6,
-      shadowColor: kBlack.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(context.rs(16)),
+      elevation: 4,
+      shadowColor: kBlack.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () =>
             ref.read(navBarIndexProvider.notifier).state = _earningsTabIndex,
-        borderRadius: BorderRadius.circular(context.rs(16)),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: EdgeInsets.all(context.rs(12)),
+          constraints: const BoxConstraints(minHeight: 115),
+          padding: const EdgeInsets.fromLTRB(15, 21, 15, 16),
           decoration: BoxDecoration(
             color: kWhite,
-            borderRadius: BorderRadius.circular(context.rs(16)),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
               Row(
-                children: [
-                  Container(
-                    height: context.rs(22),
-                    width: context.rs(34),
-                    decoration: const BoxDecoration(
-                      color: kBrandBlue,
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: SvgPicture.asset(
-                      'assets/svgs/wallet_icon.svg',
-                      width: context.rs(17),
-                      height: context.rs(14),
-                      colorFilter: const ColorFilter.mode(
-                        kWhite,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: context.rs(8)),
-                  Expanded(
-                    child: Text("Today's Earnings", style: kTripSubSectionSB),
-                  ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: kChevronGrey,
-                    size: context.rs(20),
-                  ),
-                ],
-              ),
-              SizedBox(height: context.rs(6)),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          earningsLabel,
-                          style: kStyle(
-                            kSemiBold,
-                            kSize26,
+                        Container(
+                          height: 36,
+                          width: 36,
+                          decoration: const BoxDecoration(
                             color: kBrandBlue,
-                            height: 1.05,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: SvgPicture.asset(
+                            'assets/svgs/wallet_icon.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: const ColorFilter.mode(
+                              kWhite,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 13),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Today's Earnings",
+                                style: TextStyle(
+                                  fontFamily: 'ClashGrotesk',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: kTextColor,
+                                  height: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    '₹',
+                                    style: TextStyle(
+                                      fontFamily: 'ClashGrotesk',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 24,
+                                      color: kBrandBlue,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                  Text(
+                                    amountText,
+                                    style: const TextStyle(
+                                      fontFamily: 'ClashGrotesk',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 24,
+                                      color: kBrandBlue,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(width: context.rs(8)),
+                  const SizedBox(width: 8),
                   SizedBox(
-                    height: context.rs(52),
-                    width: context.rs(84),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: _barHeights
-                          .map(
-                            (h) => Container(
-                              width: context.rs(8),
-                              height: context.rs(52) * h,
-                              decoration: BoxDecoration(
-                                color: _kEarningsBarBlue,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                          )
-                          .toList(),
+                    height: 45,
+                    width: 106,
+                    child: CustomPaint(
+                      painter: _EarningsChartPainter(
+                        barHeights: _barHeights,
+                        trackHeights: _barTrackHeights,
+                      ),
                     ),
                   ),
                 ],
+              ),
+              const Positioned(
+                top: 0,
+                right: 0,
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: kChevronGrey,
+                  size: 24,
+                ),
               ),
             ],
           ),
@@ -638,6 +705,55 @@ class _TodaysEarningsCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _EarningsChartPainter extends CustomPainter {
+  _EarningsChartPainter({
+    required this.barHeights,
+    required this.trackHeights,
+  });
+
+  final List<double> barHeights;
+  final List<double> trackHeights;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = const Color(0xFFE8EFF8)
+      ..strokeWidth = 0.32;
+
+    for (var i = 0; i < 4; i++) {
+      final y = size.height * (i / 3);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
+    }
+
+    const barWidth = 8.67;
+    final gap = (size.width - barWidth * 7) / 6;
+    final trackPaint = Paint()..color = _kEarningsBarTrack;
+    final solidPaint = Paint()..color = _kEarningsBarBlue;
+
+    for (var i = 0; i < 7; i++) {
+      final x = i * (barWidth + gap);
+      final trackH = size.height * trackHeights[i].clamp(0.05, 1.0);
+      final solidH = trackH * barHeights[i].clamp(0.05, 1.0);
+      final trackTop = size.height - trackH;
+      final solidTop = size.height - solidH;
+
+      final trackRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, trackTop, barWidth, trackH),
+        const Radius.circular(2),
+      );
+      final solidRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, solidTop, barWidth, solidH),
+        const Radius.circular(2),
+      );
+      canvas.drawRRect(trackRect, trackPaint);
+      canvas.drawRRect(solidRect, solidPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _EarningsChartPainter oldDelegate) => false;
 }
 
 class _TripPreferenceCard extends StatelessWidget {
@@ -655,10 +771,10 @@ class _TripPreferenceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(context.rs(12)),
+      padding: const EdgeInsets.fromLTRB(11, 15, 11, 12),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(context.rs(14)),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
             color: kBlack.withValues(alpha: 0.06),
@@ -670,13 +786,22 @@ class _TripPreferenceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Trip Preference', style: kTripSubSectionSB),
-          SizedBox(height: context.rs(10)),
+          const Text(
+            'Trip Preference',
+            style: TextStyle(
+              fontFamily: 'ClashGrotesk',
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: kTextColor,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 11),
           Container(
-            padding: EdgeInsets.all(context.rs(4)),
+            padding: const EdgeInsets.all(4.5),
             decoration: BoxDecoration(
               color: kWhite,
-              borderRadius: BorderRadius.circular(context.rs(14)),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: _kOptionsBorder),
             ),
             child: Row(
@@ -691,7 +816,6 @@ class _TripPreferenceCard extends StatelessWidget {
                     onTap: () => onChanged(true),
                   ),
                 ),
-                const SizedBox(width: 6),
                 Expanded(
                   child: _TripOptionTile(
                     title: 'Long Trip',
@@ -705,20 +829,22 @@ class _TripPreferenceCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: context.rs(8)),
-          Row(
+          const SizedBox(height: 11),
+          const Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                Icons.check_circle,
-                size: context.rs(14),
-                color: kActiveGreen,
-              ),
-              SizedBox(width: context.rs(6)),
+              Icon(Icons.verified, size: 12, color: kActiveGreen),
+              SizedBox(width: 4),
               Expanded(
                 child: Text(
                   'You will recieve requestes based on your preferences',
-                  style: kCaption12R.copyWith(color: kMutedText, height: 1.35),
+                  style: TextStyle(
+                    fontFamily: 'ClashGrotesk',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    color: kMutedText,
+                    height: 1.15,
+                  ),
                 ),
               ),
             ],
@@ -748,75 +874,63 @@ class _TripOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageSize = context.rs(32);
+    const imageSize = 30.0;
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-          horizontal: context.rs(8),
-          vertical: context.rs(8),
-        ),
+        height: 55,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? selectedBackground : Colors.transparent,
-          borderRadius: BorderRadius.circular(context.rs(10)),
+          borderRadius: BorderRadius.circular(10),
           border: isSelected
               ? Border.all(color: kGoldAccent, width: 1.2)
               : null,
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final useColumn = constraints.maxWidth < context.rs(110);
-
-            final image = Image.asset(
+        child: Row(
+          children: [
+            Image.asset(
               imagePath,
               height: imageSize,
               width: imageSize,
               fit: BoxFit.contain,
-            );
-
-            final textColumn = Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: kCaption14B.copyWith(color: kTextColor),
-                ),
-                SizedBox(height: context.rs(2)),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: kCaption12R.copyWith(color: kTextColor, height: 1.2),
-                ),
-              ],
-            );
-
-            if (useColumn) {
-              return Column(
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  image,
-                  SizedBox(height: context.rs(8)),
-                  textColumn,
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'ClashGrotesk',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: kTextColor,
+                      height: 1.35,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'ClashGrotesk',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                      color: kMutedText,
+                      height: 1.15,
+                    ),
+                  ),
                 ],
-              );
-            }
-
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                image,
-                SizedBox(width: context.rs(8)),
-                Expanded(child: textColumn),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -839,13 +953,12 @@ class _PromoBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageWidth = context.rs(118);
-
     return Container(
+      height: 112,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _kPromoCardBg,
-        borderRadius: BorderRadius.circular(context.rs(14)),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: kGoldAccent.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
@@ -858,76 +971,86 @@ class _PromoBannerCard extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            right: 0,
-            bottom: 0,
-            top: 0,
-            width: imageWidth,
+            right: 3,
+            top: 12,
+            bottom: 11,
+            width: 190,
             child: Stack(
               alignment: Alignment.centerRight,
               children: [
                 Positioned(
-                  right: context.rs(8),
-                  bottom: context.rs(8),
+                  right: 8,
+                  bottom: 0,
                   child: Image.asset(
                     'assets/pngs/car_shadow.png',
-                    width: context.rs(100),
+                    width: 100,
                     fit: BoxFit.contain,
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(right: context.rs(4)),
-                  child: Image.asset(
-                    'assets/pngs/car_image.png',
-                    fit: BoxFit.contain,
-                    alignment: Alignment.centerRight,
-                  ),
+                Image.asset(
+                  'assets/pngs/car_image.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              context.rs(14),
-              context.rs(12),
-              imageWidth - context.rs(10),
-              context.rs(12),
-            ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(19, 18, 200, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Drive More. Earn More!',
-                  style: kCaption14B.copyWith(fontSize: kSize16),
+                  style: TextStyle(
+                    fontFamily: 'ClashGrotesk',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: kTextColor,
+                    height: 1.2,
+                  ),
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 8),
                 Text(
                   'Complete 20 trips this week and get 1,000 extra',
-                  style: kCaption13R.copyWith(
+                  style: TextStyle(
+                    fontFamily: 'ClashGrotesk',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
                     color: kSecondaryTextColor,
-                    height: 1.35,
+                    height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: () => _openLearnMore(context),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: context.rs(2)),
-                    child: Text(
-                      'Learn more',
-                      style: kStyle(
-                        kMedium,
-                        kSize14,
-                        color: kBrandBlue,
-                        height: 1.2,
-                      ).copyWith(decoration: TextDecoration.underline),
-                    ),
-                  ),
-                ),
+                SizedBox(height: 9),
+                _PromoLearnMoreLink(),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PromoLearnMoreLink extends StatelessWidget {
+  const _PromoLearnMoreLink();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _PromoBannerCard._openLearnMore(context),
+      behavior: HitTestBehavior.opaque,
+      child: const Text(
+        'Learn more',
+        style: TextStyle(
+          fontFamily: 'ClashGrotesk',
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
+          color: kBrandBlue,
+          height: 1.15,
+          decoration: TextDecoration.underline,
+          decorationColor: kBrandBlue,
+        ),
       ),
     );
   }

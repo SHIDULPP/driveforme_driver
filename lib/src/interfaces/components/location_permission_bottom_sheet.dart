@@ -1,8 +1,9 @@
+import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
+import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 
-const _kSheetBlue = Color(0xFF1E5D94);
 const _kBodyGray = Color(0xFF666666);
 
 /// Layout tuned to the 375px-wide Figma reference.
@@ -151,30 +152,12 @@ class LocationPermissionBottomSheet extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: _SheetMetrics.bodyButtonGap(context)),
-                  SizedBox(
-                    width: double.infinity,
-                    height: _SheetMetrics.buttonHeight(context),
-                    child: ElevatedButton(
-                      onPressed: onEnableLocation,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _kSheetBlue,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            _SheetMetrics.buttonHeight(context) / 2,
-                          ),
-                        ),
-                      ),
-                      child: Text(
-                        'Enable Location',
-                        style: kStyle(
-                          kSemiBold,
-                          kSize17,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                  primaryButton(
+                    label: 'Enable Location',
+                    buttonHeight: _SheetMetrics.buttonHeight(context),
+                    buttonColor: kBrandBlue,
+                    labelColor: kWhite,
+                    onPressed: onEnableLocation,
                   ),
                   if (onNotNow != null) ...[
                     SizedBox(height: _SheetMetrics.notNowGap(context)),
@@ -245,7 +228,7 @@ class _SheetTitle extends StatelessWidget {
       color: Colors.black,
       height: 1.15,
     );
-    final blueStyle = blackStyle.copyWith(color: _kSheetBlue);
+    final blueStyle = blackStyle.copyWith(color: kBrandBlue);
 
     return Wrap(
       alignment: WrapAlignment.center,

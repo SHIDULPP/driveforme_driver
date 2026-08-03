@@ -10,7 +10,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kScreenBg,
+      backgroundColor: kWhite,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -39,8 +39,10 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 delayMilliseconds: 100,
                 child: Text(
                   'Private Car Driver',
-                  style: kSubHeadingR.copyWith(
-                    color: kChevronGrey,
+                  style: kStyle(
+                    kRegular,
+                    kSize18,
+                    color: kDarkText.withValues(alpha: 0.5),
                     height: 1.1,
                   ),
                 ),
@@ -56,16 +58,20 @@ class DriverPartnerLandingPage extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: 'Earn by driving\nwith ',
-                        style: kHeadTitleSB.copyWith(
+                        style: kStyle(
+                          kRegular,
+                          kSize36,
+                          color: kDarkText,
                           height: 1.22,
-                          color: kTextColor,
                         ),
                       ),
                       TextSpan(
                         text: 'D4me',
-                        style: kHeadTitleSB.copyWith(
-                          height: 1.22,
+                        style: kStyle(
+                          kRegular,
+                          kSize36,
                           color: kGoldAccent,
+                          height: 1.22,
                         ),
                       ),
                     ],
@@ -80,7 +86,12 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 delayMilliseconds: 300,
                 child: Text(
                   'Drive when you want,Get paid weekly,\nNo vehicle needed',
-                  style: kCaption14R.copyWith(height: 1.4, color: kChevronGrey),
+                  style: kStyle(
+                    kLight,
+                    kSize14,
+                    color: kDarkText.withValues(alpha: 0.5),
+                    height: 1.4,
+                  ),
                 ),
               ),
               const Spacer(flex: 11),
@@ -103,19 +114,13 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 animationType: anim.AppAnimationType.fadeScaleUp,
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 400,
-                child: SizedBox(
-                  // height: 68,
-                  width: double.infinity,
-                  child: primaryButton(
-                    label: 'Get Started',
-                    buttonHeight: MediaQuery.of(context).size.height * 0.065,
-                    fontSize: kSize20,
-                    buttonColor: kBrandBlue,
-                    labelColor: kWhite,
-                    onPressed: () {
-                      Navigator.pushNamed(context, 'registration');
-                    },
-                  ),
+                child: primaryButton(
+                  label: 'Get Started',
+                  buttonColor: kBrandBlue,
+                  labelColor: kWhite,
+                  onPressed: () {
+                    Navigator.pushNamed(context, 'registration');
+                  },
                 ),
               ),
               const SizedBox(height: 14),

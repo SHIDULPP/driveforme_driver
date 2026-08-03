@@ -594,32 +594,7 @@ class _WeeklyEarningsChart extends StatelessWidget {
                   style: kEarningsSectionTitleSB,
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.rs(10),
-                  vertical: context.rs(6),
-                ),
-                decoration: BoxDecoration(
-                  color: kSearchFieldBg,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: kCardBorder),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'This week',
-                      style: kCaption13R.copyWith(color: kTextColor),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: context.rs(16),
-                      color: kTextColor,
-                    ),
-                  ],
-                ),
-              ),
+              const _WeekFilterChip(),
             ],
           ),
           SizedBox(height: context.rs(10)),
@@ -657,6 +632,36 @@ class _WeeklyEarningsChart extends StatelessWidget {
                 );
               }),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeekFilterChip extends StatelessWidget {
+  const _WeekFilterChip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.rs(12),
+        vertical: context.rs(6),
+      ),
+      decoration: BoxDecoration(
+        color: kFigmaNeutral,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('This week', style: kCaption12R.copyWith(color: kTextColor)),
+          SizedBox(width: context.rs(4)),
+          Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: context.rs(16),
+            color: kTextColor,
           ),
         ],
       ),
@@ -730,74 +735,93 @@ class _AvailableEarningsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(context.rs(14)),
+      padding: EdgeInsets.all(context.rs(12)),
       decoration: BoxDecoration(
         color: kWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: kCardBorder),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Available Earnings', style: kEarningsSectionTitleSB),
-                SizedBox(height: context.rs(4)),
-                Text(
-                  formatRupeeStat(amount),
-                  style: kStyle(
-                    kSemiBold,
-                    kSize20,
-                    color: kEarningsStatValueBlue,
-                    height: 1.1,
-                  ),
-                ),
-                SizedBox(height: context.rs(2)),
-                Text(
-                  'Withdraw anytime to your bank',
-                  style: kCaption12R.copyWith(height: 1.2),
-                ),
-              ],
+          Text('Available Earnings', style: kEarningsSectionTitleSB),
+          SizedBox(height: context.rs(10)),
+          Container(
+            padding: EdgeInsets.fromLTRB(
+              context.rs(10),
+              context.rs(9),
+              context.rs(6),
+              context.rs(9),
             ),
-          ),
-          SizedBox(width: context.rs(8)),
-          Material(
-            color: kEarningsGold,
-            borderRadius: BorderRadius.circular(24),
-            child: InkWell(
-              onTap: () => NavigationService().pushNamed('withdrawEarnings'),
-              borderRadius: BorderRadius.circular(24),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.rs(12),
-                  vertical: context.rs(10),
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
+            decoration: BoxDecoration(
+              color: kFigmaNeutral,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.account_balance_rounded,
-                        color: kWhite,
-                        size: 16,
-                      ),
-                      SizedBox(width: context.rs(4)),
                       Text(
-                        'Withdraw Earnings',
+                        formatRupeeStat(amount),
                         style: kStyle(
-                          kMedium,
-                          kSize12,
-                          color: kWhite,
+                          kSemiBold,
+                          kSize20,
+                          color: kEarningsStatValueBlue,
                           height: 1.1,
                         ),
+                      ),
+                      SizedBox(height: context.rs(4)),
+                      Text(
+                        'Withdraw anytime to your bank',
+                        style: kCaption11R.copyWith(color: kMutedText),
                       ),
                     ],
                   ),
                 ),
-              ),
+                SizedBox(width: context.rs(8)),
+                Material(
+                  color: kEarningsGold,
+                  borderRadius: BorderRadius.circular(24),
+                  child: InkWell(
+                    onTap: () =>
+                        NavigationService().pushNamed('withdrawEarnings'),
+                    borderRadius: BorderRadius.circular(24),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.rs(12),
+                        vertical: context.rs(10),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.account_balance_rounded,
+                              color: kWhite,
+                              size: 16,
+                            ),
+                            SizedBox(width: context.rs(4)),
+                            Text(
+                              'Withdraw Earnings',
+                              style: kStyle(
+                                kMedium,
+                                kSize12,
+                                color: kWhite,
+                                height: 1.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1039,14 +1063,14 @@ class _WithdrawalTile extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: context.rs(14),
-        vertical: context.rs(11),
+        vertical: context.rs(9),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            height: context.rs(44),
-            width: context.rs(44),
+            height: context.rs(35),
+            width: context.rs(35),
             decoration: const BoxDecoration(
               color: kEarningsWithdrawIconBg,
               shape: BoxShape.circle,
@@ -1054,10 +1078,10 @@ class _WithdrawalTile extends StatelessWidget {
             child: Icon(
               Icons.account_balance_rounded,
               color: kActiveGreen,
-              size: context.rs(21),
+              size: context.rs(16),
             ),
           ),
-          SizedBox(width: context.rs(12)),
+          SizedBox(width: context.rs(10)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
