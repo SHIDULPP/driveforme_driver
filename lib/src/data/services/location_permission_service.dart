@@ -33,6 +33,30 @@ class LocationPermissionService {
     );
   }
 
+  /// Requests OS location permission when still in the soft-denied state.
+  ///
+  /// Returns the refreshed status. Callers should open app settings only when
+  /// permission is permanently denied or location services are off.
+  Future<LocationPermissionStatus> requestPermission() async {
+    final isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isServiceEnabled) {
+      return const LocationPermissionStatus(
+        accessState: LocationAccessState.serviceDisabled,
+        isServiceEnabled: false,
+      );
+    }
+
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    return LocationPermissionStatus(
+      accessState: _mapGeolocatorPermission(permission),
+      isServiceEnabled: true,
+    );
+  }
+
   Future<bool> openSettings() => openAppSettings();
 
   LocationAccessState _mapPermissionStatus(PermissionStatus status) {
@@ -45,6 +69,19 @@ class LocationPermissionService {
         return LocationAccessState.permanentlyDenied;
       case PermissionStatus.denied:
       case PermissionStatus.provisional:
+        return LocationAccessState.denied;
+    }
+  }
+
+  LocationAccessState _mapGeolocatorPermission(LocationPermission permission) {
+    switch (permission) {
+      case LocationPermission.always:
+      case LocationPermission.whileInUse:
+        return LocationAccessState.granted;
+      case LocationPermission.deniedForever:
+        return LocationAccessState.permanentlyDenied;
+      case LocationPermission.denied:
+      case LocationPermission.unableToDetermine:
         return LocationAccessState.denied;
     }
   }

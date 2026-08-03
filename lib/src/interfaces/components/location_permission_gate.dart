@@ -64,14 +64,36 @@ class _LocationPermissionGateState extends ConsumerState<LocationPermissionGate>
     await LocationPermissionBottomSheet.show(
       context,
       onEnableLocation: () async {
-        final status = ref.read(locationPermissionStatusProvider);
-        if (status != null &&
-            status.accessState == LocationAccessState.granted &&
-            !status.isServiceEnabled) {
+        final service = ref.read(locationPermissionServiceProvider);
+        final current = ref.read(locationPermissionStatusProvider);
+
+        // Location services off → device location settings.
+        if (current != null && !current.isServiceEnabled) {
           await Geolocator.openLocationSettings();
           return;
         }
-        await ref.read(locationPermissionServiceProvider).openSettings();
+
+        // Soft deny → show the OS permission dialog first.
+        if (current == null ||
+            current.accessState == LocationAccessState.denied) {
+          final result = await service.requestPermission();
+          ref.read(locationPermissionStatusProvider.notifier).state = result;
+
+          if (result.isFullyGranted) {
+            await _dismissSheetIfVisible();
+            ref.invalidate(currentLocationProvider);
+            return;
+          }
+
+          // Permanently denied after the prompt → open app settings.
+          if (result.accessState == LocationAccessState.permanentlyDenied) {
+            await service.openSettings();
+          }
+          return;
+        }
+
+        // Permanently denied → app settings is the only recovery path.
+        await service.openSettings();
       },
       onNotNow: () {
         _sheetVisible = false;
