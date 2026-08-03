@@ -1,5 +1,6 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/providers/nav_provider.dart';
 import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
@@ -70,11 +71,25 @@ class _NavBarState extends ConsumerState<NavBar> {
     super.initState();
     _currentIndex = widget.initialIndex.clamp(0, _items.length - 1);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(navBarIndexProvider.notifier).state = _currentIndex;
       loadDriverOnlinePreference(ref);
       ref.read(driverLocationServiceProvider);
       _setupNotificationSocket();
       _resumeActiveTrip();
     });
+  }
+
+  void _selectTab(int index) {
+    if (_currentIndex == index) return;
+    setState(() => _currentIndex = index);
+    ref.read(navBarIndexProvider.notifier).state = index;
+    if (index == 0 || index == 3) {
+      ref.invalidate(userProvider);
+    } else if (index == 1) {
+      ref.invalidate(tripHistoryProvider);
+    } else if (index == 2) {
+      ref.invalidate(walletProvider);
+    }
   }
 
   Future<void> _setupNotificationSocket() async {
@@ -104,6 +119,12 @@ class _NavBarState extends ConsumerState<NavBar> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(navBarIndexProvider, (previous, next) {
+      if (next != _currentIndex && next >= 0 && next < _items.length) {
+        _selectTab(next);
+      }
+    });
+
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final horizontalMargin = _NavBarMetrics.horizontalMargin(context);
     final barHeight = _NavBarMetrics.barHeight(context);
@@ -127,18 +148,7 @@ class _NavBarState extends ConsumerState<NavBar> {
           barHeight: barHeight,
           items: _items,
           currentIndex: _currentIndex,
-          onItemSelected: (index) {
-            if (_currentIndex != index) {
-              setState(() => _currentIndex = index);
-              if (index == 0 || index == 3) {
-                ref.invalidate(userProvider);
-              } else if (index == 1) {
-                ref.invalidate(tripHistoryProvider);
-              } else if (index == 2) {
-                ref.invalidate(walletProvider);
-              }
-            }
-          },
+          onItemSelected: _selectTab,
         ),
       ),
     );

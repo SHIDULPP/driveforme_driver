@@ -4,6 +4,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
 import 'package:driveforme_driver/src/data/providers/current_location_provider.dart';
+import 'package:driveforme_driver/src/data/providers/nav_provider.dart';
 import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
 import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
@@ -527,6 +528,7 @@ class _TodaysEarningsCard extends ConsumerWidget {
   const _TodaysEarningsCard();
 
   static const _barHeights = [0.38, 0.58, 0.45, 0.82, 0.52, 0.68, 0.62];
+  static const _earningsTabIndex = 2;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -543,90 +545,95 @@ class _TodaysEarningsCard extends ConsumerWidget {
       elevation: 6,
       shadowColor: kBlack.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(context.rs(16)),
-      child: Container(
-        padding: EdgeInsets.all(context.rs(12)),
-        decoration: BoxDecoration(
-          color: kWhite,
-          borderRadius: BorderRadius.circular(context.rs(16)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  height: context.rs(22),
-                  width: context.rs(34),
-                  decoration: const BoxDecoration(
-                    color: kBrandBlue,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: SvgPicture.asset(
-                    'assets/svgs/wallet_icon.svg',
-                    width: context.rs(17),
-                    height: context.rs(14),
-                    colorFilter: const ColorFilter.mode(
-                      kWhite,
-                      BlendMode.srcIn,
+      child: InkWell(
+        onTap: () =>
+            ref.read(navBarIndexProvider.notifier).state = _earningsTabIndex,
+        borderRadius: BorderRadius.circular(context.rs(16)),
+        child: Container(
+          padding: EdgeInsets.all(context.rs(12)),
+          decoration: BoxDecoration(
+            color: kWhite,
+            borderRadius: BorderRadius.circular(context.rs(16)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    height: context.rs(22),
+                    width: context.rs(34),
+                    decoration: const BoxDecoration(
+                      color: kBrandBlue,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: SvgPicture.asset(
+                      'assets/svgs/wallet_icon.svg',
+                      width: context.rs(17),
+                      height: context.rs(14),
+                      colorFilter: const ColorFilter.mode(
+                        kWhite,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: context.rs(8)),
-                Expanded(
-                  child: Text("Today's Earnings", style: kTripSubSectionSB),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: kChevronGrey,
-                  size: context.rs(20),
-                ),
-              ],
-            ),
-            SizedBox(height: context.rs(6)),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        earningsLabel,
-                        style: kStyle(
-                          kSemiBold,
-                          kSize26,
-                          color: kBrandBlue,
-                          height: 1.05,
-                        ),
-                      ),
-                    ],
+                  SizedBox(width: context.rs(8)),
+                  Expanded(
+                    child: Text("Today's Earnings", style: kTripSubSectionSB),
                   ),
-                ),
-                SizedBox(width: context.rs(8)),
-                SizedBox(
-                  height: context.rs(52),
-                  width: context.rs(84),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: _barHeights
-                        .map(
-                          (h) => Container(
-                            width: context.rs(8),
-                            height: context.rs(52) * h,
-                            decoration: BoxDecoration(
-                              color: _kEarningsBarBlue,
-                              borderRadius: BorderRadius.circular(3),
-                            ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: kChevronGrey,
+                    size: context.rs(20),
+                  ),
+                ],
+              ),
+              SizedBox(height: context.rs(6)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          earningsLabel,
+                          style: kStyle(
+                            kSemiBold,
+                            kSize26,
+                            color: kBrandBlue,
+                            height: 1.05,
                           ),
-                        )
-                        .toList(),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  SizedBox(width: context.rs(8)),
+                  SizedBox(
+                    height: context.rs(52),
+                    width: context.rs(84),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: _barHeights
+                          .map(
+                            (h) => Container(
+                              width: context.rs(8),
+                              height: context.rs(52) * h,
+                              decoration: BoxDecoration(
+                                color: _kEarningsBarBlue,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
