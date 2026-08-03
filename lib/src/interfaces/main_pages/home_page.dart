@@ -494,7 +494,7 @@ class _OnlineStatusCard extends StatelessWidget {
                 SizedBox(height: context.rs(2)),
                 Text(
                   isOnline
-                      ? 'Ready to accept orders'
+                      ? 'Ready to accept requests'
                       : 'You will not receive requests',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
