@@ -1006,27 +1006,13 @@ class _PromoBannerCard extends StatelessWidget {
             SizedBox(
               width: 168,
               height: double.infinity,
-              child: Stack(
-                alignment: Alignment.centerRight,
-                children: [
-                  Positioned(
-                    right: 8,
-                    bottom: 4,
-                    child: Image.asset(
-                      'assets/pngs/car_shadow.png',
-                      width: 100,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 4, top: 8, bottom: 4),
-                    child: Image.asset(
-                      'assets/pngs/car_image.png',
-                      fit: BoxFit.contain,
-                      alignment: Alignment.centerRight,
-                    ),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4, top: 8, bottom: 4),
+                child: Image.asset(
+                  'assets/pngs/car_image.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                ),
               ),
             ),
           ],
