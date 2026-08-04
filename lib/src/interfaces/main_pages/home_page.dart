@@ -569,9 +569,25 @@ class _OnlineToggle extends StatelessWidget {
 class _TodaysEarningsCard extends ConsumerWidget {
   const _TodaysEarningsCard();
 
-  /// Relative solid fill heights matching Figma bar solids (visual approximation).
-  static const _barHeights = [0.50, 0.21, 1.0, 0.50, 0.36, 0.23, 1.0];
-  static const _barTrackHeights = [0.75, 1.0, 0.39, 0.75, 0.62, 1.0, 0.82];
+  /// Figma Stat Indicators `742:26338` — track/solid as fractions of max track 45.27.
+  static const _trackHeights = [
+    34.03 / 45.27,
+    44.95 / 45.27,
+    17.66 / 45.27,
+    34.03 / 45.27,
+    28.25 / 45.27,
+    45.27 / 45.27,
+    36.92 / 45.27,
+  ];
+  static const _solidHeights = [
+    22.79 / 45.27,
+    9.63 / 45.27,
+    17.66 / 45.27,
+    22.79 / 45.27,
+    10.27 / 45.27,
+    10.27 / 45.27,
+    36.92 / 45.27,
+  ];
   static const _earningsTabIndex = 2;
 
   @override
@@ -597,97 +613,89 @@ class _TodaysEarningsCard extends ConsumerWidget {
             ref.read(navBarIndexProvider.notifier).state = _earningsTabIndex,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 115),
+          height: 115,
           padding: const EdgeInsets.fromLTRB(15, 21, 15, 16),
           decoration: BoxDecoration(
             color: kWhite,
             borderRadius: BorderRadius.circular(16),
           ),
+          // Figma: left content + chart at (218,28) + chevron top-right.
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 36,
-                          width: 36,
-                          decoration: const BoxDecoration(
-                            color: kBrandBlue,
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: SvgPicture.asset(
-                            'assets/svgs/wallet_icon.svg',
-                            width: 20,
-                            height: 20,
-                            colorFilter: const ColorFilter.mode(
-                              kWhite,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 13),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Today's Earnings",
-                                style: TextStyle(
-                                  fontFamily: 'ClashGrotesk',
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                  color: kTextColor,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    '₹',
-                                    style: TextStyle(
-                                      fontFamily: 'ClashGrotesk',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 24,
-                                      color: kBrandBlue,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                  Text(
-                                    amountText,
-                                    style: const TextStyle(
-                                      fontFamily: 'ClashGrotesk',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 24,
-                                      color: kBrandBlue,
-                                      height: 1.2,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                  Container(
+                    height: 36,
+                    width: 36,
+                    decoration: const BoxDecoration(
+                      color: kBrandBlue,
+                      shape: BoxShape.circle,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 45,
-                    width: 106,
-                    child: CustomPaint(
-                      painter: _EarningsChartPainter(
-                        barHeights: _barHeights,
-                        trackHeights: _barTrackHeights,
+                    alignment: Alignment.center,
+                    child: SvgPicture.asset(
+                      'assets/svgs/wallet_icon.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                        kWhite,
+                        BlendMode.srcIn,
                       ),
                     ),
                   ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Today's Earnings",
+                          style: TextStyle(
+                            fontFamily: 'ClashGrotesk',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: kDarkText,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              '₹',
+                              style: TextStyle(
+                                fontFamily: 'ClashGrotesk',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 24,
+                                color: kBrandBlue,
+                                height: 1.0,
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                amountText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: 'ClashGrotesk',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 24,
+                                  color: kBrandBlue,
+                                  height: 1.2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        // Figma Bonus row — no API field yet, show ₹0 for parity.
+                        const _EarningsBonusRow(bonusAmount: 0),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 106),
                 ],
               ),
               const Positioned(
@@ -699,6 +707,20 @@ class _TodaysEarningsCard extends ConsumerWidget {
                   size: 24,
                 ),
               ),
+              Positioned(
+                top: 28,
+                right: 0,
+                child: SizedBox(
+                  height: 45,
+                  width: 106,
+                  child: CustomPaint(
+                    painter: _EarningsChartPainter(
+                      trackHeights: _trackHeights,
+                      solidHeights: _solidHeights,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -707,53 +729,124 @@ class _TodaysEarningsCard extends ConsumerWidget {
   }
 }
 
+class _EarningsBonusRow extends StatelessWidget {
+  const _EarningsBonusRow({required this.bonusAmount});
+
+  final double bonusAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    final bonusText = bonusAmount == bonusAmount.truncateToDouble()
+        ? bonusAmount.toInt().toString()
+        : bonusAmount.toStringAsFixed(0);
+
+    return Row(
+      children: [
+        Text(
+          '+',
+          style: TextStyle(
+            fontFamily: 'ClashGrotesk',
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: kGoldAccent,
+            height: 1.2,
+          ),
+        ),
+        const SizedBox(width: 1),
+        Icon(Icons.currency_rupee_rounded, size: 12, color: kGoldAccent),
+        Text(
+          bonusText,
+          style: const TextStyle(
+            fontFamily: 'ClashGrotesk',
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+            color: kGoldAccent,
+            height: 1.15,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          'Bonus',
+          style: TextStyle(
+            fontFamily: 'ClashGrotesk',
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
+            color: kDarkText.withValues(alpha: 0.55),
+            height: 1.15,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _EarningsChartPainter extends CustomPainter {
   _EarningsChartPainter({
-    required this.barHeights,
     required this.trackHeights,
+    required this.solidHeights,
   });
 
-  final List<double> barHeights;
   final List<double> trackHeights;
+  final List<double> solidHeights;
+
+  static const _barWidth = 8.67;
+  static const _barStep = 15.09;
+  static const _barsInsetX = 3.37;
+  static const _gridOverhangLeft = 15.06;
+  static const _radius = Radius.circular(2);
 
   @override
   void paint(Canvas canvas, Size size) {
+    final scaleY = size.height / 45.27;
+
+    // Background lines extend past the bar group (Figma ~136 wide).
     final linePaint = Paint()
-      ..color = const Color(0xFFE8EFF8)
+      ..color = _kEarningsBarTrack
       ..strokeWidth = 0.32;
 
-    for (var i = 0; i < 4; i++) {
-      final y = size.height * (i / 3);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
+    const gridYs = [0.0, 13.81, 27.61, 41.42];
+    final gridLeft = -_gridOverhangLeft * (size.width / 106);
+    final gridRight = size.width + (15.0 * (size.width / 106));
+    for (final gy in gridYs) {
+      final y = gy * scaleY;
+      canvas.drawLine(Offset(gridLeft, y), Offset(gridRight, y), linePaint);
     }
 
-    const barWidth = 8.67;
-    final gap = (size.width - barWidth * 7) / 6;
     final trackPaint = Paint()..color = _kEarningsBarTrack;
     final solidPaint = Paint()..color = _kEarningsBarBlue;
+    final insetX = _barsInsetX * (size.width / 106);
+    final barW = _barWidth * (size.width / 106);
+    final step = _barStep * (size.width / 106);
 
     for (var i = 0; i < 7; i++) {
-      final x = i * (barWidth + gap);
+      final x = insetX + i * step;
       final trackH = size.height * trackHeights[i].clamp(0.05, 1.0);
-      final solidH = trackH * barHeights[i].clamp(0.05, 1.0);
+      // Solid height is absolute vs max track (not fraction of this bar's track).
+      final solidH = size.height * solidHeights[i].clamp(0.05, 1.0);
       final trackTop = size.height - trackH;
       final solidTop = size.height - solidH;
 
-      final trackRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, trackTop, barWidth, trackH),
-        const Radius.circular(2),
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, trackTop, barW, trackH),
+          _radius,
+        ),
+        trackPaint,
       );
-      final solidRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, solidTop, barWidth, solidH),
-        const Radius.circular(2),
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, solidTop, barW, solidH),
+          _radius,
+        ),
+        solidPaint,
       );
-      canvas.drawRRect(trackRect, trackPaint);
-      canvas.drawRRect(solidRect, solidPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _EarningsChartPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _EarningsChartPainter oldDelegate) =>
+      oldDelegate.trackHeights != trackHeights ||
+      oldDelegate.solidHeights != solidHeights;
 }
 
 class _TripPreferenceCard extends StatelessWidget {
