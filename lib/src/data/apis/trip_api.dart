@@ -1,4 +1,5 @@
 import 'package:driveforme_driver/src/data/models/api_response.dart';
+import 'package:driveforme_driver/src/data/models/driver_ratings_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/api_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -196,6 +197,33 @@ class TripApi {
     }
 
     return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+  }
+
+  /// Driver (self) or admin can load customer reviews for [driverId].
+  Future<ApiResponse<DriverRatingsSummary>> getDriverRatings(
+    String driverId,
+  ) async {
+    final response = await _api.get(
+      '/trips/driver/$driverId/ratings',
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to load ratings.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data);
+    if (data == null) {
+      return ApiResponse.error('Invalid ratings response');
+    }
+
+    return ApiResponse.success(
+      DriverRatingsSummary.fromJson(data),
+      response.statusCode,
+    );
   }
 
   Future<ApiResponse<TripModel>> cancelTrip(

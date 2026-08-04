@@ -64,15 +64,20 @@ class ProfilePage extends ConsumerWidget {
   }
 }
 
-class _ProfileSummaryCard extends StatelessWidget {
+class _ProfileSummaryCard extends ConsumerWidget {
   const _ProfileSummaryCard({required this.user});
 
   final UserModel? user;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final avatarSize = context.rs(60);
     final isVerified = user?.onboardingStatus == 'approved';
+    final ratingAsync = ref.watch(effectiveDriverRatingProvider);
+    final rating = ratingAsync.maybeWhen(
+      data: (value) => value ?? user?.rating,
+      orElse: () => user?.rating,
+    );
 
     return Container(
       padding: EdgeInsets.all(context.rs(16)),
@@ -137,12 +142,12 @@ class _ProfileSummaryCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      displayRating(user),
+                      formatDriverRating(rating),
                       style: kStyle(kLight, kSize12, color: kDarkText),
                     ),
                     SizedBox(width: context.rs(5)),
                     ProfileRatingStars(
-                      rating: user?.rating ?? 5.0,
+                      rating: rating ?? 0,
                       size: context.rs(13),
                     ),
                     SizedBox(width: context.rs(5)),

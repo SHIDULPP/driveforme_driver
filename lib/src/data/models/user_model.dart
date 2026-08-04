@@ -6,6 +6,17 @@ double _parseWalletBalance(dynamic value) {
   return 0;
 }
 
+double? _parseOptionalDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    return double.tryParse(trimmed);
+  }
+  return null;
+}
+
 class AdminReview {
   final String status;
   final String notes;
@@ -176,7 +187,8 @@ class UserModel {
   final String onboardingStatus;
   final bool isPhoneVerified;
   final double walletBalance;
-  final double rating;
+  /// Average customer rating from the API; `null` when the driver has none yet.
+  final double? rating;
   final int totalTrips;
   final double todayEarnings;
   final UserProfile profile;
@@ -191,7 +203,7 @@ class UserModel {
     required this.onboardingStatus,
     required this.isPhoneVerified,
     this.walletBalance = 0,
-    this.rating = 5.0,
+    this.rating,
     this.totalTrips = 0,
     this.todayEarnings = 0,
     required this.profile,
@@ -218,7 +230,7 @@ class UserModel {
       onboardingStatus: json['onboardingStatus'] as String? ?? '',
       isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
       walletBalance: _parseWalletBalance(json['walletBalance']),
-      rating: (json['rating'] as num?)?.toDouble() ?? 5.0,
+      rating: _parseOptionalDouble(json['rating']),
       totalTrips: (json['totalTrips'] as num?)?.toInt() ?? 0,
       todayEarnings: (json['todayEarnings'] as num?)?.toDouble() ?? 0,
       profile: UserProfile.fromJson(

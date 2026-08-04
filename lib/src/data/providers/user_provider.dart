@@ -1,4 +1,5 @@
 import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
+import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/models/user_model.dart';
 import 'package:driveforme_driver/src/data/models/wallet_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,24 @@ import 'package:intl/intl.dart';
 final userProvider = FutureProvider<UserModel?>((ref) async {
   final response = await ref.read(onboardingApiProvider).getMe();
   return response.data;
+});
+
+/// Prefer live average from customer reviews; fall back to `/me` rating.
+final effectiveDriverRatingProvider = FutureProvider<double?>((ref) async {
+  final user = await ref.watch(userProvider.future);
+  if (user == null) return null;
+
+  final driverId = user.userId.trim();
+  if (driverId.isEmpty) return user.rating;
+
+  final response = await ref.read(tripApiProvider).getDriverRatings(driverId);
+  if (response.success && response.data != null) {
+    final fromReviews = response.data!.averageFromReviews;
+    if (fromReviews != null) return fromReviews;
+    return response.data!.driverRating ?? user.rating;
+  }
+
+  return user.rating;
 });
 
 String greetingFirstName(UserModel? user) {
@@ -55,8 +74,14 @@ String displayGender(UserModel? user) {
   return gender[0].toUpperCase() + gender.substring(1);
 }
 
-String displayRating(UserModel? user) {
-  final rating = user?.rating ?? 5.0;
+String displayRating(UserModel? user, {double? override}) {
+  final rating = override ?? user?.rating;
+  if (rating == null) return '—';
+  return rating.toStringAsFixed(1);
+}
+
+String formatDriverRating(double? rating) {
+  if (rating == null) return '—';
   return rating.toStringAsFixed(1);
 }
 

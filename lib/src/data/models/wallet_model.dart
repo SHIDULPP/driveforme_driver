@@ -45,7 +45,7 @@ class WalletTransactionModel {
   }
 
   String get displayDate {
-    final date = createdAt;
+    final date = createdAt?.toLocal();
     if (date == null) return '';
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -54,6 +54,38 @@ class WalletTransactionModel {
       return 'Today, ${DateFormat('hh:mm a').format(date)}';
     }
     return DateFormat('d MMM yyyy, hh:mm a').format(date);
+  }
+
+  String get displayTime {
+    final date = createdAt?.toLocal();
+    if (date == null) return '';
+    return DateFormat('hh:mm a').format(date);
+  }
+
+  /// User-facing title for the transaction list.
+  String get displayTitle {
+    switch (category) {
+      case 'trip_earning':
+        return description.toLowerCase().contains('trip fare')
+            ? description
+            : (description.isNotEmpty
+                ? description
+                : 'Trip fare received');
+      case 'trip_commission':
+        return description.isNotEmpty
+            ? description
+            : 'Platform commission';
+      case 'referral_bonus':
+        return description.isNotEmpty ? description : 'Referral bonus';
+      case 'recharge':
+        return description.isNotEmpty ? description : 'Wallet recharge';
+      case 'withdrawal':
+        return description.isNotEmpty ? description : 'Withdrawal';
+      default:
+        return description.isNotEmpty
+            ? description
+            : categoryLabel;
+    }
   }
 
   String get categoryLabel => _titleCase(category.replaceAll('_', ' '));

@@ -410,9 +410,13 @@ class _EarningsTabContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
-    final rating = userAsync.maybeWhen(
-      data: (user) => displayRating(user),
-      orElse: () => '—',
+    final ratingAsync = ref.watch(effectiveDriverRatingProvider);
+    final rating = ratingAsync.maybeWhen(
+      data: formatDriverRating,
+      orElse: () => userAsync.maybeWhen(
+        data: (user) => displayRating(user),
+        orElse: () => '—',
+      ),
     );
     final completedTrips = userAsync.maybeWhen(
       data: (user) => '${user?.totalTrips ?? wallet.completedTripCount}',
