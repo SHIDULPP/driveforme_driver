@@ -474,29 +474,16 @@ class MapNavigateButton extends StatelessWidget {
 
     return Material(
       color: kWhite,
-      elevation: 3,
-      shadowColor: kBlack.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(24),
+      elevation: 4,
+      shadowColor: kBlack.withValues(alpha: 0.16),
+      shape: const CircleBorder(),
       child: InkWell(
+        customBorder: const CircleBorder(),
         onTap: () => launchMapNavigation(location),
-        borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.navigation_rounded, size: 18, color: kBrandBlue),
-              const SizedBox(width: 6),
-              Text(
-                'Navigate',
-                style: TextStyle(
-                  color: kBrandBlue,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
+        child: const SizedBox(
+          height: 48,
+          width: 48,
+          child: Icon(Icons.navigation_rounded, size: 22, color: kBrandBlue),
         ),
       ),
     );

@@ -12,7 +12,10 @@ import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
+import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:driveforme_driver/src/interfaces/components/driver_navigation_sheet.dart';
+import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -164,7 +167,6 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
     final headingTo = trip?.dropoffAddress ?? trip?.pickupAddress ?? '—';
     final price = trip?.displayPrice ?? '—';
     final navigationTarget = trip?.dropoffLocation ?? trip?.pickupLocation;
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -176,69 +178,66 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
         backgroundColor: kWhite,
         body: trip == null
             ? const Center(child: CircularProgressIndicator())
-            : Stack(
-                fit: StackFit.expand,
+            : Column(
                 children: [
-                  TripMapView(
-                    pickup: trip.pickupLocation,
-                    dropoff: trip.dropoffLocation,
-                    driverLocation: driverMapLocation,
-                    mode: TripMapMode.toDropoff,
-                    followDriver: true,
-                    onRouteSummary: _onRouteSummary,
-                  ),
-                  Positioned(
-                    right: 16,
-                    top: topPadding + 60,
-                    child: MapNavigateButton(target: navigationTarget),
-                  ),
-                  Positioned(
-                    top: topPadding + 8,
-                    left: 16,
-                    child: _MapBackButton(onTap: () => Navigator.maybePop(context)),
-                  ),
-                  Positioned(
-                    top: topPadding + 60,
-                    left: 16,
-                    child: _TripStatusCard(timerText: _formattedTimer),
-                  ),
-                  Positioned(
-                    top: topPadding + 8,
-                    right: 16,
-                    child: _EarningsCard(price: price),
-                  ),
-                  Positioned(
-                    right: 16,
-                    bottom: 200 + bottomInset,
-                    child: _SosButton(
-                      tripMongoId: widget.tripMongoId,
-                      locationLabel: headingTo,
-                    ),
-                  ),
-                  Positioned(
-                    right: 20,
-                    bottom: 130 + bottomInset,
-                    child: FloatingActionButton.extended(
-                      onPressed: _completeTrip,
-                      backgroundColor: kTripCtaBlue,
-                      elevation: 4,
-                      icon: const Icon(Icons.flag_rounded, color: kWhite),
-                      label: Text(
-                        'End Trip',
-                        style: kCaption14M.copyWith(
-                          color: kWhite,
-                          fontWeight: kSemiBold,
+                  // Map + top chrome only — action CTAs stay in the sheet so
+                  // Android GoogleMap does not steal taps.
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        TripMapView(
+                          pickup: trip.pickupLocation,
+                          dropoff: trip.dropoffLocation,
+                          driverLocation: driverMapLocation,
+                          mode: TripMapMode.toDropoff,
+                          followDriver: true,
+                          onRouteSummary: _onRouteSummary,
                         ),
-                      ),
+                        Positioned(
+                          top: topPadding + 8,
+                          left: 16,
+                          child: _MapBackButton(
+                            onTap: () => Navigator.maybePop(context),
+                          ),
+                        ),
+                        Positioned(
+                          top: topPadding + 60,
+                          left: 16,
+                          child: _TripStatusCard(timerText: _formattedTimer),
+                        ),
+                        Positioned(
+                          top: topPadding + 8,
+                          right: 16,
+                          child: _EarningsCard(price: price),
+                        ),
+                      ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: DriverNavigationSheet(
-                      title: 'Navigate to destination',
-                      subtitle: headingTo,
-                      distanceLabel: _distanceLabel,
-                      etaLabel: _etaLabel,
+                  DriverNavigationSheet(
+                    title: 'Heading to destination',
+                    subtitle: headingTo,
+                    distanceLabel: _distanceLabel,
+                    etaLabel: _etaLabel,
+                    footer: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _SheetNavigateButton(target: navigationTarget),
+                        const SizedBox(height: 12),
+                        primaryButton(
+                          label: 'End Trip',
+                          buttonHeight: 52,
+                          fontSize: kSize16,
+                          buttonColor: kTripCtaBlue,
+                          labelColor: kWhite,
+                          onPressed: _completeTrip,
+                        ),
+                        const SizedBox(height: 8),
+                        _SosTextButton(
+                          tripMongoId: widget.tripMongoId,
+                          locationLabel: headingTo,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -357,8 +356,28 @@ class _EarningsCard extends StatelessWidget {
   }
 }
 
-class _SosButton extends StatelessWidget {
-  const _SosButton({
+class _SheetNavigateButton extends StatelessWidget {
+  const _SheetNavigateButton({required this.target});
+
+  final TripLocation? target;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = target != null && target!.hasCoordinates;
+
+    return sizedSheetAction(
+      label: 'Navigate',
+      icon: Icons.navigation_rounded,
+      foreground: kTripCtaBlue,
+      background: kWhite,
+      border: kTripCtaBlue.withValues(alpha: 0.35),
+      onTap: enabled ? () => launchMapNavigation(target!) : null,
+    );
+  }
+}
+
+class _SosTextButton extends StatelessWidget {
+  const _SosTextButton({
     required this.tripMongoId,
     required this.locationLabel,
   });
@@ -368,8 +387,8 @@ class _SosButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
+    return TextButton(
+      onPressed: () {
         Navigator.of(context).pushNamed(
           'sos_select',
           arguments: {
@@ -378,34 +397,60 @@ class _SosButton extends StatelessWidget {
           },
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: kWhite,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: kSosRed.withValues(alpha: 0.85)),
-          boxShadow: [
-            BoxShadow(
-              color: kBlack.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'SOS',
-              style: kStyle(kBold, kSize16, color: kSosRed, height: 1.1),
-            ),
-            Text(
-              'Emergency',
-              style: kCaption11R.copyWith(color: kSosRed, fontWeight: kMedium),
-            ),
-          ],
+      child: Text(
+        'SOS · Emergency',
+        style: kCaption14M.copyWith(
+          color: kSosRed,
+          fontWeight: kSemiBold,
         ),
       ),
     );
   }
+}
+
+/// Shared outlined sheet CTA used for Navigate (and keep sizing consistent).
+Widget sizedSheetAction({
+  required String label,
+  required IconData icon,
+  required Color foreground,
+  required Color background,
+  required Color border,
+  VoidCallback? onTap,
+}) {
+  return SizedBox(
+    height: 52,
+    width: double.infinity,
+    child: Material(
+      color: background,
+      borderRadius: BorderRadius.circular(100),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(100),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: border, width: 1.4),
+          ),
+          child: Opacity(
+            opacity: onTap == null ? 0.45 : 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 20, color: foreground),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: kCaption14M.copyWith(
+                    color: foreground,
+                    fontWeight: kSemiBold,
+                    fontSize: kSize16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
