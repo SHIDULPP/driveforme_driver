@@ -22,10 +22,7 @@ const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
 
 class TripTicketInfo {
-  const TripTicketInfo({
-    required this.title,
-    required this.description,
-  });
+  const TripTicketInfo({required this.title, required this.description});
 
   final String title;
   final String description;
@@ -106,9 +103,9 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
     final launched = await launchMapNavigation(location);
     if (!mounted || launched) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not open navigation.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Could not open navigation.')));
   }
 
   Future<void> _goToPickupFlow() async {
@@ -247,8 +244,7 @@ class _TripDetailsCard extends StatelessWidget {
 
   bool get _showNavigateButton => onNavigateToPickup != null;
 
-  bool get _showGoToPickupButton =>
-      onGoToPickup != null && isPickupTimeReached;
+  bool get _showGoToPickupButton => onGoToPickup != null && isPickupTimeReached;
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +359,8 @@ class _TripDetailsCard extends StatelessWidget {
               value: startsInLabel ?? trip.countdownValue ?? '',
             ),
           ],
-          if (isPickupTimeReached && trip.status == TripCardStatus.upcoming) ...[
+          if (isPickupTimeReached &&
+              trip.status == TripCardStatus.upcoming) ...[
             const SizedBox(height: 12),
             Row(
               children: [
@@ -772,8 +769,9 @@ class _CustomerProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName =
-        customerName.isNotEmpty ? customerName : 'Vehicle owner';
+    final displayName = customerName.isNotEmpty
+        ? customerName
+        : 'Vehicle owner';
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -921,19 +919,10 @@ class _TripDetailsBottomActions extends StatelessWidget {
               buttonColor: _kNavigateBlue,
               labelColor: kWhite,
               onPressed: () async {
-                final result = await Navigator.of(context).pushNamed(
+                await Navigator.of(context).pushNamed(
                   'raiseTicket',
-                  arguments: {'tripId': tripId},
+                  arguments: {'tripId': tripId, 'category': 'Trip Support'},
                 );
-                if (result != null && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Ticket submitted. Our team will get back to you soon.',
-                      ),
-                    ),
-                  );
-                }
               },
             ),
           ),
@@ -977,17 +966,11 @@ class _TripTicketCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            ticket.title,
-            style: kCaption14B.copyWith(height: 1.3),
-          ),
+          Text(ticket.title, style: kCaption14B.copyWith(height: 1.3)),
           const SizedBox(height: 8),
           Text(
             ticket.description,
-            style: kCaption13R.copyWith(
-              color: kTripBodyMuted,
-              height: 1.45,
-            ),
+            style: kCaption13R.copyWith(color: kTripBodyMuted, height: 1.45),
           ),
         ],
       ),

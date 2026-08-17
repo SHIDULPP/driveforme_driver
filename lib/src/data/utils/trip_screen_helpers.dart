@@ -28,13 +28,9 @@ class TripScreenService {
     if (!response.success || response.data == null) return null;
 
     final trip = response.data!;
-    if (isActiveTripStatus(trip.status) && !trip.isCancelled) {
+    if (isResumableTrip(trip)) {
       await activeTripNotifier.setActiveTrip(tripMongoId, trip: trip);
-    } else if (trip.isScheduled &&
-        trip.isPickupTimeReached &&
-        !trip.isCancelled) {
-      await activeTripNotifier.setActiveTrip(tripMongoId, trip: trip);
-    } else if (trip.isCancelled) {
+    } else {
       await activeTripNotifier.clear();
     }
     return trip;

@@ -45,7 +45,7 @@ class ChatMessageModel {
 
   static DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
-    if (value is DateTime) return value;
-    return DateTime.tryParse(value.toString());
+    if (value is DateTime) return value.toLocal();
+    return DateTime.tryParse(value.toString())?.toLocal();
   }
 }

@@ -1,5 +1,4 @@
 import 'package:driveforme_driver/src/data/apis/trip_api.dart';
-import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,33 +13,19 @@ class ActiveTripService {
   }) : _storage = storage,
        _tripApi = tripApi;
 
+  /// Resumes only the trip id last saved locally.
+  ///
+  /// Assigned/ongoing list fallbacks are intentionally skipped so dismissing a
+  /// trip screen (or finishing a stale trip) is not undone on the next launch.
   Future<TripNavigationTarget?> resolveResumableTrip() async {
     final storedId = await _storage.getActiveTripId();
-    if (storedId != null && storedId.isNotEmpty) {
-      final target = await _targetFromTripId(storedId);
-      if (target != null) return target;
+    if (storedId == null || storedId.isEmpty) return null;
+
+    final target = await _targetFromTripId(storedId);
+    if (target == null) {
       await _storage.clearActiveTripId();
     }
-
-    final inProgress = await _tripApi.listOngoingTrips();
-    if (inProgress.success && inProgress.data != null) {
-      final trip = _firstResumableTrip(inProgress.data!);
-      if (trip != null) {
-        await _storage.saveActiveTripId(trip.id);
-        return tripNavigationTarget(trip);
-      }
-    }
-
-    final assigned = await _tripApi.listAssignedTrips();
-    if (assigned.success && assigned.data != null) {
-      final trip = _firstResumableTrip(assigned.data!);
-      if (trip != null) {
-        await _storage.saveActiveTripId(trip.id);
-        return tripNavigationTarget(trip);
-      }
-    }
-
-    return null;
+    return target;
   }
 
   Future<TripNavigationTarget?> _targetFromTripId(String tripId) async {
@@ -48,19 +33,12 @@ class ActiveTripService {
     if (!response.success || response.data == null) return null;
 
     final trip = response.data!;
-    if (trip.isCancelled || !isResumableTrip(trip)) {
+    if (!isResumableTrip(trip)) {
       await _storage.clearActiveTripId();
       return null;
     }
 
     return tripNavigationTarget(trip);
-  }
-
-  TripModel? _firstResumableTrip(List<TripModel> trips) {
-    for (final trip in trips) {
-      if (isResumableTrip(trip)) return trip;
-    }
-    return null;
   }
 }
 

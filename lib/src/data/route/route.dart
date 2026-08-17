@@ -386,7 +386,9 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
     case 'raiseTicket':
       final ticketArgs = settings?.arguments as Map?;
       final tripId = ticketArgs?['tripId'] as String? ?? '';
-      page = RaiseTicketPage(tripId: tripId);
+      final category =
+          ticketArgs?['category'] as String? ?? 'Trip Support';
+      page = RaiseTicketPage(tripId: tripId, category: category);
       transitionToUse = TransitionType.slideFromRight;
       transitionDuration = const Duration(milliseconds: 400);
       break;

@@ -4,6 +4,7 @@ import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/pickup_proximity.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
@@ -119,6 +120,17 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
     );
   }
 
+  /// Leaving without continuing should not auto-reopen this trip on next launch.
+  /// The trip remains available from Trips if it is still assigned.
+  Future<void> _dismissWithoutContinuing() async {
+    if (_navigatedAway) return;
+    _pollTimer?.cancel();
+    _navigatedAway = true;
+    await ref.read(activeTripProvider.notifier).clear();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
   Future<void> _handleCancel() async {
     _pollTimer?.cancel();
     _navigatedAway = true;
@@ -143,82 +155,89 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
   Widget build(BuildContext context) {
     final trip = _trip;
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: kWhite,
-        body: trip == null
-            ? const Center(child: CircularProgressIndicator())
-            : Stack(
-                fit: StackFit.expand,
-                children: [
-                  TripMapView(
-                    pickup: trip.pickupLocation,
-                    dropoff: trip.dropoffLocation,
-                    driverLocation: driverMapLocation,
-                    mode: TripMapMode.toPickup,
-                    followDriver: true,
-                    onRouteSummary: _onRouteSummary,
-                  ),
-                  Positioned(
-                    right: 16,
-                    top: MediaQuery.paddingOf(context).top + 60,
-                    child: MapNavigateButton(target: trip.pickupLocation),
-                  ),
-                  Positioned(
-                    top: MediaQuery.paddingOf(context).top + 8,
-                    left: 16,
-                    child: _MapBackButton(
-                      onTap: () => Navigator.maybePop(context),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop || _navigatedAway) return;
+        await _dismissWithoutContinuing();
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark.copyWith(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
+        child: Scaffold(
+          backgroundColor: kWhite,
+          body: trip == null
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    TripMapView(
+                      pickup: trip.pickupLocation,
+                      dropoff: trip.dropoffLocation,
+                      driverLocation: driverMapLocation,
+                      mode: TripMapMode.toPickup,
+                      followDriver: true,
+                      onRouteSummary: _onRouteSummary,
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: DriverNavigationSheet(
-                      title: 'Navigate to pickup',
-                      subtitle: trip.pickupAddress,
-                      distanceLabel: _distanceLabel,
-                      etaLabel: _etaLabel,
-                      footer: Column(
-                        children: [
-                          primaryButton(
-                            label: 'I have arrived',
-                            buttonHeight: 52,
-                            fontSize: kSize16,
-                            buttonColor: kTripCtaBlue,
-                            labelColor: kWhite,
-                            onPressed:
-                                _canArrive ? () => _goToOtp(trip) : null,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _canArrive
-                                ? 'Tap when you reached the pickup location'
-                                : 'Approach pickup to unlock',
-                            textAlign: TextAlign.center,
-                            style: kCaption12R.copyWith(
-                              color: kTripBodyMuted,
-                              height: 1.35,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _handleCancel,
-                            child: Text(
-                              'Cancel trip',
-                              style: kCaption14M.copyWith(color: kRed),
-                            ),
-                          ),
-                        ],
+                    Positioned(
+                      right: 16,
+                      top: MediaQuery.paddingOf(context).top + 60,
+                      child: MapNavigateButton(target: trip.pickupLocation),
+                    ),
+                    Positioned(
+                      top: MediaQuery.paddingOf(context).top + 8,
+                      left: 16,
+                      child: _MapBackButton(
+                        onTap: _dismissWithoutContinuing,
                       ),
-                      child: _PassengerInfoCard(trip: trip),
                     ),
-                  ),
-                ],
-              ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: DriverNavigationSheet(
+                        title: 'Navigate to pickup',
+                        subtitle: trip.pickupAddress,
+                        distanceLabel: _distanceLabel,
+                        etaLabel: _etaLabel,
+                        footer: Column(
+                          children: [
+                            primaryButton(
+                              label: 'I have arrived',
+                              buttonHeight: 52,
+                              fontSize: kSize16,
+                              buttonColor: kTripCtaBlue,
+                              labelColor: kWhite,
+                              onPressed:
+                                  _canArrive ? () => _goToOtp(trip) : null,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _canArrive
+                                  ? 'Tap when you reached the pickup location'
+                                  : 'Approach pickup to unlock',
+                              textAlign: TextAlign.center,
+                              style: kCaption12R.copyWith(
+                                color: kTripBodyMuted,
+                                height: 1.35,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _handleCancel,
+                              child: Text(
+                                'Cancel trip',
+                                style: kCaption14M.copyWith(color: kRed),
+                              ),
+                            ),
+                          ],
+                        ),
+                        child: _PassengerInfoCard(trip: trip),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }
