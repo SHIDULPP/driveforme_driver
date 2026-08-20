@@ -47,6 +47,7 @@ class TripCardData {
     this.customerId = '',
     this.customerName = '',
     this.customerPhone = '',
+    this.customerPhotoUrl,
     this.vehicleNumber = '',
     this.stats = const [],
     this.totalEarned,
@@ -77,6 +78,7 @@ class TripCardData {
   final String customerId;
   final String customerName;
   final String customerPhone;
+  final String? customerPhotoUrl;
   final String vehicleNumber;
   final DateTime? pickupAt;
   final TripLocation? pickupLocation;
@@ -132,6 +134,10 @@ class TripCardData {
       customerId: args['customerId']?.toString() ?? '',
       customerName: args['customerName']?.toString() ?? '',
       customerPhone: args['customerPhone']?.toString() ?? '',
+      customerPhotoUrl: () {
+        final raw = args['customerPhotoUrl']?.toString().trim();
+        return (raw != null && raw.isNotEmpty) ? raw : null;
+      }(),
       vehicleNumber: args['vehicleNumber']?.toString() ?? '',
       routeStyle: status == TripCardStatus.cancelled
           ? TripRouteStyle.cancelledBolt
@@ -185,6 +191,7 @@ class TripCardData {
       customerId: trip.customerId,
       customerName: trip.customerDisplayName,
       customerPhone: trip.customerPhone,
+      customerPhotoUrl: trip.customerPhotoUrl,
       vehicleNumber: trip.vehicleNumber,
       routeStyle: status == TripCardStatus.cancelled
           ? TripRouteStyle.cancelledBolt

@@ -8,6 +8,7 @@ import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -348,6 +349,7 @@ class _TripDetailsCard extends StatelessWidget {
             customerId: trip.customerId,
             customerName: trip.customerName,
             customerPhone: trip.customerPhone,
+            customerPhotoUrl: trip.customerPhotoUrl,
             vehicleNumber: trip.vehicleNumber,
             tripMongoId: trip.tripMongoId,
             subtitle: trip.infoRowText,
@@ -756,6 +758,7 @@ class _CustomerProfileCard extends StatelessWidget {
     required this.customerName,
     required this.customerPhone,
     required this.vehicleNumber,
+    this.customerPhotoUrl,
     this.tripMongoId,
     this.subtitle,
   });
@@ -764,6 +767,7 @@ class _CustomerProfileCard extends StatelessWidget {
   final String customerName;
   final String customerPhone;
   final String vehicleNumber;
+  final String? customerPhotoUrl;
   final String? tripMongoId;
   final String? subtitle;
 
@@ -782,14 +786,10 @@ class _CustomerProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
+          ProfileAvatar(
+            imageUrl: customerPhotoUrl,
+            size: 52,
             borderRadius: BorderRadius.circular(10),
-            child: Image.asset(
-              'assets/pngs/person1.png',
-              width: 52,
-              height: 52,
-              fit: BoxFit.cover,
-            ),
           ),
           const SizedBox(width: 12),
           Expanded(

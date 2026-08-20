@@ -49,7 +49,7 @@ class ProfileAvatar extends StatelessWidget {
       color: _kAvatarBg,
       alignment: Alignment.center,
       child: Icon(
-        Icons.person_outline_rounded,
+        Icons.person_rounded,
         size: size * 0.5,
         color: _kAvatarIconColor,
       ),

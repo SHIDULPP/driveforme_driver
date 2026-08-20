@@ -9,6 +9,7 @@ import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
+import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
@@ -217,14 +218,10 @@ class _RequestSheet extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    ClipRRect(
+                    ProfileAvatar(
+                      imageUrl: trip.customerPhotoUrl,
+                      size: 56,
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        'assets/pngs/live_photo_image.png',
-                        width: 56,
-                        height: 56,
-                        fit: BoxFit.cover,
-                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

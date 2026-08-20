@@ -3,6 +3,7 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/utils/responsive.dart';
 import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
+import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
 
@@ -85,7 +86,10 @@ class NewTripRequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _PassengerAvatar(size: context.rs(44)),
+                  _PassengerAvatar(
+                    size: context.rs(44),
+                    imageUrl: trip.customerPhotoUrl,
+                  ),
                   SizedBox(width: context.rs(10)),
                   Expanded(
                     child: Column(
@@ -213,9 +217,10 @@ class _ScheduledPickupRow extends StatelessWidget {
 }
 
 class _PassengerAvatar extends StatelessWidget {
-  const _PassengerAvatar({required this.size});
+  const _PassengerAvatar({required this.size, this.imageUrl});
 
   final double size;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -226,13 +231,10 @@ class _PassengerAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: kTripRequestAvatarRing, width: context.rs(1.5)),
       ),
-      child: ClipOval(
-        child: Image.asset(
-          'assets/pngs/live_photo_image.png',
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-        ),
+      child: ProfileAvatar(
+        imageUrl: imageUrl,
+        size: size,
+        borderRadius: BorderRadius.circular(size / 2),
       ),
     );
   }

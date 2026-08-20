@@ -29,6 +29,7 @@ class TripModel {
   final String customerId;
   final String customerName;
   final String customerPhone;
+  final String? customerPhotoUrl;
   final String vehicleName;
   final String vehicleNumber;
   final String vehicleType;
@@ -59,6 +60,7 @@ class TripModel {
     this.customerId = '',
     this.customerName = '',
     this.customerPhone = '',
+    this.customerPhotoUrl,
     this.vehicleName = '',
     this.vehicleNumber = '',
     this.vehicleType = '',
@@ -121,6 +123,7 @@ class TripModel {
       customerId: _userId(customer) ?? '',
       customerName: _userName(customer) ?? '',
       customerPhone: _userPhone(customer) ?? '',
+      customerPhotoUrl: _userPhotoUrl(customer),
       vehicleName: vehicleDetails is Map
           ? vehicleDetails['vehicleName']?.toString() ?? ''
           : '',
@@ -304,6 +307,7 @@ class TripModel {
         'customerId': customerId,
         'customerName': customerDisplayName,
         'customerPhone': customerPhone,
+        'customerPhotoUrl': customerPhotoUrl ?? '',
         'pickup': pickupAddress,
         'dropoff': dropoffAddress ?? pickupAddress,
         'vehicleNumber': vehicleNumber,
@@ -359,6 +363,8 @@ class TripModel {
         'customerName': customerDisplayName,
         'customerPhone': customerPhone,
         'customerId': customerId,
+        'customerPhotoUrl': customerPhotoUrl ?? '',
+        'vehicleNumber': vehicleNumber,
         'pickup': pickupAddress,
         'dropoff': dropoffAddress ?? pickupAddress,
         'distance': distanceLabel,
@@ -417,6 +423,28 @@ class TripModel {
   static String? _userPhone(dynamic user) {
     if (user is Map && user['phoneNumber'] != null) {
       return user['phoneNumber'].toString();
+    }
+    return null;
+  }
+
+  static String? _userPhotoUrl(dynamic user) {
+    if (user is! Map) return null;
+
+    final candidates = <dynamic>[
+      if (user['profile'] is Map) (user['profile'] as Map)['avatarUrl'],
+      if (user['profile'] is Map) (user['profile'] as Map)['livePhotoUrl'],
+      if (user['profile'] is Map) (user['profile'] as Map)['photoUrl'],
+      if (user['profile'] is Map) (user['profile'] as Map)['profilePhotoUrl'],
+      user['livePhotoUrl'],
+      user['photoUrl'],
+      user['avatar'],
+      user['avatarUrl'],
+      user['profilePhotoUrl'],
+    ];
+
+    for (final candidate in candidates) {
+      final url = candidate?.toString().trim();
+      if (url != null && url.isNotEmpty) return url;
     }
     return null;
   }

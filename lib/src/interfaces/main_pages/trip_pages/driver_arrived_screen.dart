@@ -12,6 +12,7 @@ import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/driver_navigation_sheet.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -302,14 +303,10 @@ class _PassengerInfoCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
+          ProfileAvatar(
+            imageUrl: trip.customerPhotoUrl,
+            size: 56,
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/pngs/person1.png',
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-            ),
           ),
           const SizedBox(width: 12),
           Expanded(
