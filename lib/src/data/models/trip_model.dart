@@ -270,8 +270,13 @@ class TripModel {
 
   String formatDateTime(DateTime? date) {
     if (date == null) return '—';
-    return DateFormat('d MMMM, hh:mm a').format(date);
+    // Figma: "April 30, 09:00 AM"
+    return DateFormat('MMMM d, hh:mm a').format(date);
   }
+
+  /// Best available trip date for list/detail cards.
+  DateTime? get displayTripAt =>
+      pickupAt ?? startedAt ?? createdAt ?? completedAt;
 
   String get paymentTypeKey =>
       paymentMethod == 'pay_online' || paymentMethod == 'upi'

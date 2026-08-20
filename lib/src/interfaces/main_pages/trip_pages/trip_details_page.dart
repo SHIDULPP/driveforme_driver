@@ -267,9 +267,9 @@ class _TripDetailsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Flexible(child: _StatusBadge(status: trip.status)),
+              _StatusBadge(status: trip.status),
               SizedBox(width: context.rs(8)),
-              Flexible(child: _ShortTripBadge(label: trip.tripTypeLabel)),
+              _ShortTripBadge(label: trip.tripTypeLabel),
               if (_showMenu) ...[
                 const Spacer(),
                 IconButton(
@@ -277,7 +277,7 @@ class _TripDetailsCard extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   icon: const Icon(
-                    Icons.more_horiz_rounded,
+                    Icons.more_vert_rounded,
                     color: kTextColor,
                     size: 22,
                   ),
@@ -456,28 +456,28 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case TripCardStatus.upcoming:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'SCHEDULED',
           backgroundColor: kStatusScheduledBg,
           dotColor: kStatusScheduledText,
           textColor: kStatusScheduledText,
         );
       case TripCardStatus.completed:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'COMPLETED',
           backgroundColor: kStatusCompletedBg,
           dotColor: kStatusCompletedText,
           textColor: kStatusCompletedText,
         );
       case TripCardStatus.cancelled:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'CANCELLED',
           backgroundColor: kStatusCancelledBg,
           dotColor: kStatusCancelledText,
           textColor: kStatusCancelledText,
         );
       case TripCardStatus.ongoing:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'NOW',
           backgroundColor: kActiveGreenBg,
           dotColor: kActiveGreen,
@@ -506,9 +506,10 @@ class _DotStatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             height: 6,
@@ -516,12 +517,15 @@ class _DotStatusBadge extends StatelessWidget {
             decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: kStyle(kSemiBold, kSize11, color: textColor, height: 1.1),
+          Text(
+            label,
+            softWrap: false,
+            style: kStyle(
+              kMedium,
+              kSize11,
+              color: textColor,
+              height: 1.1,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -541,22 +545,26 @@ class _ShortTripBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: _kShortTripBadgeBg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.sync_alt_rounded,
             size: 14,
             color: kTextColor.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: 5),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: kStyle(kMedium, kSize11, color: kTextColor, height: 1.1),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            softWrap: false,
+            style: kStyle(
+              kMedium,
+              kSize11,
+              color: kTextColor,
+              height: 1.1,
+              letterSpacing: 0.3,
             ),
           ),
         ],

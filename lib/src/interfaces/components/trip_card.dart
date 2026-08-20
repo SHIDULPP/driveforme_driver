@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 const _kNavigateBlue = kBrandBlue;
-const _kShortTripBadgeBg = kFigmaNeutral;
+const _kShortTripBadgeBg = kChipGreyBg;
 const _kDropPinBlue = kDropBlue;
 
 enum TripCardStatus { ongoing, upcoming, completed, cancelled }
@@ -100,15 +100,18 @@ class TripCardData {
       _ => TripCardStatus.upcoming,
     };
 
+    final pickupAt = _tryParseDate(args['pickupAt']);
+    final completedAt = _tryParseDate(args['completedAt']);
+
     return TripCardData(
       tripMongoId: args['tripMongoId']?.toString(),
       status: status,
       tripTypeLabel: args['tripTypeLabel']?.toString() ?? 'SHORT TRIP',
-      dateLabel: args['pickupAt'] != null
-          ? 'Date : ${args['pickupAt']}'
+      dateLabel: pickupAt != null
+          ? 'Date : ${DateFormat('MMMM d, hh:mm a').format(pickupAt)}'
           : null,
-      completedAtLabel: args['completedAt'] != null
-          ? 'Completed at : ${args['completedAt']}'
+      completedAtLabel: completedAt != null
+          ? 'Completed at : ${DateFormat('hh:mm a').format(completedAt)}'
           : null,
       pickup: TripLocationInfo(
         title: args['pickup']?.toString() ?? 'Pickup',
@@ -157,12 +160,16 @@ class TripCardData {
         ? 'Drop, ${trip.distanceLabel} away'
         : 'Drop Location';
 
+    final tripDate = trip.displayTripAt;
+    final showTotalEarned =
+        status == TripCardStatus.completed || status == TripCardStatus.cancelled;
+
     return TripCardData(
       tripMongoId: trip.id,
       status: status,
       tripTypeLabel: trip.tripTypeBadgeLabel,
-      dateLabel: trip.pickupAt != null
-          ? 'Date : ${trip.formatDateTime(trip.pickupAt)}'
+      dateLabel: tripDate != null
+          ? 'Date : ${trip.formatDateTime(tripDate)}'
           : null,
       completedAtLabel: trip.completedAt != null
           ? 'Completed at : ${DateFormat('hh:mm a').format(trip.completedAt!)}'
@@ -187,7 +194,7 @@ class TripCardData {
         TripStatInfo(label: 'Duration', value: trip.durationLabel),
         TripStatInfo(label: 'Vehicle Type', value: trip.vehicleTypeLabel),
       ],
-      totalEarned: trip.displayEarnings,
+      totalEarned: showTotalEarned ? trip.displayEarnings : null,
       customerId: trip.customerId,
       customerName: trip.customerDisplayName,
       customerPhone: trip.customerPhone,
@@ -219,6 +226,12 @@ class TripCardData {
       return trip.isInProgress ? 'View Trip' : 'Go to pickup';
     }
     return 'View Trip Details';
+  }
+
+  static DateTime? _tryParseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    return DateTime.tryParse(value.toString());
   }
 
   static TripCardData dummyOngoing() {
@@ -331,7 +344,12 @@ class TripCard extends StatelessWidget {
   bool get _showDateRow =>
       data.dateLabel != null || data.completedAtLabel != null;
 
-  bool get _showEarningsColumn => data.earningsAmount != null;
+  /// Side "you earn" amount — design shows this on upcoming/ongoing only.
+  /// Completed/cancelled use the bottom "Total Earned" row instead.
+  bool get _showEarningsColumn =>
+      data.earningsAmount != null &&
+      (data.status == TripCardStatus.upcoming ||
+          data.status == TripCardStatus.ongoing);
 
   bool get _showStats => data.stats.isNotEmpty;
 
@@ -554,16 +572,16 @@ class _TripCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Flexible(child: _StatusBadge(status: status)),
+        _StatusBadge(status: status),
         SizedBox(width: context.rs(8)),
-        Flexible(child: _ShortTripBadge(label: tripTypeLabel)),
+        _ShortTripBadge(label: tripTypeLabel),
         const Spacer(),
         IconButton(
           onPressed: onMenuPressed,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
           icon: const Icon(
-            Icons.more_horiz_rounded,
+            Icons.more_vert_rounded,
             color: kTextColor,
             size: 22,
           ),
@@ -580,56 +598,31 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Figma: pill chips with a solid colored dot (not check/close icons).
     switch (status) {
       case TripCardStatus.ongoing:
-        return Container(
-          height: 26,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0x1A16A34A),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 6,
-                width: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF16A34A),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'NOW',
-                maxLines: 1,
-                style: kStyle(
-                  kMedium,
-                  kSize14,
-                  color: const Color(0xFF16A34A),
-                  height: 1.2,
-                ),
-              ),
-            ],
-          ),
+        return const _DotStatusBadge(
+          label: 'NOW',
+          backgroundColor: kActiveGreenBg,
+          dotColor: kActiveGreen,
+          textColor: kActiveGreen,
         );
       case TripCardStatus.upcoming:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'SCHEDULED',
           backgroundColor: kStatusScheduledBg,
           dotColor: kStatusScheduledText,
           textColor: kStatusScheduledText,
         );
       case TripCardStatus.completed:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'COMPLETED',
           backgroundColor: kStatusCompletedBg,
           dotColor: kStatusCompletedText,
           textColor: kStatusCompletedText,
         );
       case TripCardStatus.cancelled:
-        return _DotStatusBadge(
+        return const _DotStatusBadge(
           label: 'CANCELLED',
           backgroundColor: kStatusCancelledBg,
           dotColor: kStatusCancelledText,
@@ -658,9 +651,10 @@ class _DotStatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             height: 6,
@@ -668,12 +662,15 @@ class _DotStatusBadge extends StatelessWidget {
             decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: kStyle(kSemiBold, kSize11, color: textColor, height: 1.1),
+          Text(
+            label,
+            softWrap: false,
+            style: kStyle(
+              kMedium,
+              kSize11,
+              color: textColor,
+              height: 1.1,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -690,7 +687,7 @@ class _ShortTripBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: _kShortTripBadgeBg,
         borderRadius: BorderRadius.circular(100),
@@ -701,15 +698,18 @@ class _ShortTripBadge extends StatelessWidget {
           Icon(
             Icons.sync_alt_rounded,
             size: 14,
-            color: kDarkText.withValues(alpha: 0.7),
+            color: kTextColor.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: kStyle(kMedium, kSize14, color: kDarkText, height: 1.2),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            softWrap: false,
+            style: kStyle(
+              kMedium,
+              kSize11,
+              color: kTextColor,
+              height: 1.1,
+              letterSpacing: 0.3,
             ),
           ),
         ],
