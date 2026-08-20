@@ -71,7 +71,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                 duration: anim.AnimationDuration.normal,
                 child: Text(
                   'Verify Your Number',
-                  style: kStyle(kRegular, kSize30, color: kDarkText),
+                  style: kHeadTitleR,
                 ),
               ),
               const SizedBox(height: 40),
@@ -97,9 +97,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                               child: TextFormField(
                                 initialValue: '+ 91',
                                 textAlign: TextAlign.center,
-                                style: kStyle(
-                                  kRegular,
-                                  kSize24,
+                                style: kLoginPhoneFieldR.copyWith(
                                   color: kDarkText,
                                 ),
                                 decoration: InputDecoration(
@@ -155,18 +153,14 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                                 }
                                 return null;
                               },
-                              style: kStyle(kRegular, kSize24, color: kDarkText),
+                              style: kLoginPhoneFieldR,
                               cursorColor: kBrandBlue,
                               onChanged: (_) => setState(() {}),
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
                                 hintText: 'Mobile Number',
-                                hintStyle: kStyle(
-                                  kRegular,
-                                  kSize24,
-                                  color: _kFieldPlaceholderGrey,
-                                ),
+                                hintStyle: kLoginPhoneFieldR,
                                 enabledBorder: const UnderlineInputBorder(
                                   borderSide: BorderSide(
                                     color: _kFieldPlaceholderGrey,
@@ -361,7 +355,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                       duration: anim.AnimationDuration.normal,
                       child: Text(
                         'Enter OTP',
-                        style: kStyle(kRegular, kSize30, color: kDarkText),
+                        style: kHeadTitleR,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -372,19 +366,14 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                       delayMilliseconds: 100,
                       child: RichText(
                         text: TextSpan(
-                          style: kStyle(
-                            kLight,
-                            kSize16,
-                            color: kDarkText,
-                            height: 1.4,
-                          ),
+                          style: kLoginSubtitleR,
                           children: [
                             const TextSpan(
                               text: 'We have sent a 6 digit OTP to ',
                             ),
                             TextSpan(
                               text: _maskedPhone(),
-                              style: kStyle(kRegular, kSize16, color: kBrandBlue),
+                              style: kLoginSubtitleAccentSB,
                             ),
                             const TextSpan(
                               text: ' number and you can use to login',
@@ -421,7 +410,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                               fontFamily: 'ClashGrotesk',
                               color: kBrandBlue,
                               fontSize: fontSize,
-                              fontWeight: kRegular,
+                              fontWeight: kMedium,
                             ),
                             pinTheme: PinTheme(
                               shape: PinCodeFieldShape.underline,
@@ -467,28 +456,20 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                             child: Text(
                               "Didn't get SMS?",
                               textAlign: TextAlign.center,
-                              style: kStyle(kLight, kSize16, color: kDarkText),
+                              style: kLoginResendPromptM,
                             ),
                           ),
                           const SizedBox(height: 8),
                           if (_isButtonDisabled)
                             RichText(
                               text: TextSpan(
-                                style: kStyle(
-                                  kLight,
-                                  kSize16,
-                                  color: kDarkText,
-                                ),
+                                style: kLoginResendPromptM,
                                 children: [
                                   const TextSpan(text: 'Get a new OTP in '),
                                   TextSpan(
                                     text:
                                         '00:${_start.toString().padLeft(2, '0')}',
-                                    style: kStyle(
-                                      kRegular,
-                                      kSize16,
-                                      color: kBrandBlue,
-                                    ),
+                                    style: kLoginResendTimerSB,
                                   ),
                                 ],
                               ),
@@ -498,11 +479,9 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                               onTap: _resendOtp,
                               child: Text(
                                 'Resend OTP',
-                                style: kStyle(
-                                  kRegular,
-                                  kSize16,
-                                  color: kBrandBlue,
-                                ).copyWith(decoration: TextDecoration.underline),
+                                style: kLoginResendActionSB.copyWith(
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ),
                         ],

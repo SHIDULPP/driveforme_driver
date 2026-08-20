@@ -183,7 +183,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                                         TextSpan(
                                           text: 'Drive4me',
                                           style: TextStyle(
-                                            fontWeight: FontWeight.w700,
+                                            fontWeight: kMedium,
                                           ),
                                         ),
                                       ],

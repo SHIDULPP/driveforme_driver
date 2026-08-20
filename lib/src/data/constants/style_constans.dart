@@ -1,35 +1,36 @@
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:flutter/material.dart';
 
-// ================= FONT WEIGHTS =================
+// Clash Grotesk (Figma: Regular 400 / Medium 500 / Semibold 600 / Bold 700).
+// Line-height is 120%. Headings paint as Medium — legacy weight names alias
+// so existing `kStyle(kSemiBold, …)` call sites stay unchanged.
 
-// Clash Grotesk works best with these mappings
+const String kFontFamily = 'ClashGrotesk';
 
-const kExtraLight = FontWeight.w200;
-const kUltraLight = FontWeight.w300;
-const kLight = FontWeight.w400;
-const kRegular = FontWeight.w500;
-const kMedium = FontWeight.w600;
-const kSemiBold = FontWeight.w700;
-const kBold = FontWeight.w800;
-const kExtraBold = FontWeight.w900;
-const kBlackFont = FontWeight.w900;
+const kRegular = FontWeight.w400;
+const kMedium = FontWeight.w500;
 
-// ================= LETTER SPACING =================
+const kLight = kRegular;
+const kUltraLight = kRegular;
+const kExtraLight = kRegular;
+const kSemiBold = kMedium;
+const kBold = kMedium;
+const kExtraBold = kMedium;
+const kBlackFont = kMedium;
 
 const double kShortClose = -1.2;
 const double kShort = -0.3;
 
-// ================= FONT SIZES =================
-
-const double kDisplay = 44;
-const double kExtraLarge = 40;
-const double kLarge = 38;
-const double kHeading = 36;
+// Figma type scale: Clash Grotesk/{size}/{weight}
+// 10 · 12 · 14 · 16 · 18 · 20 · 24 · 30 · 36
+const double kDisplay = 36;
+const double kExtraLarge = 30;
+const double kLarge = 24;
+const double kHeading = 20;
 const double kSubHeading = 18;
-const double kBody = 32;
-const double kSize30 = 30;
-const double kSize28 = 28;
+const double kBody = 16;
+
+const double kSize10 = 10;
 const double kSize11 = 11;
 const double kSize12 = 12;
 const double kSize13 = 13;
@@ -38,15 +39,16 @@ const double kSize15 = 15;
 const double kSize16 = 16;
 const double kSize17 = 17;
 const double kSize18 = 18;
+const double kSize20 = 20;
 const double kSize22 = 22;
+const double kSize24 = 24;
+const double kSize25 = 25;
+const double kSize26 = 26;
+const double kSize28 = 28;
+const double kSize30 = 30;
+const double kSize32 = 32;
 const double kSize34 = 34;
 const double kSize36 = 36;
-const double kSize10 = 10;
-const double kSize20 = 20;
-const double kSize24 = 24;
-const double kSize26 = 26;
-
-// ================= BASE STYLE =================
 
 TextStyle kStyle(
   FontWeight weight,
@@ -56,7 +58,7 @@ TextStyle kStyle(
   double? height,
 }) {
   return TextStyle(
-    fontFamily: 'ClashGrotesk',
+    fontFamily: kFontFamily,
     fontWeight: weight,
     color: color ?? kTextColor,
     fontSize: size,
@@ -65,117 +67,109 @@ TextStyle kStyle(
   );
 }
 
-// ================= DISPLAY =================
+// ================= SCALE (Figma sizes × Regular / Medium) =================
 
 final kDisplayTitleR = kStyle(kRegular, kDisplay);
 final kDisplayTitleM = kStyle(kMedium, kDisplay);
-final kDisplayTitleSB = kStyle(kSemiBold, kDisplay);
-final kDisplayTitleB = kStyle(kBold, kDisplay);
-final kDisplayTitleEB = kStyle(kExtraBold, kDisplay);
+final kDisplayTitleSB = kDisplayTitleM;
+final kDisplayTitleB = kDisplayTitleM;
+final kDisplayTitleEB = kDisplayTitleM;
 
-// ================= LARGE =================
+final kExtraLargeTitleM = kStyle(kMedium, kExtraLarge);
+final kExtraLargeTitleR = kStyle(kRegular, kExtraLarge);
+final kExtraLargeTitleSB = kExtraLargeTitleM;
+final kExtraLargeTitleB = kExtraLargeTitleM;
 
 final kLargeTitleR = kStyle(kRegular, kLarge);
 final kLargeTitleM = kStyle(kMedium, kLarge);
-final kExtraLargeTitleM = kStyle(kMedium, kExtraLarge);
-final kLargeTitleSB = kStyle(kSemiBold, kLarge);
-final kLargeTitleB = kStyle(kBold, kLarge);
-final kLargeTitleEB = kStyle(kExtraBold, kLarge);
+final kLargeTitleSB = kLargeTitleM;
+final kLargeTitleB = kLargeTitleM;
+final kLargeTitleEB = kLargeTitleM;
 
-// ================= HEADING =================
-
-final kHeadTitleR = kStyle(kRegular, kHeading);
 final kHeadTitleM = kStyle(kMedium, kHeading);
-final kHeadTitleSB = kStyle(kSemiBold, kHeading);
-final kHeadTitleB = kStyle(kBold, kHeading);
-final kHeadTitleEB = kStyle(kExtraBold, kHeading);
+final kHeadTitleSB = kHeadTitleM;
+final kHeadTitleB = kHeadTitleM;
+final kHeadTitleEB = kHeadTitleM;
+final kHeadTitleR = kDisplayTitleR;
 
-// ================= SUBHEADING =================
-
-final kSubHeadingL = kStyle(kLight, kSubHeading);
 final kSubHeadingR = kStyle(kRegular, kSubHeading);
 final kSubHeadingM = kStyle(kMedium, kSubHeading);
-final kSubHeadingSB = kStyle(kSemiBold, kSubHeading);
-final kSubHeadingB = kStyle(kBold, kSubHeading);
-final kSubHeadingEB = kStyle(kExtraBold, kSubHeading);
+final kSubHeadingL = kSubHeadingR;
+final kSubHeadingSB = kSubHeadingM;
+final kSubHeadingB = kSubHeadingM;
+final kSubHeadingEB = kSubHeadingM;
 
-// ================= BODY =================
-
-final kBodyTitleL = kStyle(kLight, kBody);
 final kBodyTitleR = kStyle(kRegular, kBody);
 final kBodyTitleM = kStyle(kMedium, kBody);
-final kBodyTitleSB = kStyle(kSemiBold, kBody);
-final kBodyTitleB = kStyle(kBold, kBody);
-final kBodyTitleEB = kStyle(kExtraBold, kBody);
+final kBodyTitleL = kStyle(kRegular, kSize32);
+final kBodyTitleSB = kBodyTitleM;
+final kBodyTitleB = kBodyTitleM;
+final kBodyTitleEB = kBodyTitleM;
 
-// ================= SMALL =================
+final kSmallTitleR = kStyle(kRegular, kSize14);
+final kSmallTitleM = kStyle(kMedium, kSize14);
+final kSmallTitleL = kSmallTitleR;
+final kSmallTitleUL = kSmallTitleR;
+final kSmallTitleSB = kSmallTitleM;
+final kSmallTitleB = kSmallTitleM;
+final kSmallTitleEB = kSmallTitleM;
 
-final kSmallTitleUL = kStyle(kUltraLight, kSize30);
-final kSmallTitleL = kStyle(kLight, kSize30);
-final kSmallTitleR = kStyle(kRegular, kSize30);
-final kSmallTitleM = kStyle(kMedium, kSize30);
-final kSmallTitleSB = kStyle(kSemiBold, kSize30);
-final kSmallTitleB = kStyle(kBold, kSize30);
-final kSmallTitleEB = kStyle(kExtraBold, kSize30);
-
-// ================= SMALLER =================
-
-final kSmallerTitleEL = kStyle(kExtraLight, kSize28);
-final kSmallerTitleUL = kStyle(kUltraLight, kSize28);
-final kSmallerTitleL = kStyle(kLight, kSize28);
-final kSmallerTitleR = kStyle(kRegular, kSize28);
-final kSmallerTitleRWithGradient = kStyle(kRegular, kSize28);
-final kSmallerTitleM = kStyle(kMedium, kSize28);
-final kSmallerTitleSB = kStyle(kSemiBold, kSize28);
-final kSmallerTitleB = kStyle(kBold, kSize28);
-final kSmallerTitleEB = kStyle(kExtraBold, kSize28);
+final kSmallerTitleR = kStyle(kRegular, kSize12);
+final kSmallerTitleM = kStyle(kMedium, kSize12);
+final kSmallerTitleL = kSmallerTitleR;
+final kSmallerTitleEL = kSmallerTitleR;
+final kSmallerTitleUL = kSmallerTitleR;
+final kSmallerTitleSB = kSmallerTitleM;
+final kSmallerTitleB = kSmallerTitleM;
+final kSmallerTitleEB = kSmallerTitleM;
+final kSmallerTitleRWithGradient = kSmallerTitleR;
 
 // ── Compact UI (home, trips, bottom nav) ──────────────────────────────────────
 
 final kCaption11R = kStyle(kRegular, kSize11);
 final kCaption12R = kStyle(kRegular, kSize12, color: kMutedText);
 final kCaption13R = kStyle(kRegular, kSize13, color: kMutedText);
-final kCaption13SB = kStyle(kSemiBold, kSize13, color: kTextColor);
-final kCaption14R = kStyle(kRegular, kSize14);
-final kCaption14M = kStyle(kMedium, kSize14);
-final kCaption14B = kStyle(kSemiBold, kSize14, color: kTextColor);
+final kCaption13SB = kStyle(kMedium, kSize13);
+final kCaption14R = kSmallTitleR;
+final kCaption14M = kSmallTitleM;
+final kCaption14B = kSmallTitleM;
 final kCaption15M = kStyle(kMedium, kSize15, color: kMutedText);
 
-final kLabel15M = kStyle(kMedium, kSize15, color: kTextColor, height: 1.25);
-final kLabel17B = kStyle(kSemiBold, kSize17, height: 1.1);
-final kLabel17BGold = kStyle(kSemiBold, kSize17, color: kGold, height: 1.1);
-final kLabel22B = kStyle(kSemiBold, kSize22, color: kBrandBlue, height: 1.1);
-final kLabel22White = kStyle(kSemiBold, kSize22, color: kWhite, height: 1.15);
+final kLabel15M = kStyle(kMedium, kSize15, height: 1.25);
+final kLabel17B = kStyle(kMedium, kSize17, height: 1.1);
+final kLabel17BGold = kStyle(kMedium, kSize17, color: kGold, height: 1.1);
+final kLabel22B = kStyle(kMedium, kSize22, color: kBrandBlue, height: 1.1);
+final kLabel22White = kStyle(kMedium, kSize22, color: kWhite, height: 1.15);
 
-final kTabLabelR = kStyle(kRegular, kSize14, color: kTextColor);
+final kTabLabelR = kCaption14R;
 final kTabLabelM = kStyle(kMedium, kSize14, color: kGoldAccent);
 
-final kNavLabelR = kStyle(kRegular, kSize12, color: kMutedText);
+final kNavLabelR = kCaption12R;
 final kNavLabelM = kStyle(kMedium, kSize12, color: kBrandBlue);
 
-final kTripBadgeSB = kStyle(kSemiBold, kSize13, color: kActiveGreen);
+final kTripBadgeSB = kStyle(kMedium, kSize13, color: kActiveGreen);
 final kTripChipR = kStyle(kRegular, kSize13);
-final kTrackTripSB = kStyle(kSemiBold, kSize14, color: kWhite, height: 1.1);
+final kTrackTripSB = kStyle(kMedium, kSize14, color: kWhite, height: 1.1);
 
-final kSupportTitleB = kStyle(kSemiBold, kSize17, color: kWhite, height: 1.2);
-final kSupportSubtitleR = kStyle(kRegular, kSize12, color: kWhite, height: 1.3);
-final kPhoneNumberB = kStyle(
-  kSemiBold,
-  kSize14,
-  color: kTextColor,
-  height: 1.15,
+final kSupportTitleB = kStyle(kMedium, kSize17, color: kWhite);
+final kSupportSubtitleR = kStyle(
+  kRegular,
+  kSize13,
+  color: kWhite,
+  height: 1.35,
 );
-final kPhoneSupportR = kStyle(kRegular, kSize11, height: 1.15);
+final kPhoneNumberB = kStyle(kMedium, kSize14, height: 1.0);
+final kPhoneSupportR = kStyle(kRegular, kSize11, height: 1.0);
 
 final kDecorTitleEB = kStyle(
-  kExtraBold,
+  FontWeight.w700,
   kSize36,
   color: kDecorText,
-  height: 1.05,
-  letterSpacing: -0.3,
+  height: 1.02,
+  letterSpacing: -0.8,
 );
 final kFooterCaptionR = kStyle(kRegular, kSize13, height: 1.35);
-final kFooterBrandB = kStyle(kSemiBold, kSize13, color: kBrandBlue);
+final kFooterBrandB = kStyle(kMedium, kSize13, color: kBrandBlue);
 
 final kEmptyStateM = kStyle(kMedium, kSize15, color: kMutedText);
 
@@ -188,8 +182,8 @@ final kEarningsBalanceLabelR = kStyle(
   height: 1.2,
 );
 final kEarningsBalanceAmountB = kStyle(
-  kBold,
-  kSize34,
+  kMedium,
+  kSize32,
   color: kWhite,
   height: 1.05,
 );
@@ -262,12 +256,26 @@ final kTripNotificationBodyR = kStyle(
   color: kTripBodyMuted,
   height: 1.45,
 );
-final kTripNotificationTimeM = kStyle(
+final kTripNotificationTimeM = kNavLabelM;
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+
+final kLoginSubtitleR = kStyle(
   kMedium,
-  kSize12,
-  color: kTripCtaBlue,
-  height: 1.2,
+  kSize14,
+  color: kMutedText,
+  height: 1.5,
 );
+final kLoginSubtitleAccentSB = kStyle(
+  kMedium,
+  kSize14,
+  color: kBrandBlue,
+  height: 1.5,
+);
+final kLoginPhoneFieldR = kStyle(kRegular, kSize25, color: kGreyDark);
+final kLoginResendPromptM = kStyle(kMedium, kSize14, color: kMutedText);
+final kLoginResendTimerSB = kEditProfileM;
+final kLoginResendActionSB = kEditProfileM;
 
 // ── Trip booking (Ride Now / create trip flow) ────────────────────────────────
 

@@ -351,7 +351,7 @@ class _HomeHeaderBackground extends ConsumerWidget {
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontFamily: 'ClashGrotesk',
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                   fontSize: 11,
                                   color: kWhite,
                                   height: 1,
@@ -667,7 +667,7 @@ class _TodaysEarningsCard extends ConsumerWidget {
                               '₹',
                               style: TextStyle(
                                 fontFamily: 'ClashGrotesk',
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 fontSize: 24,
                                 color: kBrandBlue,
                                 height: 1.0,
@@ -680,7 +680,7 @@ class _TodaysEarningsCard extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontFamily: 'ClashGrotesk',
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                   fontSize: 24,
                                   color: kBrandBlue,
                                   height: 1.2,
@@ -883,7 +883,7 @@ class _TripPreferenceCard extends StatelessWidget {
             'Trip Preference',
             style: TextStyle(
               fontFamily: 'ClashGrotesk',
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               fontSize: 14,
               color: kTextColor,
               height: 1.35,
@@ -1002,7 +1002,7 @@ class _TripOptionTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontFamily: 'ClashGrotesk',
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       fontSize: 14,
                       color: kTextColor,
                       height: 1.35,

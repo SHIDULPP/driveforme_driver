@@ -179,7 +179,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         duration: anim.AnimationDuration.normal,
                         child: Text(
                           'Personal Details',
-                          style: kStyle(kRegular, kSize30, color: kDarkText),
+                          style: kHeadTitleR,
                         ),
                       ),
                       const SizedBox(height: 8),

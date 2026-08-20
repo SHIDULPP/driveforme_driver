@@ -147,7 +147,7 @@ class _InteractiveButtonState extends State<_InteractiveButton> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: 'ClashGrotesk',
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           color: widget.labelColor,
                           fontSize: widget.fontSize,
                           height: 1.2,

@@ -233,7 +233,7 @@ class _ActiveNavPill extends StatelessWidget {
 
   static const _labelStyle = TextStyle(
     fontFamily: 'ClashGrotesk',
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w500,
     fontSize: 12,
     color: kWhite,
     height: 1.0,

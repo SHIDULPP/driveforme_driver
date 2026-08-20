@@ -38,7 +38,7 @@ class WithdrawalSuccessPage extends StatelessWidget {
                 SizedBox(height: context.rs(6)),
                 Text(
                   formatRupeeStat(amount),
-                  style: kStyle(kBold, kSize34, color: kTextColor, height: 1.05),
+                  style: kStyle(kMedium, kSize32, color: kTextColor, height: 1.05),
                 ),
                 SizedBox(height: context.rs(10)),
                 Text(

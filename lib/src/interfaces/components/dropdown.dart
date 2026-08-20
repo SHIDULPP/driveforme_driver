@@ -207,8 +207,8 @@ class _AnimatedDropdownState<T> extends State<AnimatedDropdown<T>>
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: isSelected
-                                                ? FontWeight.w600
-                                                : FontWeight.w500,
+                                                ? FontWeight.w500
+                                                : FontWeight.w400,
                                             color: isSelected
                                                 ? Colors.blue.shade700
                                                 : Colors.black87,
@@ -284,7 +284,7 @@ class _AnimatedDropdownState<T> extends State<AnimatedDropdown<T>>
                           ? const Color(0xFF9C9C9C)
                           : const Color(0xFF141414),
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
