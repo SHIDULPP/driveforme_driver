@@ -96,6 +96,21 @@ String? profilePhotoUrl(UserModel? user) {
   return url;
 }
 
+String profileInitials(UserModel? user) {
+  final name = user?.profile.fullName.trim() ?? '';
+  if (name.isEmpty) return 'DR';
+
+  final parts = name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+  if (parts.length == 1) {
+    final word = parts.first;
+    return word.length >= 2
+        ? word.substring(0, 2).toUpperCase()
+        : word.toUpperCase();
+  }
+
+  return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+}
+
 String formatWalletBalance(UserModel? user) {
   final balance = user?.walletBalance ?? 0;
   if (balance == balance.truncateToDouble()) {

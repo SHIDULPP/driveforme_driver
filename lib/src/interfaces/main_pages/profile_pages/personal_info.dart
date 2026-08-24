@@ -3,13 +3,12 @@ import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/user_model.dart';
 import 'package:driveforme_driver/src/data/providers/user_provider.dart';
 import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
+import 'package:driveforme_driver/src/interfaces/main_pages/profile_pages/edit_profile_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
-const _kIconCircleBg = kFigmaNeutral;
-const _kRowIconColor = kChevronGrey;
 
 class PersonalInfoPage extends ConsumerWidget {
   const PersonalInfoPage({super.key});
@@ -72,34 +71,24 @@ class _PersonalInfoContent extends StatelessWidget {
 
   List<_PersonalInfoField> get _fields => [
         _PersonalInfoField(
-          icon: Icons.person_outline_rounded,
           label: 'Name',
           value: displayFullName(user),
         ),
         _PersonalInfoField(
-          icon: Icons.mail_outline_rounded,
+          label: 'Mobile Number',
+          value: displayPhone(user),
+        ),
+        _PersonalInfoField(
           label: 'Email',
           value: displayEmail(user),
         ),
         _PersonalInfoField(
-          icon: Icons.phone_outlined,
-          label: 'Phone',
-          value: displayPhone(user),
-        ),
-        _PersonalInfoField(
-          icon: Icons.calendar_today_outlined,
-          label: 'Date of birth',
+          label: 'Date of Birth',
           value: displayDateOfBirth(user),
         ),
         _PersonalInfoField(
-          icon: Icons.wc_outlined,
           label: 'Gender',
           value: displayGender(user),
-        ),
-        _PersonalInfoField(
-          icon: Icons.location_on_outlined,
-          label: 'Location',
-          value: displayLocation(user),
         ),
       ];
 
@@ -108,11 +97,16 @@ class _PersonalInfoContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _PersonalInfoHeader(),
+        _PersonalInfoHeader(
+          onEdit: user == null
+              ? null
+              : () => EditProfileSheet.show(context, user!),
+        ),
         const SizedBox(height: 28),
         Center(
           child: ProfileAvatar(
             imageUrl: profilePhotoUrl(user),
+            initials: profileInitials(user),
             size: 110,
           ),
         ),
@@ -124,12 +118,13 @@ class _PersonalInfoContent extends StatelessWidget {
             separatorBuilder: (_, _) => const Divider(
               height: 1,
               thickness: 1,
+              indent: 20,
+              endIndent: 20,
               color: _kDividerColor,
             ),
             itemBuilder: (context, index) {
               final field = _fields[index];
               return _PersonalInfoRow(
-                icon: field.icon,
                 label: field.label,
                 value: field.value,
               );
@@ -143,23 +138,23 @@ class _PersonalInfoContent extends StatelessWidget {
 
 class _PersonalInfoField {
   const _PersonalInfoField({
-    required this.icon,
     required this.label,
     required this.value,
   });
 
-  final IconData icon;
   final String label;
   final String value;
 }
 
 class _PersonalInfoHeader extends StatelessWidget {
-  const _PersonalInfoHeader();
+  const _PersonalInfoHeader({this.onEdit});
+
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 20, 0),
+      padding: const EdgeInsets.fromLTRB(8, 8, 12, 0),
       child: Row(
         children: [
           IconButton(
@@ -182,6 +177,18 @@ class _PersonalInfoHeader extends StatelessWidget {
               height: 1.2,
             ),
           ),
+          const Spacer(),
+          if (onEdit != null)
+            IconButton(
+              onPressed: onEdit,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              icon: const Icon(
+                Icons.edit_outlined,
+                size: 22,
+                color: kBrandBlue,
+              ),
+            ),
         ],
       ),
     );
@@ -190,12 +197,10 @@ class _PersonalInfoHeader extends StatelessWidget {
 
 class _PersonalInfoRow extends StatelessWidget {
   const _PersonalInfoRow({
-    required this.icon,
     required this.label,
     required this.value,
   });
 
-  final IconData icon;
   final String label;
   final String value;
 
@@ -203,45 +208,24 @@ class _PersonalInfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 40,
-            width: 40,
-            decoration: const BoxDecoration(
-              color: _kIconCircleBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: _kRowIconColor,
+          Text(
+            label,
+            style: kCaption12R.copyWith(
+              color: kMutedText,
+              height: 1.2,
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: kCaption12R.copyWith(
-                    color: kMutedText,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: kStyle(
-                    kSemiBold,
-                    kSize16,
-                    color: kTextColor,
-                    height: 1.25,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: kStyle(
+              kSemiBold,
+              kSize16,
+              color: kTextColor,
+              height: 1.25,
             ),
           ),
         ],

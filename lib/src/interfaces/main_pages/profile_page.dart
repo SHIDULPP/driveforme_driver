@@ -100,6 +100,7 @@ class _ProfileSummaryCard extends ConsumerWidget {
             children: [
               ProfileAvatar(
                 imageUrl: profilePhotoUrl(user),
+                initials: profileInitials(user),
                 size: avatarSize,
                 borderRadius: BorderRadius.circular(avatarSize / 2),
               ),

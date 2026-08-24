@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 
 const _kAvatarBg = Color(0xFFE8E8E8);
 const _kAvatarIconColor = Color(0xFFB0B0B0);
+const _kInitialsBg = Color(0xFFCE9141);
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
     super.key,
     this.imageUrl,
+    this.initials,
     this.size = 64,
     this.borderRadius,
   });
 
   final String? imageUrl;
+  final String? initials;
   final double size;
   final BorderRadius? borderRadius;
 
@@ -34,6 +37,8 @@ class ProfileAvatar extends StatelessWidget {
           return _loading(size);
         },
       );
+    } else if (initials != null && initials!.trim().isNotEmpty) {
+      child = _initialsPlaceholder(size, initials!.trim());
     } else {
       child = _placeholder(size);
     }
@@ -41,6 +46,22 @@ class ProfileAvatar extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius,
       child: SizedBox(width: size, height: size, child: child),
+    );
+  }
+
+  Widget _initialsPlaceholder(double size, String text) {
+    return Container(
+      color: _kInitialsBg,
+      alignment: Alignment.center,
+      child: Text(
+        text,
+        style: TextStyle(
+          color: kWhite,
+          fontSize: size * 0.32,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 
