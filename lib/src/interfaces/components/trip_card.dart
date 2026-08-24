@@ -334,12 +334,10 @@ class TripCard extends StatelessWidget {
     super.key,
     required this.data,
     this.onButtonPressed,
-    this.onMenuPressed,
   });
 
   final TripCardData data;
   final VoidCallback? onButtonPressed;
-  final VoidCallback? onMenuPressed;
 
   bool get _showDateRow =>
       data.dateLabel != null || data.completedAtLabel != null;
@@ -383,7 +381,6 @@ class TripCard extends StatelessWidget {
           _TripCardHeader(
             status: data.status,
             tripTypeLabel: data.tripTypeLabel,
-            onMenuPressed: onMenuPressed,
           ),
           if (_showDateRow) ...[
             const SizedBox(height: 12),
@@ -561,12 +558,10 @@ class _TripCardHeader extends StatelessWidget {
   const _TripCardHeader({
     required this.status,
     required this.tripTypeLabel,
-    this.onMenuPressed,
   });
 
   final TripCardStatus status;
   final String tripTypeLabel;
-  final VoidCallback? onMenuPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -575,17 +570,6 @@ class _TripCardHeader extends StatelessWidget {
         _StatusBadge(status: status),
         SizedBox(width: context.rs(8)),
         _ShortTripBadge(label: tripTypeLabel),
-        const Spacer(),
-        IconButton(
-          onPressed: onMenuPressed,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: const Icon(
-            Icons.more_vert_rounded,
-            color: kTextColor,
-            size: 22,
-          ),
-        ),
       ],
     );
   }

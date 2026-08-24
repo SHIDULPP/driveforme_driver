@@ -232,10 +232,6 @@ class _TripDetailsCard extends StatelessWidget {
   bool get _showEarningsColumn =>
       trip.status == TripCardStatus.upcoming && trip.earningsAmount != null;
 
-  bool get _showMenu =>
-      trip.status == TripCardStatus.completed ||
-      trip.status == TripCardStatus.cancelled;
-
   bool get _showCountdown =>
       trip.status == TripCardStatus.upcoming &&
       !isPickupTimeReached &&
@@ -270,19 +266,6 @@ class _TripDetailsCard extends StatelessWidget {
               _StatusBadge(status: trip.status),
               SizedBox(width: context.rs(8)),
               _ShortTripBadge(label: trip.tripTypeLabel),
-              if (_showMenu) ...[
-                const Spacer(),
-                IconButton(
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(
-                    Icons.more_vert_rounded,
-                    color: kTextColor,
-                    size: 22,
-                  ),
-                ),
-              ],
             ],
           ),
           if (trip.dateLabel != null || trip.completedAtLabel != null) ...[
