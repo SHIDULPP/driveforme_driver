@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _kPromoBorder = Color(0xFFE8C98A);
-const _kPromoBg = Color(0xFFFFFBF3);
+const _kPromoBg = Color(0xFFF9F9FB);
 const _kCodeDashedBorder = Color(0xFFCE9141);
 
 class ReferPage extends ConsumerWidget {
@@ -175,24 +175,30 @@ class _InviteEarnBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bannerHeight = context.rs(152);
+
     return Container(
+      height: bannerHeight,
       decoration: BoxDecoration(
         color: _kPromoBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _kPromoBorder, width: 1),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
+            flex: 11,
             child: Padding(
               padding: EdgeInsets.fromLTRB(
+                context.rs(20),
                 context.rs(18),
-                context.rs(20),
-                context.rs(8),
-                context.rs(20),
+                context.rs(6),
+                context.rs(18),
               ),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RichText(
@@ -212,27 +218,31 @@ class _InviteEarnBanner extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: context.rs(8)),
+                  SizedBox(height: context.rs(10)),
                   Text(
                     'Earn ₹100 for every successful Driver referral',
                     style: kCaption13R.copyWith(
                       color: kTripBodyMuted,
-                      height: 1.4,
+                      height: 1.45,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          ClipRRect(
-            borderRadius: const BorderRadius.horizontal(
-              right: Radius.circular(15),
-            ),
-            child: Image.asset(
-              'assets/pngs/referandearnimage.png',
-              width: context.rs(148),
-              height: context.rs(132),
-              fit: BoxFit.cover,
+          Expanded(
+            flex: 10,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: context.rs(4)),
+                child: Image.asset(
+                  'assets/pngs/referandearnimage.png',
+                  height: bannerHeight,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                ),
+              ),
             ),
           ),
         ],
