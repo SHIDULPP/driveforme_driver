@@ -105,6 +105,7 @@ class _NavBarState extends ConsumerState<NavBar> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(driverLocationServiceProvider);
     ref.listen<int>(navBarIndexProvider, (previous, next) {
       if (next != _currentIndex && next >= 0 && next < _items.length) {
         _selectTab(next);

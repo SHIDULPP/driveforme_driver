@@ -35,6 +35,7 @@ class TripSocketService {
       socketUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
+          .enableReconnection()
           .disableAutoConnect()
           .build(),
     );
@@ -84,14 +85,27 @@ class TripSocketService {
     required double latitude,
     required double longitude,
     String? status,
+    String? tripId,
   }) {
-    if (_socket?.connected != true || driverId.isEmpty) return;
-    _socket!.emit('update_location', {
-      'driverId': driverId,
-      'latitude': latitude,
-      'longitude': longitude,
-      if (status != null && status.isNotEmpty) 'status': status,
-    });
+    if (driverId.isEmpty) return;
+    ensureConnected();
+
+    void emit() {
+      _socket?.emit('update_location', {
+        'driverId': driverId,
+        'latitude': latitude,
+        'longitude': longitude,
+        if (status != null && status.isNotEmpty) 'status': status,
+        if (tripId != null && tripId.isNotEmpty) 'tripId': tripId,
+      });
+    }
+
+    if (_socket?.connected == true) {
+      emit();
+      return;
+    }
+
+    _socket?.once('connect', (_) => emit());
   }
 
   void joinUserRoom(String userId) {
@@ -141,6 +155,7 @@ String socketUrlFromApiBase(String apiBaseUrl) {
 }
 
 final tripSocketServiceProvider = Provider<TripSocketService>((ref) {
+  ref.keepAlive();
   final apiBase = dotenv.env['BASE_URL'] ?? '';
   final socketUrl = socketUrlFromApiBase(apiBase);
   final service = TripSocketService(socketUrl: socketUrl);
