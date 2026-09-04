@@ -3,17 +3,18 @@ import 'dart:async';
 import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
+import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
+import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
 import 'package:driveforme_driver/src/data/providers/loading_provider.dart';
+import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
 import 'package:driveforme_driver/src/data/services/navigation_services.dart';
-import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
-import 'package:driveforme_driver/src/data/models/trip_model.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
+import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
+import 'package:driveforme_driver/src/data/utils/pickup_proximity.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
-import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
-import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:driveforme_driver/src/interfaces/components/driver_navigation_sheet.dart';
 import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
 import 'package:driveforme_driver/src/interfaces/components/trip_map_view.dart';
@@ -53,6 +54,15 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
 
   String get _etaLabel =>
       _routeSummary?.durationLabel ?? _trip?.durationLabel ?? '—';
+
+  bool get _canEndTrip {
+    final trip = _trip;
+    if (trip == null) return false;
+    return isWithinDropoffRadius(
+      driver: driverMapLocation?.latLng,
+      dropoff: trip.dropoffLocation?.latLng ?? trip.pickupLocation.latLng,
+    );
+  }
 
   @override
   void initState() {
@@ -111,6 +121,16 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
 
   Future<void> _completeTrip() async {
     if (widget.tripMongoId.isEmpty) return;
+    if (!_canEndTrip) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'You can end the trip only within 500 m of the destination.',
+          ),
+        ),
+      );
+      return;
+    }
 
     ref.read(loadingProvider.notifier).startLoading();
     final response =
@@ -230,7 +250,18 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
                           fontSize: kSize16,
                           buttonColor: kTripCtaBlue,
                           labelColor: kWhite,
-                          onPressed: _completeTrip,
+                          onPressed: _canEndTrip ? _completeTrip : null,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _canEndTrip
+                              ? 'Tap when you reached the destination'
+                              : 'Approach destination (within 500 m) to unlock',
+                          textAlign: TextAlign.center,
+                          style: kCaption12R.copyWith(
+                            color: kTripBodyMuted,
+                            height: 1.35,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         _SosTextButton(
