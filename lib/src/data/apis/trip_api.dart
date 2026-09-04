@@ -177,6 +177,28 @@ class TripApi {
     return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
   }
 
+  Future<ApiResponse<TripModel>> markArrived(String tripId) async {
+    final response = await _api.post(
+      '/trips/$tripId/arrived',
+      {},
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to mark arrival.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data);
+    if (data == null) {
+      return ApiResponse.error('Invalid arrival response');
+    }
+
+    return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+  }
+
   Future<ApiResponse<TripModel>> completeTrip(String tripId) async {
     final response = await _api.post(
       '/trips/$tripId/complete',

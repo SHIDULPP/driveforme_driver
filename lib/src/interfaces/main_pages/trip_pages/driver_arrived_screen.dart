@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:driveforme_driver/src/data/apis/trip_api.dart';
 import 'package:driveforme_driver/src/data/constants/color_constants.dart';
 import 'package:driveforme_driver/src/data/constants/style_constans.dart';
 import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
@@ -22,10 +23,7 @@ const _kChatGreen = Color(0xFF17A34A);
 const _kCallBlue = Color(0xFF4A9FD4);
 
 class DriverArrivedScreen extends ConsumerStatefulWidget {
-  const DriverArrivedScreen({
-    super.key,
-    this.tripMongoId = '',
-  });
+  const DriverArrivedScreen({super.key, this.tripMongoId = ''});
 
   final String tripMongoId;
 
@@ -110,15 +108,24 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
     setState(() => _routeSummary = summary);
   }
 
-  void _goToOtp(TripModel trip) {
+  void _goToOtp(TripModel trip) async {
     if (!_canArrive) return;
+
+    // Notify the vehicle owner that the driver reached pickup.
+    final response = await ref.read(tripApiProvider).markArrived(trip.id);
+    if (!mounted) return;
+    if (!response.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message ?? 'Could not notify arrival.'),
+        ),
+      );
+      // Still allow OTP flow so a network blip does not block the trip.
+    }
+
     _navigatedAway = true;
     _pollTimer?.cancel();
-    Navigator.pushNamed(
-      context,
-      'tripOtp',
-      arguments: trip.toOtpArguments(),
-    );
+    Navigator.pushNamed(context, 'tripOtp', arguments: trip.toOtpArguments());
   }
 
   /// Leaving without continuing should not auto-reopen this trip on next launch.
@@ -191,9 +198,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                     Positioned(
                       top: MediaQuery.paddingOf(context).top + 8,
                       left: 16,
-                      child: _MapBackButton(
-                        onTap: _dismissWithoutContinuing,
-                      ),
+                      child: _MapBackButton(onTap: _dismissWithoutContinuing),
                     ),
                     Align(
                       alignment: Alignment.bottomCenter,
@@ -210,8 +215,9 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                               fontSize: kSize16,
                               buttonColor: kTripCtaBlue,
                               labelColor: kWhite,
-                              onPressed:
-                                  _canArrive ? () => _goToOtp(trip) : null,
+                              onPressed: _canArrive
+                                  ? () => _goToOtp(trip)
+                                  : null,
                             ),
                             const SizedBox(height: 8),
                             Text(
