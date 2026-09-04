@@ -77,6 +77,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return;
     }
 
+    final tripId = widget.tripId?.trim() ?? '';
+    if (tripId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Trip chat is only available during an active trip.';
+        });
+      }
+      return;
+    }
+
     if (!silent && mounted) {
       setState(() {
         _isLoading = _messages.isEmpty;
@@ -84,8 +95,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
     }
 
-    final response =
-        await ref.read(chatApiProvider).getMessages(widget.receiverId);
+    final response = await ref.read(chatApiProvider).getMessages(
+          otherUserId: widget.receiverId,
+          tripId: tripId,
+        );
 
     if (!mounted) return;
 
@@ -118,12 +131,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _sendMessage([String? text]) async {
     final content = (text ?? _messageController.text).trim();
-    if (content.isEmpty || widget.receiverId.isEmpty || _isSending) return;
+    final tripId = widget.tripId?.trim() ?? '';
+    if (content.isEmpty ||
+        widget.receiverId.isEmpty ||
+        tripId.isEmpty ||
+        _isSending) {
+      return;
+    }
 
     setState(() => _isSending = true);
     final response = await ref.read(chatApiProvider).sendMessage(
           receiverId: widget.receiverId,
           content: content,
+          tripId: tripId,
         );
 
     if (!mounted) return;

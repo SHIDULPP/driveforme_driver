@@ -14,10 +14,15 @@ class ChatApi {
   Future<ApiResponse<ChatMessageModel>> sendMessage({
     required String receiverId,
     required String content,
+    required String tripId,
   }) async {
     final response = await _api.post(
       '/chat/send',
-      {'receiverId': receiverId, 'content': content.trim()},
+      {
+        'receiverId': receiverId,
+        'content': content.trim(),
+        'tripId': tripId,
+      },
       requireAuth: true,
     );
 
@@ -57,12 +62,14 @@ class ChatApi {
     return ApiResponse.success(items, response.statusCode);
   }
 
-  Future<ApiResponse<List<ChatMessageModel>>> getMessages(
-    String otherUserId,
-  ) async {
+  Future<ApiResponse<List<ChatMessageModel>>> getMessages({
+    required String otherUserId,
+    required String tripId,
+  }) async {
     final response = await _api.get(
       '/chat/messages/$otherUserId',
       requireAuth: true,
+      queryParams: {'tripId': tripId},
     );
 
     if (!response.success) {
