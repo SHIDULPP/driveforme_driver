@@ -13,6 +13,7 @@ import 'package:driveforme_driver/src/data/services/navigation_services.dart';
 import 'package:driveforme_driver/src/data/utils/driver_map_location.dart';
 import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/pickup_proximity.dart';
+import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
 import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
 import 'package:driveforme_driver/src/data/utils/trip_screen_helpers.dart';
 import 'package:driveforme_driver/src/interfaces/components/driver_navigation_sheet.dart';
@@ -160,6 +161,26 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
     );
   }
 
+  Future<void> _handleCancel() async {
+    _pollTimer?.cancel();
+    _navigatedAway = true;
+
+    final trip = await cancelTripWithDialog(
+      context: context,
+      ref: ref,
+      tripMongoId: widget.tripMongoId,
+    );
+    if (!mounted) return;
+
+    if (trip == null) {
+      _navigatedAway = false;
+      _startPolling();
+      return;
+    }
+
+    navigateToHomeAfterActiveTripEnds();
+  }
+
   void _onRouteSummary(RouteSummary? summary) {
     if (!mounted || summary == null) return;
     setState(() => _routeSummary = summary);
@@ -263,7 +284,13 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
                             height: 1.35,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: _handleCancel,
+                          child: Text(
+                            'Cancel trip',
+                            style: kCaption14M.copyWith(color: kRed),
+                          ),
+                        ),
                         _SosTextButton(
                           tripMongoId: widget.tripMongoId,
                           locationLabel: headingTo,

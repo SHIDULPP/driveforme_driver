@@ -691,7 +691,7 @@ class _TodaysEarningsCard extends ConsumerWidget {
                         ),
                         const SizedBox(height: 3),
                         // Figma Bonus row — no API field yet, show ₹0 for parity.
-                        const _EarningsBonusRow(bonusAmount: 0),
+                        // const _EarningsBonusRow(bonusAmount: 0),
                       ],
                     ),
                   ),
