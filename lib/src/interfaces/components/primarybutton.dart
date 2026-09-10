@@ -1,6 +1,6 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/services/haptic_helper.dart';
-import 'package:driveforme_driver/src/interfaces/components/loading_indicator.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/services/haptic_helper.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/loading_indicator.dart';
 import 'package:flutter/material.dart';
 
 Widget primaryButton({

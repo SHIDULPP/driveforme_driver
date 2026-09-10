@@ -1,8 +1,8 @@
-import 'package:driveforme_driver/src/data/providers/screen_data_providers.dart';
-import 'package:driveforme_driver/src/data/route/route.dart' as router;
-import 'package:driveforme_driver/src/data/services/navigation_services.dart';
-import 'package:driveforme_driver/src/data/services/notification_token_service.dart';
-import 'package:driveforme_driver/firebase_options.dart';
+import 'package:DriveFormeDriver/firebase_options.dart';
+import 'package:DriveFormeDriver/src/data/providers/screen_data_providers.dart';
+import 'package:DriveFormeDriver/src/data/route/route.dart' as router;
+import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
+import 'package:DriveFormeDriver/src/data/services/notification_token_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';

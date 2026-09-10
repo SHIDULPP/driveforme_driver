@@ -1,5 +1,5 @@
-import 'package:driveforme_driver/src/data/models/api_response.dart';
-import 'package:driveforme_driver/src/data/providers/api_provider.dart';
+import 'package:DriveFormeDriver/src/data/models/api_response.dart';
+import 'package:DriveFormeDriver/src/data/providers/api_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SupportApi {

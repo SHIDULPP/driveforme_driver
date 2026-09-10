@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_location_model.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';

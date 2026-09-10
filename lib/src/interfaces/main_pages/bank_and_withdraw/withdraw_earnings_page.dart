@@ -1,14 +1,14 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/data/models/withdrawal_ui_model.dart';
-import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
-import 'package:driveforme_driver/src/data/services/navigation_services.dart';
-import 'package:driveforme_driver/src/data/utils/responsive.dart';
-import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/available_earnings_card.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdrawal_list_tile.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/data/models/withdrawal_ui_model.dart';
+import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
+import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
+import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/available_earnings_card.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdrawal_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

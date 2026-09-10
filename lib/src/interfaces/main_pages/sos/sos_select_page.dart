@@ -1,8 +1,8 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/data/services/navigation_services.dart';
-import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/sos/sos_shared.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
+import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/sos/sos_shared.dart';
 import 'package:flutter/material.dart';
 
 class SosSelectPage extends StatelessWidget {

@@ -1,7 +1,7 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/interfaces/animations/index.dart' as anim;
-import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/interfaces/animations/index.dart' as anim;
+import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:flutter/material.dart';
 
 class DriverPartnerLandingPage extends StatelessWidget {

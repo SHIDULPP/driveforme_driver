@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/models/chat_message_model.dart';
+import 'package:DriveFormeDriver/src/data/models/chat_message_model.dart';
 
 class ConversationModel {
   final String otherUserId;

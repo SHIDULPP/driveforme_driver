@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:driveforme_driver/src/data/services/api_logger.dart';
-import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
+import 'package:DriveFormeDriver/src/data/services/api_logger.dart';
+import 'package:DriveFormeDriver/src/data/services/secure_storage_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;

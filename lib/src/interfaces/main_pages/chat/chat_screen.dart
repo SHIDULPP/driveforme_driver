@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:driveforme_driver/src/data/apis/chat_api.dart';
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/data/models/chat_message_model.dart';
+import 'package:DriveFormeDriver/src/data/apis/chat_api.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/data/models/chat_message_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';

@@ -1,6 +1,6 @@
-import 'package:driveforme_driver/src/data/providers/current_location_provider.dart';
-import 'package:driveforme_driver/src/data/services/location_permission_service.dart';
-import 'package:driveforme_driver/src/interfaces/components/location_permission_bottom_sheet.dart';
+import 'package:DriveFormeDriver/src/data/providers/current_location_provider.dart';
+import 'package:DriveFormeDriver/src/data/services/location_permission_service.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/location_permission_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';

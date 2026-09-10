@@ -1,5 +1,5 @@
-import 'package:driveforme_driver/src/data/apis/wallet_api.dart';
-import 'package:driveforme_driver/src/data/models/wallet_model.dart';
+import 'package:DriveFormeDriver/src/data/apis/wallet_api.dart';
+import 'package:DriveFormeDriver/src/data/models/wallet_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Loads wallet balance and transactions from `GET /wallet`.

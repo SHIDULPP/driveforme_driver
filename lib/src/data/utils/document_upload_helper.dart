@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:driveforme_driver/src/data/models/document_upload_result.dart';
-import 'package:driveforme_driver/src/data/services/upload_service.dart';
-import 'package:driveforme_driver/src/interfaces/components/media_picker_dialog.dart';
+import 'package:DriveFormeDriver/src/data/models/document_upload_result.dart';
+import 'package:DriveFormeDriver/src/data/services/upload_service.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/media_picker_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';

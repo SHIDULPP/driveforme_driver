@@ -1,5 +1,5 @@
-import 'package:driveforme_driver/src/data/apis/trip_api.dart';
-import 'package:driveforme_driver/src/data/models/trip_model.dart';
+import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum TripHistoryTab { ongoing, upcoming, completed, cancelled }

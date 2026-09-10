@@ -1,7 +1,7 @@
-import 'package:driveforme_driver/src/data/apis/onboarding_api.dart';
-import 'package:driveforme_driver/src/data/apis/trip_api.dart';
-import 'package:driveforme_driver/src/data/models/user_model.dart';
-import 'package:driveforme_driver/src/data/models/wallet_model.dart';
+import 'package:DriveFormeDriver/src/data/apis/onboarding_api.dart';
+import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
+import 'package:DriveFormeDriver/src/data/models/user_model.dart';
+import 'package:DriveFormeDriver/src/data/models/wallet_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
-import 'package:driveforme_driver/src/data/services/api_logger.dart';
-import 'package:driveforme_driver/src/data/services/location_service.dart';
+import 'package:DriveFormeDriver/src/data/models/route_summary_model.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_location_model.dart';
+import 'package:DriveFormeDriver/src/data/services/api_logger.dart';
+import 'package:DriveFormeDriver/src/data/services/location_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;

@@ -1,10 +1,10 @@
-import 'package:driveforme_driver/src/data/providers/active_trip_provider.dart';
-import 'package:driveforme_driver/src/data/providers/notification_provider.dart';
-import 'package:driveforme_driver/src/data/providers/trip_provider.dart';
-import 'package:driveforme_driver/src/data/providers/user_provider.dart';
-import 'package:driveforme_driver/src/data/providers/wallet_provider.dart';
-import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
-import 'package:driveforme_driver/src/data/services/trip_socket_service.dart';
+import 'package:DriveFormeDriver/src/data/providers/active_trip_provider.dart';
+import 'package:DriveFormeDriver/src/data/providers/notification_provider.dart';
+import 'package:DriveFormeDriver/src/data/providers/trip_provider.dart';
+import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
+import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
+import 'package:DriveFormeDriver/src/data/services/secure_storage_service.dart';
+import 'package:DriveFormeDriver/src/data/services/trip_socket_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthLogoutService {

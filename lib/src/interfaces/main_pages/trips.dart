@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/data/models/trip_model.dart';
-import 'package:driveforme_driver/src/data/providers/trip_history_provider.dart';
-import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
-import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
-import 'package:driveforme_driver/src/data/utils/responsive.dart';
-import 'package:driveforme_driver/src/interfaces/components/trip_card.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_model.dart';
+import 'package:DriveFormeDriver/src/data/providers/trip_history_provider.dart';
+import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
+import 'package:DriveFormeDriver/src/data/utils/trip_navigation.dart';
+import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/models/wallet_model.dart';
+import 'package:DriveFormeDriver/src/data/models/wallet_model.dart';
 
 class WithdrawalUiModel {
   const WithdrawalUiModel({

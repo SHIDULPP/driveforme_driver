@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_location_model.dart';
 
 class TripModel {
   static const requestExpiryMinutes = 5;

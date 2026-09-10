@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/models/user_model.dart';
+import 'package:DriveFormeDriver/src/data/models/user_model.dart';
 
 String routeForOnboardingStatus(String status) {
   switch (status) {

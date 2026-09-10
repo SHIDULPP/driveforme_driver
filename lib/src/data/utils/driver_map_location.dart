@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
-import 'package:driveforme_driver/src/data/services/driver_location_service.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_location_model.dart';
+import 'package:DriveFormeDriver/src/data/services/driver_location_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 mixin DriverMapLocationMixin<T extends ConsumerStatefulWidget>

@@ -1,6 +1,6 @@
-import 'package:driveforme_driver/src/data/apis/trip_api.dart';
-import 'package:driveforme_driver/src/data/services/secure_storage_service.dart';
-import 'package:driveforme_driver/src/data/utils/trip_navigation.dart';
+import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
+import 'package:DriveFormeDriver/src/data/services/secure_storage_service.dart';
+import 'package:DriveFormeDriver/src/data/utils/trip_navigation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ActiveTripService {

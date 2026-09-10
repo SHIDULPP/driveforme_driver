@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_location_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<bool> launchMapNavigation(TripLocation target) async {

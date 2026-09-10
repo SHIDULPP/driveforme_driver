@@ -1,10 +1,10 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/data/models/trip_model.dart';
-import 'package:driveforme_driver/src/data/utils/responsive.dart';
-import 'package:driveforme_driver/src/data/utils/trip_lifecycle.dart';
-import 'package:driveforme_driver/src/interfaces/components/profile_avatar.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_model.dart';
+import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
+import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
 import 'package:flutter/material.dart';
 
 class NewTripRequestCard extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:flutter/material.dart';
 
 // Clash Grotesk (Figma: Regular 400 / Medium 500 / Semibold 600 / Bold 700).

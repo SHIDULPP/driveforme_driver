@@ -1,4 +1,4 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:flutter/material.dart';
 
 const _kAvatarBg = Color(0xFFE8E8E8);

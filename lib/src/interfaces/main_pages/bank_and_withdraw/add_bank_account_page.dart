@@ -1,11 +1,11 @@
-import 'package:driveforme_driver/src/data/apis/wallet_api.dart';
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/constants/style_constans.dart';
-import 'package:driveforme_driver/src/data/services/navigation_services.dart';
-import 'package:driveforme_driver/src/data/utils/responsive.dart';
-import 'package:driveforme_driver/src/interfaces/components/primarybutton.dart';
-import 'package:driveforme_driver/src/data/models/bank_account_ui_model.dart';
-import 'package:driveforme_driver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:DriveFormeDriver/src/data/apis/wallet_api.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
+import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
+import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:DriveFormeDriver/src/data/models/bank_account_ui_model.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

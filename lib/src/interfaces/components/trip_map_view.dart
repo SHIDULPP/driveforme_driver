@@ -1,9 +1,9 @@
-import 'package:driveforme_driver/src/data/constants/color_constants.dart';
-import 'package:driveforme_driver/src/data/models/route_summary_model.dart';
-import 'package:driveforme_driver/src/data/models/trip_location_model.dart';
-import 'package:driveforme_driver/src/data/services/directions_service.dart';
-import 'package:driveforme_driver/src/data/services/location_service.dart';
-import 'package:driveforme_driver/src/data/utils/map_navigation.dart';
+import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/models/route_summary_model.dart';
+import 'package:DriveFormeDriver/src/data/models/trip_location_model.dart';
+import 'package:DriveFormeDriver/src/data/services/directions_service.dart';
+import 'package:DriveFormeDriver/src/data/services/location_service.dart';
+import 'package:DriveFormeDriver/src/data/utils/map_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
