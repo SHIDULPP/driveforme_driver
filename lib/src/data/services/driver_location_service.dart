@@ -75,12 +75,15 @@ class DriverLocationService {
         ),
       );
 
+      final preference = await _storage.getTripPreference();
+
       _socket.updateLocation(
         driverId: driverId,
         latitude: position.latitude,
         longitude: position.longitude,
         status: isOnTrip ? 'busy' : 'online',
         tripId: _activeTripId,
+        preferredTripType: preference,
       );
     } catch (e) {
       log('Failed to emit location: $e', name: 'DriverLocationService');

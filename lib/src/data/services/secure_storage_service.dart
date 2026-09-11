@@ -8,6 +8,7 @@ class SecureStorageService {
   static const _activeTripIdKey = 'active_trip_id';
   static const _driverOnlineKey = 'driver_online';
   static const _bankAccountKey = 'bank_account';
+  static const _tripPreferenceKey = 'trip_preference';
 
   final FlutterSecureStorage _storage;
 
@@ -47,6 +48,17 @@ class SecureStorageService {
 
   Future<void> clearDriverOnline() => _storage.delete(key: _driverOnlineKey);
 
+  Future<void> saveTripPreference(String tripType) =>
+      _storage.write(key: _tripPreferenceKey, value: tripType);
+
+  Future<String> getTripPreference() async {
+    final value = await _storage.read(key: _tripPreferenceKey);
+    if (value == 'long_trip' || value == 'short_trip') return value!;
+    return 'short_trip';
+  }
+
+  Future<void> clearTripPreference() => _storage.delete(key: _tripPreferenceKey);
+
   Future<void> saveBankAccountJson(String json) =>
       _storage.write(key: _bankAccountKey, value: json);
 
@@ -60,6 +72,7 @@ class SecureStorageService {
     await _storage.delete(key: _authTokenKey);
     await _storage.delete(key: _activeTripIdKey);
     await _storage.delete(key: _driverOnlineKey);
+    await _storage.delete(key: _tripPreferenceKey);
     await _storage.delete(key: _bankAccountKey);
   }
 }

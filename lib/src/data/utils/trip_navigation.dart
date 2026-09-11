@@ -34,7 +34,9 @@ bool isPickupStageStatus(TripModel trip) {
 /// Uses [TripModel.status] only — do not use [TripModel.isScheduled], which also
 /// matches `rideTime == 'scheduled'` and can treat finished trips as active.
 bool isResumableTrip(TripModel trip) {
-  if (trip.isCancelled || trip.isCompleted) return false;
+  if (trip.isCancelled || trip.isCompleted || trip.wasReleasedForReassignment) {
+    return false;
+  }
   if (isActiveTripStatus(trip.status)) return true;
   return trip.status == 'scheduled' && trip.isPickupTimeReached;
 }

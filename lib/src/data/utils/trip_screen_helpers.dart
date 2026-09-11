@@ -74,7 +74,8 @@ bool navigateIfTripLeftExpectedStatus({
 }) {
   if (expectedStatuses.contains(trip.status)) return false;
 
-  if (trip.isCancelled) {
+  // Cancelled OR released back to the pool after this driver backed out.
+  if (trip.isCancelled || trip.wasReleasedForReassignment) {
     navigateToHomeAfterActiveTripEnds();
     return true;
   }

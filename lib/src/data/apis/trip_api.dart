@@ -32,7 +32,6 @@ class TripApi {
 
     final trips = nestedListData(response.data)
         .map(TripModel.fromJson)
-        .where((trip) => !trip.isExpired)
         .toList();
 
     return ApiResponse.success(trips, response.statusCode);
@@ -265,12 +264,18 @@ class TripApi {
       );
     }
 
-    final data = nestedData(response.data);
+    final body = response.data;
+    final data = nestedData(body);
     if (data == null) {
       return ApiResponse.error('Invalid cancel trip response');
     }
 
-    return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+    return ApiResponse(
+      success: true,
+      data: TripModel.fromJson(data),
+      statusCode: response.statusCode,
+      message: body?['message']?.toString(),
+    );
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
+import 'package:DriveFormeDriver/src/data/providers/active_trip_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/nav_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/notification_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/trip_provider.dart';
@@ -9,6 +10,7 @@ import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/data/services/trip_socket_service.dart';
 import 'package:DriveFormeDriver/src/data/providers/trip_history_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
+import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/home_page.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/earning.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/profile_page.dart';
@@ -84,11 +86,20 @@ class _NavBarState extends ConsumerState<NavBar> {
     socket.listenForNewNotifications(() {
       ref.invalidate(notificationsProvider);
     });
+    socket.listenForTripReassigned((payload) async {
+      final tripId = payload['tripId']?.toString() ?? '';
+      if (tripId.isEmpty) return;
+      await ref.read(activeTripProvider.notifier).clear();
+      ref.read(availableTripsProvider.notifier).removeTrip(tripId);
+      if (!mounted) return;
+      navigateToHomeAfterActiveTripEnds();
+    });
 
     final user = await ref.read(userProvider.future);
     if (!mounted || user == null) return;
 
     socket.joinUserRoom(user.userId);
+    await loadTripPreference(ref);
   }
 
   Future<void> _resumeActiveTrip() async {

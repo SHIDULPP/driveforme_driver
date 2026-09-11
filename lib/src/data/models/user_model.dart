@@ -195,6 +195,7 @@ class UserModel {
   final DriverVerification driverVerification;
   final AdminReview adminReview;
   final String referralCode;
+  final String preferredTripType;
 
   const UserModel({
     required this.userId,
@@ -210,6 +211,7 @@ class UserModel {
     required this.driverVerification,
     this.adminReview = const AdminReview(),
     this.referralCode = '',
+    this.preferredTripType = 'short_trip',
   });
 
   bool get isApproved => effectiveOnboardingStatus == 'approved';
@@ -243,6 +245,9 @@ class UserModel {
         json['adminReview'] as Map<String, dynamic>?,
       ),
       referralCode: json['referralCode']?.toString() ?? '',
+      preferredTripType: json['preferredTripType']?.toString() == 'long_trip'
+          ? 'long_trip'
+          : 'short_trip',
     );
   }
 }

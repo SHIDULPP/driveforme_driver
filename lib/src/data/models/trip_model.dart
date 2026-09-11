@@ -34,6 +34,8 @@ class TripModel {
   final String vehicleNumber;
   final String vehicleType;
   final String transmission;
+  /// Present on cancel responses when the trip was released for reassignment.
+  final bool reassigned;
 
   const TripModel({
     required this.id,
@@ -48,6 +50,7 @@ class TripModel {
     this.estimatedDurationLabel,
     required this.durationValue,
     required this.durationUnit,
+    this.reassigned = false,
     this.pickupAt,
     this.createdAt,
     this.startedAt,
@@ -84,9 +87,12 @@ class TripModel {
       tripDirection: tripDetails is Map
           ? tripDetails['tripDirection']?.toString() ?? 'one_way'
           : 'one_way',
-      tripType: tripDetails is Map
-          ? tripDetails['tripType']?.toString() ?? 'short_trip'
-          : 'short_trip',
+      tripType: () {
+        if (tripDetails is Map && tripDetails['tripType'] != null) {
+          return tripDetails['tripType'].toString();
+        }
+        return json['tripType']?.toString() ?? 'short_trip';
+      }(),
       rideTime: tripDetails is Map
           ? tripDetails['rideTime']?.toString() ?? 'now'
           : 'now',
@@ -136,6 +142,7 @@ class TripModel {
       transmission: vehicleDetails is Map
           ? vehicleDetails['transmission']?.toString() ?? ''
           : '',
+      reassigned: json['reassigned'] == true,
     );
   }
 
@@ -159,6 +166,12 @@ class TripModel {
   bool get isCompleted => status == 'completed';
 
   bool get isCancelled => status == 'cancelled';
+
+  bool get isPendingAssignment => status == 'pending_assignment';
+
+  /// Driver cancel before start — trip stays alive for the next driver.
+  bool get wasReleasedForReassignment =>
+      reassigned || isPendingAssignment;
 
   /// True when the scheduled pickup minute has arrived (or passed).
   bool get isPickupTimeReached {

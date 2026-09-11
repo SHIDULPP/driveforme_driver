@@ -25,6 +25,16 @@ class OnboardingApi {
     return ApiResponse.success(UserModel.fromJson(data), response.statusCode);
   }
 
+  Future<ApiResponse<Map<String, dynamic>>> updateTripPreference(
+    String preferredTripType,
+  ) {
+    return _api.patch(
+      '/onboarding/driver/trip-preference',
+      {'preferredTripType': preferredTripType},
+      requireAuth: true,
+    );
+  }
+
   Future<ApiResponse<Map<String, dynamic>>> submitDriverProfile({
     required String fullName,
     required String email,

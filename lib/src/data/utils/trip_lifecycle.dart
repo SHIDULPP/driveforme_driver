@@ -16,12 +16,12 @@ Future<bool> showCancelTripDialog(BuildContext context) async {
     builder: (context) => const _TripActionDialog(
       icon: Icons.error_outline_rounded,
       iconColor: kSosRed,
-      title: 'Cancel trip?',
+      title: 'Release this trip?',
       body:
-          'Are you sure you want to cancel this trip? This may affect your '
-          'rating.',
+          'If the trip has not started yet, it will be offered to another '
+          'driver nearby. Your rating may still be affected.',
       keepLabel: 'Keep trip',
-      confirmLabel: 'Cancel trip',
+      confirmLabel: 'Release trip',
       confirmColor: kSosRed,
     ),
   );
@@ -177,7 +177,22 @@ Future<TripModel?> cancelTripWithDialog({
     return null;
   }
 
-  return response.data;
+  final trip = response.data;
+  if (trip == null) return null;
+
+  final released = trip.wasReleasedForReassignment;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        response.message ??
+            (released
+                ? 'Trip released. It will be offered to another driver.'
+                : 'Trip cancelled.'),
+      ),
+    ),
+  );
+
+  return trip;
 }
 
 void openChatScreen({

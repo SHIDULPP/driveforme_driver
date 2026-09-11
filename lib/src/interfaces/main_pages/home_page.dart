@@ -59,11 +59,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.invalidate(currentLocationProvider);
-      loadDriverOnlinePreference(ref);
-      final isShortTrip = ref.read(tripPreferenceProvider) == 'short_trip';
-      setTripPreference(ref, isShortTrip);
+      await loadDriverOnlinePreference(ref);
+      await loadTripPreference(ref);
     });
   }
 
@@ -164,7 +163,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     const SizedBox(height: 8),
                     _TripPreferenceCard(
                       isShortTrip: isShortTrip,
-                      onChanged: (isShort) => setTripPreference(ref, isShort),
+                      onChanged: (isShort) {
+                        setTripPreference(ref, isShort);
+                      },
                     ),
                     const SizedBox(height: 8),
                     const _PromoBannerCard(),

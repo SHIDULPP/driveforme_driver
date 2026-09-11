@@ -1,3 +1,4 @@
+import 'package:DriveFormeDriver/src/data/apis/onboarding_api.dart';
 import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
 import 'package:DriveFormeDriver/src/data/models/trip_model.dart';
 import 'package:DriveFormeDriver/src/data/services/secure_storage_service.dart';
@@ -77,7 +78,9 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
 
     if (!response.success) return;
 
-    final trips = _filterDismissed(response.data ?? []);
+    final trips = _filterDismissed(
+      _filterByPreference(response.data ?? const []),
+    );
     if (!ref.read(driverOnlineProvider)) return;
     state = trips;
   }
@@ -86,7 +89,7 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
     if (!ref.read(driverOnlineProvider)) return;
 
     final trip = TripModel.fromJson(data);
-    if (trip.id.isEmpty || trip.isExpired) return;
+    if (trip.id.isEmpty) return;
     if (!_matchesPreference(trip)) return;
     if (ref.read(dismissedTripIdsProvider).contains(trip.id)) return;
 
@@ -100,8 +103,12 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
     state = updated;
   }
 
-  bool _matchesPreference(TripModel trip) =>
-      trip.tripType == ref.read(tripPreferenceProvider);
+  bool _matchesPreference(TripModel trip) {
+    final preferred = ref.read(tripPreferenceProvider);
+    final type = trip.tripType.trim();
+    if (type.isEmpty) return true;
+    return type == preferred;
+  }
 
   List<TripModel> _filterByPreference(List<TripModel> trips) =>
       trips.where(_matchesPreference).toList();
@@ -130,7 +137,38 @@ Future<void> loadDriverOnlinePreference(WidgetRef ref) async {
   ref.read(driverOnlineProvider.notifier).state = isOnline;
 }
 
-void setTripPreference(WidgetRef ref, bool isShortTrip) {
-  ref.read(tripPreferenceProvider.notifier).state =
-      isShortTrip ? 'short_trip' : 'long_trip';
+Future<void> loadTripPreference(WidgetRef ref) async {
+  final storage = ref.read(secureStorageServiceProvider);
+  var preference = await storage.getTripPreference();
+
+  // Prefer the value stored on the backend profile when available.
+  try {
+    final me = await ref.read(onboardingApiProvider).getMe();
+    final remote = me.data?.preferredTripType;
+    if (me.success && (remote == 'short_trip' || remote == 'long_trip')) {
+      preference = remote!;
+      await storage.saveTripPreference(preference);
+    }
+  } catch (_) {
+    // Keep local preference if profile fetch fails.
+  }
+
+  ref.read(tripPreferenceProvider.notifier).state = preference;
+}
+
+Future<void> setTripPreference(WidgetRef ref, bool isShortTrip) async {
+  final preference = isShortTrip ? 'short_trip' : 'long_trip';
+  ref.read(tripPreferenceProvider.notifier).state = preference;
+  await ref.read(secureStorageServiceProvider).saveTripPreference(preference);
+
+  // Sync to backend so dispatch only targets matching drivers.
+  try {
+    final response =
+        await ref.read(onboardingApiProvider).updateTripPreference(preference);
+    if (!response.success) {
+      // Keep local preference; backend will catch up on next successful sync.
+    }
+  } catch (_) {
+    // Local preference still applies for in-app filtering.
+  }
 }

@@ -16,6 +16,8 @@ class TripSocketService {
   io.Socket? _socket;
   void Function(Map<String, dynamic>)? _onTripAvailable;
   void Function(String tripId)? _onTripUnavailable;
+  final List<void Function(Map<String, dynamic>)> _tripReassignedHandlers = [];
+  final List<void Function(Map<String, dynamic>)> _tripUpdatedHandlers = [];
 
   bool get isConnected => _socket?.connected ?? false;
 
@@ -86,6 +88,7 @@ class TripSocketService {
     required double longitude,
     String? status,
     String? tripId,
+    String? preferredTripType,
   }) {
     if (driverId.isEmpty) return;
     ensureConnected();
@@ -97,6 +100,8 @@ class TripSocketService {
         'longitude': longitude,
         if (status != null && status.isNotEmpty) 'status': status,
         if (tripId != null && tripId.isNotEmpty) 'tripId': tripId,
+        if (preferredTripType != null && preferredTripType.isNotEmpty)
+          'preferredTripType': preferredTripType,
       });
     }
 
@@ -132,6 +137,56 @@ class TripSocketService {
     _socket?.on('new_notification', (_) => onNewNotification());
   }
 
+  void listenForTripReassigned(
+    void Function(Map<String, dynamic> payload) onTripReassigned,
+  ) {
+    ensureConnected();
+    if (!_tripReassignedHandlers.contains(onTripReassigned)) {
+      _tripReassignedHandlers.add(onTripReassigned);
+    }
+    _socket?.off('trip_reassigned');
+    _socket?.on('trip_reassigned', (data) {
+      final map = _asMap(data);
+      if (map == null) return;
+      for (final handler in List<void Function(Map<String, dynamic>)>.from(
+        _tripReassignedHandlers,
+      )) {
+        handler(map);
+      }
+    });
+  }
+
+  void removeTripReassignedListener(
+    void Function(Map<String, dynamic> payload) onTripReassigned,
+  ) {
+    _tripReassignedHandlers.remove(onTripReassigned);
+  }
+
+  void listenForTripUpdated(
+    void Function(Map<String, dynamic> payload) onTripUpdated,
+  ) {
+    ensureConnected();
+    if (!_tripUpdatedHandlers.contains(onTripUpdated)) {
+      _tripUpdatedHandlers.add(onTripUpdated);
+    }
+    _socket?.off('trip_updated');
+    _socket?.on('trip_updated', (data) {
+      final map = _asMap(data);
+      if (map == null) return;
+      for (final handler in List<void Function(Map<String, dynamic>)>.from(
+        _tripUpdatedHandlers,
+      )) {
+        handler(map);
+      }
+    });
+  }
+
+  void removeTripUpdatedListener(
+    void Function(Map<String, dynamic> payload) onTripUpdated,
+  ) {
+    _tripUpdatedHandlers.remove(onTripUpdated);
+  }
+
   void disconnect() {
     leaveDriversRoom();
     _socket?.disconnect();
@@ -139,6 +194,8 @@ class TripSocketService {
     _socket = null;
     _onTripAvailable = null;
     _onTripUnavailable = null;
+    _tripReassignedHandlers.clear();
+    _tripUpdatedHandlers.clear();
   }
 
   static Map<String, dynamic>? _asMap(dynamic value) {

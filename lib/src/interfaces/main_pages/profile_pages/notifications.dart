@@ -146,7 +146,16 @@ class NotificationsPage extends ConsumerWidget {
       ref.invalidate(notificationsProvider);
     }
 
-    if (item.type != 'trip_accepted') return;
+    if (item.type != 'trip_accepted' &&
+        item.type != 'trip_assigned' &&
+        item.type != 'trip_reassigned') {
+      return;
+    }
+
+    // "Trip released" after this driver cancelled — stay on home, do not open the trip.
+    if (item.type == 'trip_reassigned') {
+      return;
+    }
 
     final tripId = item.payload['tripId']?.toString();
     if (tripId == null || tripId.isEmpty) return;
@@ -163,7 +172,12 @@ class NotificationsPage extends ConsumerWidget {
       return;
     }
 
-    final target = tripNavigationTarget(tripResponse.data!);
+    final trip = tripResponse.data!;
+    if (trip.wasReleasedForReassignment || trip.isCancelled) {
+      return;
+    }
+
+    final target = tripNavigationTarget(trip);
     if (target == null) return;
 
     NavigationService().pushNamed(
