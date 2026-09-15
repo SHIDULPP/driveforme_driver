@@ -4,6 +4,7 @@ import 'package:DriveFormeDriver/src/data/apis/onboarding_api.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
+import 'package:DriveFormeDriver/src/data/services/auth_logout_service.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,6 +60,33 @@ class _ApplicationUnderReviewPageState
     }
   }
 
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You will need to sign in again to use the app.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    _pollTimer?.cancel();
+    await ref.read(authLogoutServiceProvider).logout(ref);
+    if (!mounted) return;
+    NavigationService().pushNamedAndRemoveUntil('Phone');
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -76,7 +104,24 @@ class _ApplicationUnderReviewPageState
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Column(
               children: [
-                SizedBox(height: size.height * 0.10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _confirmLogout,
+                    style: TextButton.styleFrom(
+                      foregroundColor: kWhite,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                    ),
+                    child: Text(
+                      'Log out',
+                      style: kStyle(kSemiBold, kSize14, color: kWhite),
+                    ),
+                  ),
+                ),
+                SizedBox(height: size.height * 0.06),
                 SizedBox(
                   height: size.height * 0.36,
                   child: Center(
