@@ -47,6 +47,11 @@ class _DrivingLicenseUploadPageState
 
   bool get _hasImage => _imageUrl != null && _imageUrl!.isNotEmpty;
 
+  bool _isLicenseNumberValid() {
+    final cleanText = _licenseNumberController.text.replaceAll(RegExp(r'\s+'), '');
+    return cleanText.isNotEmpty && cleanText.length <= 16;
+  }
+
   bool _isExpiryDateValid() {
     final text = _expiryDateController.text.trim();
     if (text.length != 10) return false;
@@ -62,7 +67,7 @@ class _DrivingLicenseUploadPageState
 
   bool get _canSubmit =>
       _hasImage &&
-      _licenseNumberController.text.trim().isNotEmpty &&
+      _isLicenseNumberValid() &&
       _licenseCategory != null &&
       _isExpiryDateValid() &&
       _transmissionType != null;
@@ -218,8 +223,19 @@ class _DrivingLicenseUploadPageState
                     const SizedBox(height: 8),
                     InputField(
                       type: CustomFieldType.text,
-                      hint: 'eg: 3755 1929 0862',
+                      hint: 'eg: KL0720110001234',
                       controller: _licenseNumberController,
+                      maxLength: 16,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'License number is required';
+                        }
+                        final clean = v.replaceAll(RegExp(r'\s+'), '');
+                        if (clean.length > 16) {
+                          return 'License number cannot exceed 16 characters';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 20),
                     const _RequiredFieldLabel(label: 'License Category'),

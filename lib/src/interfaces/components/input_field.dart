@@ -56,6 +56,8 @@ class InputField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
 
   const InputField({
     super.key,
@@ -73,6 +75,8 @@ class InputField extends StatelessWidget {
     this.validator,
     this.firstDate,
     this.lastDate,
+    this.maxLength,
+    this.inputFormatters,
   });
 
   DateTime? _parseDate(String dateStr) {
@@ -146,15 +150,21 @@ class InputField extends StatelessWidget {
           : isMultiline
           ? TextInputType.multiline
           : TextInputType.text,
-      inputFormatters: isNumber
-          ? [
-              FilteringTextInputFormatter.allow(
-                allowDecimal ? RegExp(r'^\d*\.?\d*$') : RegExp(r'\d+'),
-              ),
-            ]
-          : isDate
-          ? [_DateInputFormatter()]
-          : null,
+      maxLength: maxLength,
+      inputFormatters: inputFormatters ??
+          (isNumber
+              ? [
+                  FilteringTextInputFormatter.allow(
+                    allowDecimal ? RegExp(r'^\d*\.?\d*$') : RegExp(r'\d+'),
+                  ),
+                  if (maxLength != null)
+                    LengthLimitingTextInputFormatter(maxLength),
+                ]
+              : isDate
+              ? [_DateInputFormatter()]
+              : maxLength != null
+              ? [LengthLimitingTextInputFormatter(maxLength)]
+              : null),
       validator: validator,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       style: const TextStyle(
@@ -181,6 +191,7 @@ class InputField extends StatelessWidget {
           fontWeight: FontWeight.w400,
         ),
 
+        counterText: '',
         errorStyle: const TextStyle(height: 0),
 
         contentPadding: const EdgeInsets.symmetric(

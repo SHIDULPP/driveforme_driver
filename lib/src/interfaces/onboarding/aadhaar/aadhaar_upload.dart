@@ -93,9 +93,9 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -153,8 +153,19 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
                     const SizedBox(height: 8),
                     InputField(
                       type: CustomFieldType.number,
-                      hint: 'eg: 3755 1929 0862',
+                      hint: '12-digit Aadhaar number',
                       controller: _aadhaarController,
+                      maxLength: 12,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Aadhaar number is required';
+                        }
+                        final digits = v.replaceAll(RegExp(r'\D'), '');
+                        if (digits.length != 12) {
+                          return 'Aadhaar number must be exactly 12 digits';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 24),
                   ],
