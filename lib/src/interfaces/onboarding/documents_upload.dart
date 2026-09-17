@@ -205,28 +205,28 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         actionLabel: _isReuploadMode
                             ? (_aadhaarNeedsReupload
                                   ? 'Tap to Reupload'
-                                  : 'Verified')
-                            : (_aadhaarUploaded ? 'Uploaded' : 'Tap to Upload'),
+                                  : 'Uploaded (Tap to Edit)')
+                            : (_aadhaarUploaded
+                                  ? 'Uploaded (Tap to Edit)'
+                                  : 'Tap to Upload'),
                         actionIcon: aadhaarIsVerified
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
                         uploadedLocalPath: _aadhaarResult?.localPath,
                         uploadedImageUrl: _aadhaarImageUrl,
-                        onActionTap: _isReuploadMode && aadhaarIsVerified
-                            ? null
-                            : () async {
-                                final result = await Navigator.pushNamed(
-                                  context,
-                                  'aadhaarUpload',
-                                  arguments: _aadhaarResult,
-                                );
-                                if (result is DocumentUploadResult && mounted) {
-                                  setState(() {
-                                    _aadhaarResult = result;
-                                    _aadhaarImageUrl = result.imageUrl;
-                                  });
-                                }
-                              },
+                        onActionTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            'aadhaarUpload',
+                            arguments: _aadhaarResult,
+                          );
+                          if (result is DocumentUploadResult && mounted) {
+                            setState(() {
+                              _aadhaarResult = result;
+                              _aadhaarImageUrl = result.imageUrl;
+                            });
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -244,28 +244,28 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         actionLabel: _isReuploadMode
                             ? (_licenseNeedsReupload
                                   ? 'Tap to Reupload'
-                                  : 'Verified')
-                            : (_licenseUploaded ? 'Uploaded' : 'Tap to Upload'),
+                                  : 'Uploaded (Tap to Edit)')
+                            : (_licenseUploaded
+                                  ? 'Uploaded (Tap to Edit)'
+                                  : 'Tap to Upload'),
                         actionIcon: licenseIsVerified
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
                         uploadedLocalPath: _licenseResult?.localPath,
                         uploadedImageUrl: _licenseImageUrl,
-                        onActionTap: _isReuploadMode && licenseIsVerified
-                            ? null
-                            : () async {
-                                final result = await Navigator.pushNamed(
-                                  context,
-                                  'drivingLicenseUpload',
-                                  arguments: _licenseResult,
-                                );
-                                if (result is DocumentUploadResult && mounted) {
-                                  setState(() {
-                                    _licenseResult = result;
-                                    _licenseImageUrl = result.imageUrl;
-                                  });
-                                }
-                              },
+                        onActionTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            'drivingLicenseUpload',
+                            arguments: _licenseResult,
+                          );
+                          if (result is DocumentUploadResult && mounted) {
+                            setState(() {
+                              _licenseResult = result;
+                              _licenseImageUrl = result.imageUrl;
+                            });
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -283,29 +283,27 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                         actionLabel: _isReuploadMode
                             ? (_livePhotoNeedsReupload
                                   ? 'Tap to Reupload'
-                                  : 'Verified')
+                                  : 'Captured (Tap to Retake)')
                             : (_livePhotoCaptured
-                                  ? 'Captured'
+                                  ? 'Captured (Tap to Retake)'
                                   : 'Capture Photo'),
                         actionIcon: livePhotoIsVerified
                             ? Icons.check_circle_outline
                             : Icons.camera_alt_outlined,
                         uploadedLocalPath: _livePhotoResult?.localPath,
                         uploadedImageUrl: _livePhotoUrl,
-                        onActionTap: _isReuploadMode && livePhotoIsVerified
-                            ? null
-                            : () async {
-                                final result = await Navigator.pushNamed(
-                                  context,
-                                  'selfieScreen',
-                                );
-                                if (result is DocumentUploadResult && mounted) {
-                                  setState(() {
-                                    _livePhotoResult = result;
-                                    _livePhotoUrl = result.imageUrl;
-                                  });
-                                }
-                              },
+                        onActionTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            'selfieScreen',
+                          );
+                          if (result is DocumentUploadResult && mounted) {
+                            setState(() {
+                              _livePhotoResult = result;
+                              _livePhotoUrl = result.imageUrl;
+                            });
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -396,7 +394,7 @@ class _DocumentUploadCard extends StatelessWidget {
           loadingBuilder: (_, child, progress) => progress == null
               ? child
               : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          errorBuilder: (_, __, ___) =>
+          errorBuilder: (_, _, _) =>
               Image.asset(imagePath, fit: BoxFit.contain),
         ),
       );
@@ -404,82 +402,85 @@ class _DocumentUploadCard extends StatelessWidget {
       thumbnailChild = Image.asset(imagePath, fit: BoxFit.contain);
     }
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: kWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isUploaded ? kActiveGreen : kCardBorder),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 96,
-            height: 72,
-            padding:
-                isUploaded &&
-                    (uploadedLocalPath != null || uploadedImageUrl != null)
-                ? EdgeInsets.zero
-                : const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _kImageBg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _kImageBorder, width: 1.2),
+    return GestureDetector(
+      onTap: onActionTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: kWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isUploaded ? kActiveGreen : kCardBorder),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 96,
+              height: 72,
+              padding:
+                  isUploaded &&
+                      (uploadedLocalPath != null || uploadedImageUrl != null)
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _kImageBg,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _kImageBorder, width: 1.2),
+              ),
+              child: thumbnailChild,
             ),
-            child: thumbnailChild,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: kProfileNameB),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: kCaption13R.copyWith(color: kMutedText),
-                ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: onActionTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isUploaded
-                          ? kActiveGreen.withValues(alpha: 0.12)
-                          : _kActionButtonBg,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          actionIcon,
-                          size: 16,
-                          color: isUploaded ? kActiveGreen : kBrandBlue,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          actionLabel,
-                          style: kStyle(
-                            kMedium,
-                            kSize13,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: kProfileNameB),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: kCaption13R.copyWith(color: kMutedText),
+                  ),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: onActionTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isUploaded
+                            ? kActiveGreen.withValues(alpha: 0.12)
+                            : _kActionButtonBg,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            actionIcon,
+                            size: 16,
                             color: isUploaded ? kActiveGreen : kBrandBlue,
-                            height: 1.1,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          Text(
+                            actionLabel,
+                            style: kStyle(
+                              kMedium,
+                              kSize13,
+                              color: isUploaded ? kActiveGreen : kBrandBlue,
+                              height: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
