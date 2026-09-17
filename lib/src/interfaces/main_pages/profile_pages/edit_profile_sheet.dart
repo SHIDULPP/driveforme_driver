@@ -102,7 +102,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
 
     try {
       final profile = widget.user.profile;
-      final response = await ref.read(onboardingApiProvider).submitDriverProfile(
+      final response = await ref
+          .read(onboardingApiProvider)
+          .submitDriverProfile(
             fullName: _nameController.text.trim(),
             email: _emailController.text.trim(),
             dateOfBirth: dobUiToApi(_dobController.text.trim()),
@@ -164,9 +166,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -234,8 +236,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     type: CustomFieldType.text,
                     hint: 'Enter your name',
                     controller: _nameController,
-                    validator: (value) =>
-                        value == null || value.trim().isEmpty
+                    validator: (value) => value == null || value.trim().isEmpty
                         ? 'Name is required'
                         : null,
                   ),
@@ -277,16 +278,15 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     type: CustomFieldType.date,
                     hint: 'Add DOB',
                     controller: _dobController,
-                    validator: (value) =>
-                        value == null || value.trim().isEmpty
-                        ? 'Date of birth is required'
-                        : null,
+                    validator: validateDriverDob,
                   ),
                 ),
                 const SizedBox(height: 24),
                 primaryButton(
                   label: 'save',
-                  onPressed: isLoading || _isUploadingPhoto ? null : _saveProfile,
+                  onPressed: isLoading || _isUploadingPhoto
+                      ? null
+                      : _saveProfile,
                   isLoading: isLoading,
                 ),
               ],
@@ -387,10 +387,7 @@ class _EditField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: kCaption12R.copyWith(color: kMutedText),
-        ),
+        Text(label, style: kCaption12R.copyWith(color: kMutedText)),
         const SizedBox(height: 8),
         child,
       ],

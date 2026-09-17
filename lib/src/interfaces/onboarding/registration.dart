@@ -259,9 +259,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           type: CustomFieldType.date,
                           hint: 'DD/MM/YYYY',
                           controller: _dobController,
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Date of birth is required'
-                              : null,
+                          validator: validateDriverDob,
                         ),
                       ),
                       const SizedBox(height: 20),
