@@ -245,6 +245,7 @@ void navigateToHomeAfterActiveTripEnds() {
 }
 
 Future<void> navigateToActiveTrip(WidgetRef ref, TripModel trip) async {
+  if (trip.isFutureScheduled) return;
   await ref.read(activeTripProvider.notifier).setActiveTrip(trip.id, trip: trip);
   final target = tripNavigationTarget(trip);
   if (target == null) return;

@@ -5,6 +5,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/models/trip_model.dart';
 import 'package:DriveFormeDriver/src/data/providers/loading_provider.dart';
+import 'package:DriveFormeDriver/src/data/providers/trip_history_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/trip_provider.dart';
 import 'package:DriveFormeDriver/src/data/utils/driver_map_location.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
@@ -76,6 +77,23 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
     ref.read(availableTripsProvider.notifier).removeTrip(_trip.id);
     final acceptedTrip = response.data ?? _trip;
     NavigationService().pop();
+
+    if (acceptedTrip.isFutureScheduled) {
+      ref.invalidate(tripHistoryProvider(TripHistoryTab.upcoming));
+      final dateStr = acceptedTrip.pickupAt != null
+          ? acceptedTrip.formatDateTime(acceptedTrip.pickupAt)
+          : 'scheduled time';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Scheduled trip accepted for $dateStr. The vehicle owner has been informed of your details.',
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     await navigateToActiveTrip(ref, acceptedTrip);
   }
 

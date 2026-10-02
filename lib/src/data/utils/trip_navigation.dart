@@ -42,6 +42,7 @@ bool isResumableTrip(TripModel trip) {
 }
 
 TripNavigationTarget? tripNavigationTarget(TripModel trip) {
+  if (trip.isFutureScheduled) return null;
   switch (trip.status) {
     case 'driver_assigned':
     case 'scheduled':
