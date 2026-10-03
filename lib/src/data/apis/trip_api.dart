@@ -220,6 +220,29 @@ class TripApi {
     return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
   }
 
+  /// Confirms the driver physically received cash from the vehicle owner.
+  Future<ApiResponse<TripModel>> confirmCashCollection(String tripId) async {
+    final response = await _api.post(
+      '/trips/$tripId/confirm-cash-collection',
+      {},
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to confirm cash collection.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data);
+    if (data == null) {
+      return ApiResponse.error('Invalid cash collection response');
+    }
+
+    return ApiResponse.success(TripModel.fromJson(data), response.statusCode);
+  }
+
   /// Driver (self) or admin can load customer reviews for [driverId].
   Future<ApiResponse<DriverRatingsSummary>> getDriverRatings(
     String driverId,

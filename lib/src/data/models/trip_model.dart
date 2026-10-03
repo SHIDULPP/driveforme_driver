@@ -26,6 +26,13 @@ class TripModel {
   final double? priceMaximum;
   final String currency;
   final String paymentMethod;
+  final double? paymentTotalFare;
+  final double? paymentPackageFare;
+  final double? paymentBaseFare;
+  final double? paymentExtraTimeCharge;
+  final int paymentExtraHours;
+  final int paymentOvertimeMinutes;
+  final int paymentExpectedDurationMinutes;
   final String customerId;
   final String customerName;
   final String customerPhone;
@@ -60,6 +67,13 @@ class TripModel {
     this.priceMaximum,
     this.currency = 'INR',
     required this.paymentMethod,
+    this.paymentTotalFare,
+    this.paymentPackageFare,
+    this.paymentBaseFare,
+    this.paymentExtraTimeCharge,
+    this.paymentExtraHours = 0,
+    this.paymentOvertimeMinutes = 0,
+    this.paymentExpectedDurationMinutes = 0,
     this.customerId = '',
     this.customerName = '',
     this.customerPhone = '',
@@ -78,6 +92,7 @@ class TripModel {
     final timeline = json['timeline'];
     final priceEstimate = tripDetails is Map ? tripDetails['priceEstimate'] : null;
     final vehicleDetails = json['vehicleDetails'];
+    final payment = _asMap(json['payment']);
     final customer = json['customer'] ?? json['vehicleOwner'];
 
     return TripModel(
@@ -126,6 +141,15 @@ class TripModel {
           ? priceEstimate['currency']?.toString() ?? 'INR'
           : 'INR',
       paymentMethod: json['paymentMethod']?.toString() ?? 'cash',
+      paymentTotalFare: _toDouble(payment?['totalFare']),
+      paymentPackageFare: _toDouble(payment?['packageFare']),
+      paymentBaseFare: _toDouble(payment?['baseFare']),
+      paymentExtraTimeCharge: _toDouble(payment?['extraTimeCharge']),
+      paymentExtraHours: (payment?['extraHours'] as num?)?.toInt() ?? 0,
+      paymentOvertimeMinutes:
+          (payment?['overtimeMinutes'] as num?)?.toInt() ?? 0,
+      paymentExpectedDurationMinutes:
+          (payment?['expectedDurationMinutes'] as num?)?.toInt() ?? 0,
       customerId: _userId(customer) ?? '',
       customerName: _userName(customer) ?? '',
       customerPhone: _userPhone(customer) ?? '',
@@ -221,9 +245,53 @@ class TripModel {
   String get displayEarnings => displayPrice;
 
   String get displayPrice {
-    final amount = priceMinimum ?? priceMaximum;
+    final amount = paymentTotalFare ?? priceMinimum ?? priceMaximum;
     if (amount == null) return '—';
-    return '₹ ${amount.toStringAsFixed(0)}';
+    return _formatInr(amount);
+  }
+
+  String get tripFareDisplay {
+    final amount = paymentPackageFare ??
+        (paymentTotalFare != null && paymentExtraTimeCharge != null
+            ? paymentTotalFare! - paymentExtraTimeCharge!
+            : null) ??
+        priceMinimum ??
+        priceMaximum;
+    if (amount == null) return '—';
+    return _formatInr(amount);
+  }
+
+  String get baseFareDisplay => tripFareDisplay;
+
+  String get extraTimeAmountDisplay {
+    final amount = paymentExtraTimeCharge ?? 0;
+    if (amount <= 0) return '—';
+    return _formatInr(amount);
+  }
+
+  String get extraTimeDurationLabel {
+    if (paymentOvertimeMinutes <= 0 && paymentExtraHours <= 0) return '—';
+    if (paymentOvertimeMinutes > 0) {
+      return _formatDurationMinutes(paymentOvertimeMinutes);
+    }
+    return paymentExtraHours == 1 ? '1 hr' : '$paymentExtraHours hrs';
+  }
+
+  String get expectedDurationLabel {
+    if (paymentExpectedDurationMinutes > 0) {
+      return _formatDurationMinutes(paymentExpectedDurationMinutes);
+    }
+    return durationLabel;
+  }
+
+  static String _formatInr(double amount) => '₹ ${amount.toStringAsFixed(0)}';
+
+  static String _formatDurationMinutes(int minutes) {
+    if (minutes < 60) return '$minutes min';
+    final hours = minutes ~/ 60;
+    final remaining = minutes % 60;
+    if (remaining == 0) return hours == 1 ? '1 hr' : '$hours hrs';
+    return '$hours hr $remaining min';
   }
 
   String get vehicleTypeLabel {
@@ -361,10 +429,12 @@ class TripModel {
         'routeSummary': routeSummaryLine,
         'elapsedDuration': elapsedDurationLabel,
         'totalEarned': displayPrice,
-        'baseFareLabel': 'Base fare ($durationLabel)',
-        'baseFareAmount': displayPrice,
-        'extraTimeLabel': 'Extra Time',
-        'extraTimeAmount': '—',
+        'baseFareLabel': 'Base fare ($expectedDurationLabel)',
+        'baseFareAmount': baseFareDisplay,
+        'extraTimeLabel': paymentExtraHours > 0 || paymentOvertimeMinutes > 0
+            ? 'Extra Time ($extraTimeDurationLabel)'
+            : 'Extra Time',
+        'extraTimeAmount': extraTimeAmountDisplay,
         'totalAmount': displayPrice,
         'paymentMethod': paymentMethod,
       };

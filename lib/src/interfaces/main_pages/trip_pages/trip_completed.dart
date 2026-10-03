@@ -1,3 +1,4 @@
+import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
 import 'package:DriveFormeDriver/src/data/providers/active_trip_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
@@ -14,7 +15,7 @@ const _kExtraTimeRowBg = Color(0xFFFFF3E8);
 const _kExtraTimeText = Color(0xFFC6934B);
 const _kTotalAmountBlue = Color(0xFF205D91);
 
-class TripCompletedScreen extends ConsumerWidget {
+class TripCompletedScreen extends ConsumerStatefulWidget {
   const TripCompletedScreen({
     super.key,
     this.tripMongoId = '',
@@ -42,16 +43,66 @@ class TripCompletedScreen extends ConsumerWidget {
   final String totalAmount;
   final String paymentMethod;
 
+  @override
+  ConsumerState<TripCompletedScreen> createState() =>
+      _TripCompletedScreenState();
+}
+
+class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
+  bool _confirmingCash = false;
+
   bool get _isCashPayment =>
-      paymentMethod == 'cash' || paymentMethod == 'offline';
+      widget.paymentMethod == 'cash' || widget.paymentMethod == 'offline';
+
+  Future<void> _onMarkAsCollected() async {
+    if (_confirmingCash) return;
+
+    final tripId = widget.tripMongoId.trim();
+    if (tripId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trip id missing. Please try again.')),
+      );
+      return;
+    }
+
+    setState(() => _confirmingCash = true);
+    final response =
+        await ref.read(tripApiProvider).confirmCashCollection(tripId);
+
+    if (!mounted) return;
+
+    if (!response.success) {
+      setState(() => _confirmingCash = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response.message ?? 'Failed to confirm cash collection.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    ref.invalidate(walletProvider);
+    Navigator.pushReplacementNamed(
+      context,
+      'cashCollected',
+      arguments: {
+        'tripMongoId': widget.tripMongoId,
+        'collectedAmount': widget.totalAmount,
+      },
+    );
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final sheetTop = screenHeight * 0.52;
-    final showExtra = extraTimeAmount != '—' && extraTimeAmount.isNotEmpty;
+    final showExtra =
+        widget.extraTimeAmount != '—' && widget.extraTimeAmount.isNotEmpty;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -91,9 +142,9 @@ class TripCompletedScreen extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Text(
-                        routeSummary.isNotEmpty
-                            ? '$routeSummary  $elapsedDuration'
-                            : elapsedDuration,
+                        widget.routeSummary.isNotEmpty
+                            ? '${widget.routeSummary}  ${widget.elapsedDuration}'
+                            : widget.elapsedDuration,
                         textAlign: TextAlign.center,
                         style: kCaption14R.copyWith(
                           color: kWhite.withValues(alpha: 0.95),
@@ -102,7 +153,7 @@ class TripCompletedScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    _TotalEarnedBadge(totalEarned: totalEarned),
+                    _TotalEarnedBadge(totalEarned: widget.totalEarned),
                   ],
                 ),
               ),
@@ -130,32 +181,24 @@ class TripCompletedScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _PaymentSummaryCard(
-                        baseFareLabel: baseFareLabel,
-                        baseFareAmount: baseFareAmount,
-                        extraTimeLabel: extraTimeLabel,
-                        extraTimeAmount: extraTimeAmount,
-                        totalAmount: totalAmount,
+                        baseFareLabel: widget.baseFareLabel,
+                        baseFareAmount: widget.baseFareAmount,
+                        extraTimeLabel: widget.extraTimeLabel,
+                        extraTimeAmount: widget.extraTimeAmount,
+                        totalAmount: widget.totalAmount,
                         showExtra: showExtra,
                       ),
                       const Spacer(),
                       if (_isCashPayment)
                         primaryButton(
-                          label: 'Mark as Collected',
+                          label: _confirmingCash
+                              ? 'Confirming...'
+                              : 'Mark as Collected',
                           buttonHeight: 52,
                           fontSize: kSize16,
                           buttonColor: kTripCtaBlue,
                           labelColor: kWhite,
-                          onPressed: () async {
-                            ref.invalidate(walletProvider);
-                            Navigator.pushReplacementNamed(
-                              context,
-                              'cashCollected',
-                              arguments: {
-                                'tripMongoId': tripMongoId,
-                                'collectedAmount': totalAmount,
-                              },
-                            );
-                          },
+                          onPressed: _confirmingCash ? null : _onMarkAsCollected,
                         )
                       else
                         primaryButton(
