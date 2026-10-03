@@ -270,6 +270,34 @@ class TripApi {
     );
   }
 
+  Future<ApiResponse<Map<String, dynamic>>> previewCancellationCharges(
+    String tripId,
+  ) async {
+    final response = await _api.get(
+      '/trips/$tripId/cancellation-preview',
+      requireAuth: true,
+    );
+
+    if (!response.success) {
+      return ApiResponse.error(
+        response.message ?? 'Failed to load cancellation charges.',
+        response.statusCode,
+      );
+    }
+
+    final data = nestedData(response.data) ?? response.data;
+    if (data is! Map) {
+      return ApiResponse.error('Invalid cancellation preview response');
+    }
+
+    return ApiResponse(
+      success: true,
+      data: Map<String, dynamic>.from(data!),
+      statusCode: response.statusCode,
+      message: response.message,
+    );
+  }
+
   Future<ApiResponse<TripModel>> cancelTrip(
     String tripId, {
     String? reason,

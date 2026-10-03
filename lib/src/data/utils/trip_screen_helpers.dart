@@ -36,6 +36,15 @@ class TripScreenService {
     return trip;
   }
 
+  Future<ApiResponse<Map<String, dynamic>>> previewCancellationCharges(
+    String tripMongoId,
+  ) async {
+    if (tripMongoId.isEmpty) {
+      return ApiResponse.error('Trip id is missing.');
+    }
+    return _ref.read(tripApiProvider).previewCancellationCharges(tripMongoId);
+  }
+
   Future<ApiResponse<TripModel>> cancelTrip(
     String tripMongoId, {
     String? reason,

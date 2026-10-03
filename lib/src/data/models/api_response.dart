@@ -27,6 +27,7 @@ class ApiResponse<T> {
 Map<String, dynamic>? nestedData(Map<String, dynamic>? body) {
   final data = body?['data'];
   if (data is Map<String, dynamic>) return data;
+  if (data is Map) return Map<String, dynamic>.from(data);
   return null;
 }
 

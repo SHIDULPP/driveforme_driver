@@ -43,6 +43,10 @@ class TripModel {
   final String transmission;
   /// Present on cancel responses when the trip was released for reassignment.
   final bool reassigned;
+  final double cancellationPenaltyAmount;
+  final double cancellationCompensationAmount;
+  final String? cancellationChargeMessage;
+  final String? cancellationChargeStage;
 
   const TripModel({
     required this.id,
@@ -82,6 +86,10 @@ class TripModel {
     this.vehicleNumber = '',
     this.vehicleType = '',
     this.transmission = '',
+    this.cancellationPenaltyAmount = 0,
+    this.cancellationCompensationAmount = 0,
+    this.cancellationChargeMessage,
+    this.cancellationChargeStage,
   });
 
   factory TripModel.fromJson(Map<String, dynamic> json) {
@@ -94,6 +102,7 @@ class TripModel {
     final vehicleDetails = json['vehicleDetails'];
     final payment = _asMap(json['payment']);
     final customer = json['customer'] ?? json['vehicleOwner'];
+    final charges = _resolveCancellationCharges(json);
 
     return TripModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
@@ -167,7 +176,20 @@ class TripModel {
           ? vehicleDetails['transmission']?.toString() ?? ''
           : '',
       reassigned: json['reassigned'] == true,
+      cancellationPenaltyAmount:
+          _toDouble(charges?['driverPenaltyAmount']) ?? 0,
+      cancellationCompensationAmount:
+          _toDouble(charges?['driverCompensationAmount']) ?? 0,
+      cancellationChargeMessage: charges?['message']?.toString(),
+      cancellationChargeStage: charges?['stage']?.toString(),
     );
+  }
+
+  bool get hasCancellationPenalty => cancellationPenaltyAmount > 0;
+
+  String get cancellationPenaltyDisplay {
+    if (!hasCancellationPenalty) return '₹ 0';
+    return '₹ ${cancellationPenaltyAmount.toStringAsFixed(0)}';
   }
 
   String get pickupAddress => pickupLocation.address;
@@ -463,6 +485,22 @@ class TripModel {
         'cancelledAt': cancelledAt?.toIso8601String(),
         'tripTypeLabel': tripTypeBadgeLabel,
       };
+
+  static Map<String, dynamic>? _resolveCancellationCharges(
+    Map<String, dynamic> json,
+  ) {
+    final topLevel = _asMap(json['cancellationCharges']);
+    if (topLevel != null) return topLevel;
+    final cancellation = _asMap(json['cancellation']);
+    final nested = _asMap(cancellation?['charges']);
+    if (nested != null) return nested;
+    final history = json['cancellationHistory'];
+    if (history is List && history.isNotEmpty) {
+      final last = _asMap(history.last);
+      return _asMap(last?['charges']);
+    }
+    return null;
+  }
 
   static Map<String, dynamic>? _asMap(dynamic value) {
     if (value is Map<String, dynamic>) return value;

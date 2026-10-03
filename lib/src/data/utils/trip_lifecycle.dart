@@ -9,17 +9,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<bool> showCancelTripDialog(BuildContext context) async {
+String _formatChargeAmount(num? amount) {
+  final value = (amount ?? 0).toDouble();
+  if (value <= 0) return '₹ 0';
+  return '₹ ${value.toStringAsFixed(0)}';
+}
+
+Future<bool> showCancelTripDialog(
+  BuildContext context, {
+  String? chargeMessage,
+  double penaltyAmount = 0,
+}) async {
+  final chargeLine = penaltyAmount > 0
+      ? 'Cancellation penalty: ${_formatChargeAmount(penaltyAmount)} will be deducted from your wallet.'
+      : (chargeMessage?.trim().isNotEmpty == true
+          ? chargeMessage!.trim()
+          : 'No cancellation penalty at this stage.');
+
   final result = await showDialog<bool>(
     context: context,
     barrierColor: kBlack.withValues(alpha: 0.45),
-    builder: (context) => const _TripActionDialog(
+    builder: (context) => _TripActionDialog(
       icon: Icons.error_outline_rounded,
       iconColor: kSosRed,
       title: 'Release this trip?',
       body:
           'If the trip has not started yet, it will be offered to another '
-          'driver nearby. Your rating may still be affected.',
+          'driver nearby. Your rating may still be affected.\n\n$chargeLine',
       keepLabel: 'Keep trip',
       confirmLabel: 'Release trip',
       confirmColor: kSosRed,
@@ -160,7 +176,35 @@ Future<TripModel?> cancelTripWithDialog({
   if (tripMongoId.isEmpty) return null;
 
   final tripService = ref.read(tripScreenServiceProvider);
-  final confirmed = await showCancelTripDialog(context);
+
+  double previewPenalty = 0;
+  String? previewMessage;
+  final preview = await tripService.previewCancellationCharges(tripMongoId);
+  if (preview.success && preview.data != null) {
+    previewPenalty =
+        (preview.data!['driverPenaltyAmount'] as num?)?.toDouble() ?? 0;
+    previewMessage = preview.data!['message']?.toString();
+    if (preview.data!['allowed'] == false) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              previewMessage ?? 'Cancellation is not allowed at this stage.',
+            ),
+          ),
+        );
+      }
+      return null;
+    }
+  }
+
+  if (!context.mounted) return null;
+
+  final confirmed = await showCancelTripDialog(
+    context,
+    chargeMessage: previewMessage,
+    penaltyAmount: previewPenalty,
+  );
   if (!confirmed || !context.mounted) return null;
 
   final response = await tripService.cancelTrip(
@@ -181,13 +225,16 @@ Future<TripModel?> cancelTripWithDialog({
   if (trip == null) return null;
 
   final released = trip.wasReleasedForReassignment;
+  final penaltyNote = trip.hasCancellationPenalty
+      ? ' Penalty: ${trip.cancellationPenaltyDisplay}.'
+      : '';
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
         response.message ??
             (released
-                ? 'Trip released. It will be offered to another driver.'
-                : 'Trip cancelled.'),
+                ? 'Trip released. It will be offered to another driver.$penaltyNote'
+                : 'Trip cancelled.$penaltyNote'),
       ),
     ),
   );
