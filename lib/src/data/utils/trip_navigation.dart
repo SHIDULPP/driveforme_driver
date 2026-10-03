@@ -37,6 +37,8 @@ bool isResumableTrip(TripModel trip) {
   if (trip.isCancelled || trip.isCompleted || trip.wasReleasedForReassignment) {
     return false;
   }
+  // Accepted scheduled trips must wait until pickup time.
+  if (trip.isFutureScheduled) return false;
   if (isActiveTripStatus(trip.status)) return true;
   return trip.status == 'scheduled' && trip.isPickupTimeReached;
 }
@@ -46,7 +48,9 @@ TripNavigationTarget? tripNavigationTarget(TripModel trip) {
   switch (trip.status) {
     case 'driver_assigned':
     case 'scheduled':
-      if (trip.status == 'scheduled' && !trip.isPickupTimeReached) return null;
+      if (!trip.isPickupTimeReached && trip.rideTime == 'scheduled') {
+        return null;
+      }
       return TripNavigationTarget(
         route: 'driverArrived',
         arguments: trip.toDriverArrivedArguments(),

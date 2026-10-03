@@ -232,8 +232,12 @@ class TripModel {
       isScheduled && !isPickupTimeReached && !isCancelled;
 
   /// Trips the driver should treat as active (ongoing tab / resume flow).
+  /// Future scheduled bookings stay inactive until pickup time even if accepted.
   bool get isOngoingForDriver =>
-      isInProgress || isDriverAssigned || (isScheduled && isPickupTimeReached);
+      !isFutureScheduled &&
+      (isInProgress ||
+          isDriverAssigned ||
+          (status == 'scheduled' && isPickupTimeReached));
 
   String get startsInLabel {
     if (pickupAt == null || isPickupTimeReached) return '';
