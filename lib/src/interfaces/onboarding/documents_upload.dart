@@ -11,6 +11,7 @@ import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/interfaces/animations/index.dart' as anim;
 import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -106,7 +107,7 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showMessage(response.message ?? 'Failed to submit documents');
+        _showMessage(response.message ?? 'failedToSubmitDocuments'.tr());
         return;
       }
 
@@ -165,7 +166,7 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                       duration: anim.AnimationDuration.normal,
                       delayMilliseconds: 80,
                       child: Text(
-                        'Verify Your Identity',
+                        'verifyYourIdentity'.tr(),
                         style: kStyle(
                           kRegular,
                           kSize30,
@@ -181,7 +182,7 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                       duration: anim.AnimationDuration.normal,
                       delayMilliseconds: 120,
                       child: Text(
-                        'Upload required documents to start driving',
+                        'uploadRequiredDocuments'.tr(),
                         style: kStyle(
                           kRegular,
                           kSize14,
@@ -199,16 +200,16 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                       delayMilliseconds: 180,
                       child: _DocumentUploadCard(
                         imagePath: 'assets/pngs/aadhar_image.png',
-                        title: 'Aadhaar',
-                        description: 'Government ID proof',
+                        title: 'aadhaar'.tr(),
+                        description: 'governmentIdProof'.tr(),
                         isUploaded: aadhaarIsVerified,
                         actionLabel: _isReuploadMode
                             ? (_aadhaarNeedsReupload
-                                  ? 'Tap to Reupload'
-                                  : 'Uploaded (Tap to Edit)')
+                                  ? 'tapToReupload'.tr()
+                                  : 'uploadedTapToEdit'.tr())
                             : (_aadhaarUploaded
-                                  ? 'Uploaded (Tap to Edit)'
-                                  : 'Tap to Upload'),
+                                  ? 'uploadedTapToEdit'.tr()
+                                  : 'tapToUpload'.tr()),
                         actionIcon: aadhaarIsVerified
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
@@ -238,16 +239,16 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                       delayMilliseconds: 260,
                       child: _DocumentUploadCard(
                         imagePath: 'assets/pngs/drivin_license_image.png',
-                        title: 'Driving License',
-                        description: 'Required for driver verification',
+                        title: 'drivingLicense'.tr(),
+                        description: 'requiredForDriverVerification'.tr(),
                         isUploaded: licenseIsVerified,
                         actionLabel: _isReuploadMode
                             ? (_licenseNeedsReupload
-                                  ? 'Tap to Reupload'
-                                  : 'Uploaded (Tap to Edit)')
+                                  ? 'tapToReupload'.tr()
+                                  : 'uploadedTapToEdit'.tr())
                             : (_licenseUploaded
-                                  ? 'Uploaded (Tap to Edit)'
-                                  : 'Tap to Upload'),
+                                  ? 'uploadedTapToEdit'.tr()
+                                  : 'tapToUpload'.tr()),
                         actionIcon: licenseIsVerified
                             ? Icons.check_circle_outline
                             : Icons.file_upload_outlined,
@@ -277,16 +278,16 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                       delayMilliseconds: 340,
                       child: _DocumentUploadCard(
                         imagePath: 'assets/pngs/live_photo_image.png',
-                        title: 'Live Photo',
-                        description: 'Capture a real-time photo',
+                        title: 'livePhoto'.tr(),
+                        description: 'captureRealtimePhoto'.tr(),
                         isUploaded: livePhotoIsVerified,
                         actionLabel: _isReuploadMode
                             ? (_livePhotoNeedsReupload
-                                  ? 'Tap to Reupload'
-                                  : 'Captured (Tap to Retake)')
+                                  ? 'tapToReupload'.tr()
+                                  : 'capturedTapToRetake'.tr())
                             : (_livePhotoCaptured
-                                  ? 'Captured (Tap to Retake)'
-                                  : 'Capture Photo'),
+                                  ? 'capturedTapToRetake'.tr()
+                                  : 'capturePhoto'.tr()),
                         actionIcon: livePhotoIsVerified
                             ? Icons.check_circle_outline
                             : Icons.camera_alt_outlined,
@@ -319,7 +320,7 @@ class _DocumentsUploadPageState extends ConsumerState<DocumentsUploadPage> {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 420,
                 child: primaryButton(
-                  label: 'Continue',
+                  label: 'continueText'.tr(),
                   buttonHeight: 56,
                   fontSize: kSize16,
                   buttonColor: _canContinue ? kBrandBlue : _kContinueDisabled,

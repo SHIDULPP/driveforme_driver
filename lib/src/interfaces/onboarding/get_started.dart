@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/interfaces/animations/index.dart' as anim;
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class DriverPartnerLandingPage extends StatelessWidget {
@@ -38,7 +39,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 100,
                 child: Text(
-                  'Private Car Driver',
+                  'privateCarDriver'.tr(),
                   style: kStyle(
                     kRegular,
                     kSize18,
@@ -57,7 +58,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Earn by driving\nwith ',
+                        text: 'earnByDrivingWith'.tr(),
                         style: kStyle(
                           kRegular,
                           kSize36,
@@ -85,7 +86,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 300,
                 child: Text(
-                  'Drive when you want,Get paid weekly,\nNo vehicle needed',
+                  'driveWhenYouWant'.tr(),
                   style: kStyle(
                     kLight,
                     kSize14,
@@ -115,7 +116,7 @@ class DriverPartnerLandingPage extends StatelessWidget {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 400,
                 child: primaryButton(
-                  label: 'Get Started',
+                  label: 'getStarted'.tr(),
                   buttonColor: kBrandBlue,
                   labelColor: kWhite,
                   onPressed: () {

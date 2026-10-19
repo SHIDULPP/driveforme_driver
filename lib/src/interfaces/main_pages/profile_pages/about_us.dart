@@ -1,5 +1,6 @@
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,7 +40,7 @@ class AboutUsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Drive For Me',
+                        'driveForMe'.tr(),
                         textAlign: TextAlign.center,
                         style: kStyle(
                           kSemiBold,
@@ -50,7 +51,7 @@ class AboutUsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Reliable drivers, whenever and wherever you need one.',
+                        'aboutTagline'.tr(),
                         textAlign: TextAlign.center,
                         style: kCaption14R.copyWith(
                           color: kTripBodyMuted,
@@ -65,11 +66,7 @@ class AboutUsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Drive For Me connects skilled, verified drivers with '
-                        'people who need a ride or a driver for their own '
-                        'vehicle. Our mission is to make every trip safe, '
-                        'transparent, and rewarding — for drivers and '
-                        'customers alike.',
+                        'aboutBody'.tr(),
                         textAlign: TextAlign.center,
                         style: kCaption14R.copyWith(
                           color: kTextColor,
@@ -84,7 +81,7 @@ class AboutUsPage extends StatelessWidget {
                       ),
                       _AboutUsRow(
                         icon: Icons.language_rounded,
-                        label: 'Website',
+                        label: 'website'.tr(),
                         value: 'www.driveforme.in',
                         onTap: () => _openUrl('https://www.driveforme.in'),
                       ),
@@ -95,7 +92,7 @@ class AboutUsPage extends StatelessWidget {
                       ),
                       _AboutUsRow(
                         icon: Icons.mail_outline_rounded,
-                        label: 'Support email',
+                        label: 'supportEmail'.tr(),
                         value: 'support@driveforme.in',
                         onTap: () =>
                             _openUrl('mailto:support@driveforme.in'),
@@ -107,8 +104,8 @@ class AboutUsPage extends StatelessWidget {
                       ),
                       _AboutUsRow(
                         icon: Icons.description_outlined,
-                        label: 'Terms & Privacy Policy',
-                        value: 'View',
+                        label: 'termsAndPrivacy'.tr(),
+                        value: 'view'.tr(),
                         onTap: () => _openUrl('https://www.driveforme.in/legal'),
                       ),
                       const Divider(
@@ -161,7 +158,7 @@ class _AboutUsHeader extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           Text(
-            'About us',
+            'aboutUs'.tr(),
             style: kStyle(
               kMedium,
               kSize18,

@@ -5,6 +5,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/input_field.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,7 +40,7 @@ class _RaiseTicketPageState extends ConsumerState<RaiseTicketPage> {
     final description = _descriptionController.text.trim();
     if (subject.isEmpty || description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter subject and description.')),
+        SnackBar(content: Text('pleaseEnterSubjectDescription'.tr())),
       );
       return;
     }
@@ -75,8 +76,8 @@ class _RaiseTicketPageState extends ConsumerState<RaiseTicketPage> {
       SnackBar(
         content: Text(
           ticketId != null && ticketId.isNotEmpty
-              ? 'Ticket $ticketId submitted successfully.'
-              : 'Support ticket submitted successfully.',
+              ? 'ticketSubmittedWithId'.tr(args: [ticketId])
+              : 'supportTicketSubmitted'.tr(),
         ),
       ),
     );
@@ -94,15 +95,15 @@ class _RaiseTicketPageState extends ConsumerState<RaiseTicketPage> {
 
   String _friendlyError(String? message) {
     final raw = message?.trim() ?? '';
-    if (raw.isEmpty) return 'Failed to submit ticket.';
+    if (raw.isEmpty) return 'failedToSubmitTicket'.tr();
     final lower = raw.toLowerCase();
     if (lower.contains('e11000') ||
         lower.contains('duplicate key') ||
         lower.contains('ticketid')) {
-      return 'Could not create ticket right now. Please try again in a moment.';
+      return 'couldNotCreateTicket'.tr();
     }
     if (lower.contains('linked trip not found')) {
-      return 'This trip could not be linked. Please try again from the trip details.';
+      return 'tripCouldNotBeLinked'.tr();
     }
     return raw;
   }
@@ -128,13 +129,13 @@ class _RaiseTicketPageState extends ConsumerState<RaiseTicketPage> {
           ),
         ),
         title: Text(
-          'Support',
+          'support'.tr(),
           style: kStyle(kSemiBold, kSize18, color: kTextColor),
         ),
         actions: [
           IconButton(
             onPressed: () => launchPhoneCall('+916282359916'),
-            tooltip: 'Call support',
+            tooltip: 'callSupport'.tr(),
             icon: const Icon(Icons.phone_outlined),
           ),
         ],
@@ -158,25 +159,25 @@ class _RaiseTicketPageState extends ConsumerState<RaiseTicketPage> {
                             ),
                           ),
                     icon: const Icon(Icons.chat_bubble_outline),
-                    label: const Text('View my tickets & replies'),
+                    label: Text('viewMyTicketsReplies'.tr()),
                   ),
                   const SizedBox(height: 24),
-                  Text('Raise a ticket', style: kTripSubSectionSB),
+                  Text('raiseATicket'.tr(), style: kTripSubSectionSB),
                   const SizedBox(height: 20),
-                  Text('Subject', style: kTripSubSectionSB),
+                  Text('subject'.tr(), style: kTripSubSectionSB),
                   const SizedBox(height: 12),
                   InputField(
                     type: CustomFieldType.text,
-                    hint: 'Enter your subject',
+                    hint: 'enterYourSubject'.tr(),
                     controller: _subjectController,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 28),
-                  Text('Description', style: kTripSubSectionSB),
+                  Text('description'.tr(), style: kTripSubSectionSB),
                   const SizedBox(height: 12),
                   InputField(
                     type: CustomFieldType.text,
-                    hint: 'Type your description here...',
+                    hint: 'typeYourDescription'.tr(),
                     controller: _descriptionController,
                     maxLines: 6,
                   ),
@@ -187,7 +188,7 @@ class _RaiseTicketPageState extends ConsumerState<RaiseTicketPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(20, 8, 20, bottomInset + 16),
             child: primaryButton(
-              label: 'Submit',
+              label: 'submit'.tr(),
               onPressed: _isSubmitting ? null : _submit,
               isLoading: _isSubmitting,
               buttonColor: kTripCtaBlue,

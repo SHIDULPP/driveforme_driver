@@ -1,6 +1,7 @@
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class VerifiedBadge extends StatelessWidget {
@@ -29,7 +30,7 @@ class VerifiedBadge extends StatelessWidget {
           ),
           SizedBox(width: context.rs(4)),
           Text(
-            'Verified',
+            'verified'.tr(),
             style: kStyle(
               kSemiBold,
               compact ? kSize11 : kSize12,
@@ -67,7 +68,7 @@ class SecureBadge extends StatelessWidget {
           ),
           SizedBox(width: context.rs(4)),
           Text(
-            'Secure and safe',
+            'secureAndSafe'.tr(),
             style: kStyle(
               kMedium,
               kSize11,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -60,13 +61,13 @@ class MediaPickerDialog extends StatelessWidget {
           if (!onlyVideo) ...[
             _option(
               context,
-              "Camera",
+              'camera'.tr(),
               Icons.camera_alt_rounded,
               () => _pickFromCamera(context),
             ),
             _option(
               context,
-              "Gallery",
+              'gallery'.tr(),
               Icons.photo_library_rounded,
               () => _pickFromGallery(context),
             ),
@@ -74,13 +75,13 @@ class MediaPickerDialog extends StatelessWidget {
           if (allowVideo || onlyVideo) ...[
             _option(
               context,
-              "Video Camera",
+              'videoCamera'.tr(),
               Icons.videocam_rounded,
               () => _pickVideo(context, source: ImageSource.camera),
             ),
             _option(
               context,
-              "Video Gallery",
+              'videoGallery'.tr(),
               Icons.video_collection_rounded,
               () => _pickVideo(context, source: ImageSource.gallery),
             ),
@@ -88,7 +89,7 @@ class MediaPickerDialog extends StatelessWidget {
           if (showDocument)
             _option(
               context,
-              "Document",
+              'document'.tr(),
               Icons.insert_drive_file_rounded,
               () => _pickDocument(context),
             ),

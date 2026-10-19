@@ -6,11 +6,11 @@ import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/earning_pages/wallet_recharge_sheet.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 
 enum _EarningsSection { wallet, earnings }
 
@@ -110,11 +110,11 @@ double _lastWeekEarnings(WalletDetailsModel wallet) {
 
 String? _weekTrendLabel(double thisWeek, double lastWeek) {
   if (thisWeek == 0 && lastWeek == 0) return null;
-  if (lastWeek == 0) return '↑ New earnings this week';
+  if (lastWeek == 0) return 'newEarningsThisWeek'.tr();
   final pct = ((thisWeek - lastWeek) / lastWeek * 100).round();
-  if (pct > 0) return '↑ $pct% higher than last week';
-  if (pct < 0) return '↓ ${pct.abs()}% lower than last week';
-  return 'Same as last week';
+  if (pct > 0) return 'higherThanLastWeek'.tr(args: ['$pct']);
+  if (pct < 0) return 'lowerThanLastWeek'.tr(args: ['${pct.abs()}']);
+  return 'sameAsLastWeek'.tr();
 }
 
 List<WalletTransactionModel> _withdrawalTransactions(
@@ -163,7 +163,7 @@ class _EarningsHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Your Wallet Balance',
+                  'yourWalletBalance'.tr(),
                   style: kEarningsBalanceLabelR.copyWith(
                     color: kWhite.withValues(alpha: 0.72),
                   ),
@@ -188,7 +188,7 @@ class _EarningsHeader extends StatelessWidget {
                           const Icon(Icons.add, color: kWhite, size: 15),
                           const SizedBox(width: 3),
                           Text(
-                            'Add Balance',
+                            'addBalance'.tr(),
                             style: kStyle(
                               kMedium,
                               kSize12,
@@ -253,7 +253,7 @@ class _EarningsSegmentedTabs extends StatelessWidget {
           children: [
             Expanded(
               child: _SegmentTab(
-                label: 'Wallet',
+                label: 'wallet'.tr(),
                 icon: _SegmentIcon.wallet,
                 isSelected: selected == _EarningsSection.wallet,
                 onTap: () => onChanged(_EarningsSection.wallet),
@@ -261,7 +261,7 @@ class _EarningsSegmentedTabs extends StatelessWidget {
             ),
             Expanded(
               child: _SegmentTab(
-                label: 'Earnings',
+                label: 'earnings'.tr(),
                 icon: _SegmentIcon.earnings,
                 isSelected: selected == _EarningsSection.earnings,
                 onTap: () => onChanged(_EarningsSection.earnings),
@@ -360,7 +360,7 @@ class _WalletTabContent extends StatelessWidget {
             Expanded(
               child: _StatSummaryCard(
                 value: formatRupeeStat(wallet.summary.totalCredits),
-                label: 'Total Credits',
+                label: 'totalCredits'.tr(),
                 iconAsset: 'assets/pngs/totalcredits.png',
                 backgroundColor: kEarningsCardPurpleBg,
                 valueColor: kEarningsStatValueBlue,
@@ -370,7 +370,7 @@ class _WalletTabContent extends StatelessWidget {
             Expanded(
               child: _StatSummaryCard(
                 value: formatRupeeStat(wallet.summary.totalDebits),
-                label: 'Total Debits',
+                label: 'totalDebits'.tr(),
                 iconAsset: 'assets/pngs/totaldebits.png',
                 backgroundColor: kEarningsCardBlueBg,
                 valueColor: kEarningsStatValueBlue,
@@ -380,7 +380,7 @@ class _WalletTabContent extends StatelessWidget {
             Expanded(
               child: _StatSummaryCard(
                 value: formatRupeeStat(wallet.walletBalance),
-                label: 'Current Balance',
+                label: 'currentBalance'.tr(),
                 iconAsset: 'assets/pngs/currentbalance.png',
                 backgroundColor: kEarningsCardGreenBg,
                 valueColor: kEarningsStatValueBlue,
@@ -390,7 +390,7 @@ class _WalletTabContent extends StatelessWidget {
         ),
         SizedBox(height: context.rs(18)),
         _SectionHeader(
-          title: 'Recent Transactions',
+          title: 'recentTransactions'.tr(),
           onViewAll: wallet.transactions.isEmpty ? null : () {},
         ),
         SizedBox(height: context.rs(8)),
@@ -405,7 +405,15 @@ class _EarningsTabContent extends ConsumerWidget {
 
   final WalletDetailsModel wallet;
 
-  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  List<String> get _dayLabels => [
+        'weekdayMon'.tr(),
+        'weekdayTue'.tr(),
+        'weekdayWed'.tr(),
+        'weekdayThu'.tr(),
+        'weekdayFri'.tr(),
+        'weekdaySat'.tr(),
+        'weekdaySun'.tr(),
+      ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -444,7 +452,7 @@ class _EarningsTabContent extends ConsumerWidget {
             Expanded(
               child: _StatSummaryCard(
                 value: formatRupeeStat(wallet.totalTripEarnings),
-                label: 'Total Earned',
+                label: 'totalEarned'.tr(),
                 iconAsset: 'assets/pngs/totalearnerd.png',
                 backgroundColor: kEarningsCardPurpleBg,
                 valueColor: kEarningsCardPurpleValue,
@@ -454,7 +462,7 @@ class _EarningsTabContent extends ConsumerWidget {
             Expanded(
               child: _StatSummaryCard(
                 value: rating,
-                label: 'Rating',
+                label: 'rating'.tr(),
                 iconAsset: 'assets/pngs/rating.png',
                 backgroundColor: kEarningsCardYellowBg,
                 valueColor: kEarningsCardOrangeValue,
@@ -464,7 +472,7 @@ class _EarningsTabContent extends ConsumerWidget {
             Expanded(
               child: _StatSummaryCard(
                 value: completedTrips,
-                label: 'Completed Trips',
+                label: 'completedTrips'.tr(),
                 iconAsset: 'assets/pngs/totaltrips.png',
                 backgroundColor: kEarningsCardGreenBg,
                 valueColor: kEarningsCardGreenValue,
@@ -485,7 +493,7 @@ class _EarningsTabContent extends ConsumerWidget {
         _AvailableEarningsCard(amount: wallet.totalTripEarnings),
         SizedBox(height: context.rs(18)),
         _SectionHeader(
-          title: 'Recent Withdrawals',
+          title: 'recentWithdrawals'.tr(),
           onViewAll: withdrawals.isEmpty ? null : () {},
         ),
         SizedBox(height: context.rs(8)),
@@ -594,7 +602,7 @@ class _WeeklyEarningsChart extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'This Week Earnings',
+                  'thisWeekEarnings'.tr(),
                   style: kEarningsSectionTitleSB,
                 ),
               ),
@@ -660,7 +668,7 @@ class _WeekFilterChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('This week', style: kCaption12R.copyWith(color: kTextColor)),
+          Text('thisWeek'.tr(), style: kCaption12R.copyWith(color: kTextColor)),
           SizedBox(width: context.rs(4)),
           Icon(
             Icons.keyboard_arrow_down_rounded,
@@ -748,7 +756,7 @@ class _AvailableEarningsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Available Earnings', style: kEarningsSectionTitleSB),
+          Text('availableEarnings'.tr(), style: kEarningsSectionTitleSB),
           SizedBox(height: context.rs(10)),
           Container(
             padding: EdgeInsets.fromLTRB(
@@ -780,7 +788,7 @@ class _AvailableEarningsCard extends StatelessWidget {
                       ),
                       SizedBox(height: context.rs(4)),
                       Text(
-                        'Withdraw anytime to your bank',
+                        'withdrawAnytimeToBank'.tr(),
                         style: kCaption11R.copyWith(color: kMutedText),
                       ),
                     ],
@@ -811,7 +819,7 @@ class _AvailableEarningsCard extends StatelessWidget {
                             ),
                             SizedBox(width: context.rs(4)),
                             Text(
-                              'Withdraw Earnings',
+                              'withdrawEarnings'.tr(),
                               style: kStyle(
                                 kMedium,
                                 kSize12,
@@ -849,7 +857,7 @@ class _SectionHeader extends StatelessWidget {
           GestureDetector(
             onTap: onViewAll,
             behavior: HitTestBehavior.opaque,
-            child: Text('View All', style: kEarningsViewAllM),
+            child: Text('viewAll'.tr(), style: kEarningsViewAllM),
           ),
       ],
     );
@@ -864,7 +872,7 @@ class _TransactionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
-      return _EmptyListCard(message: 'No transactions yet');
+      return _EmptyListCard(message: 'noTransactionsYet'.tr());
     }
 
     return Container(
@@ -903,7 +911,7 @@ class _WithdrawalsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (withdrawals.isEmpty) {
-      return _EmptyListCard(message: 'No withdrawals yet');
+      return _EmptyListCard(message: 'noWithdrawalsYet'.tr());
     }
 
     return Container(
@@ -1041,8 +1049,8 @@ class _WithdrawalTile extends StatelessWidget {
 
   String get _statusLabel {
     final status = transaction.status.toLowerCase();
-    if (status == 'failed') return 'Failed';
-    return 'Completed';
+    if (status == 'failed') return 'statusFailed'.tr();
+    return 'statusCompleted'.tr();
   }
 
   Color get _statusColor {
@@ -1150,7 +1158,7 @@ class _WalletErrorState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Could not load wallet',
+              'couldNotLoadWallet'.tr(),
               style: kCaption14B,
               textAlign: TextAlign.center,
             ),
@@ -1161,7 +1169,7 @@ class _WalletErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 14),
-            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+            OutlinedButton(onPressed: onRetry, child: Text('retry'.tr())),
           ],
         ),
       ),

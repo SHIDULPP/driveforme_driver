@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/verified_badge.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class BankLogoAvatar extends StatelessWidget {
@@ -114,7 +115,7 @@ class BankAccountCard extends StatelessWidget {
                         onTap: onChange,
                         behavior: HitTestBehavior.opaque,
                         child: Text(
-                          'Change >',
+                          'change'.tr(),
                           style: kStyle(
                             kMedium,
                             kSize13,

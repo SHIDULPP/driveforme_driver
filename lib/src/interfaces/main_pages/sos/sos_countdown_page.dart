@@ -7,6 +7,7 @@ import 'package:DriveFormeDriver/src/data/models/sos_model.dart';
 import 'package:DriveFormeDriver/src/data/services/driver_location_service.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/sos/sos_shared.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -78,7 +79,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
     if (!response.success || response.data == null) {
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message ?? 'Failed to send SOS alert.')),
+        SnackBar(content: Text(response.message ?? 'failedToSendSos'.tr())),
       );
       return;
     }
@@ -153,7 +154,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                                 ),
                                 SizedBox(height: maxH * 0.04),
                                 Text(
-                                  'Emergency SOS',
+                                  'emergencySos'.tr(),
                                   textAlign: TextAlign.center,
                                   style: kStyle(
                                     kSemiBold,
@@ -175,12 +176,11 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                                         color: kWhite,
                                         height: 1.3,
                                       ),
-                                      children: const [
+                                      children: [
                                         TextSpan(
-                                          text:
-                                              'Calling emergency services and notifying ',
+                                          text: 'callingEmergencyNotifying'.tr(),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: 'Drive4me',
                                           style: TextStyle(
                                             fontWeight: kMedium,
@@ -220,7 +220,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                                             ),
                                           ),
                                           Text(
-                                            'Seconds',
+                                            'seconds'.tr(),
                                             style: kStyle(
                                               kRegular,
                                               15,
@@ -280,7 +280,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Share your location',
+                                  'shareYourLocation'.tr(),
                                   style: kStyle(
                                     kSemiBold,
                                     kSize15,
@@ -289,7 +289,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  widget.locationLabel,
+                                  localizeSosLocationLabel(widget.locationLabel),
                                   style: kStyle(
                                     kRegular,
                                     kSize13,
@@ -305,7 +305,7 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'WHAT HAPPENS NOW',
+                    'whatHappensNow'.tr(),
                     style: kStyle(
                       kSemiBold,
                       kSize12,
@@ -314,20 +314,19 @@ class _SosCountdownPageState extends ConsumerState<SosCountdownPage> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const SosWhatHappensStep(
+                  SosWhatHappensStep(
                     step: 1,
-                    text:
-                        'Emergency services are notified with your GPS location.',
+                    text: 'emergencyGpsNotified'.tr(),
                   ),
                   const SizedBox(height: 14),
-                  const SosWhatHappensStep(
+                  SosWhatHappensStep(
                     step: 2,
-                    text: 'Drive4me support team is alerted immediately.',
+                    text: 'drive4meSupportAlerted'.tr(),
                   ),
                   const SizedBox(height: 14),
-                  const SosWhatHappensStep(
+                  SosWhatHappensStep(
                     step: 3,
-                    text: 'Vehicle owner is notified of the emergency.',
+                    text: 'vehicleOwnerNotifiedEmergency'.tr(),
                   ),
                 ],
               ),

@@ -3,6 +3,7 @@ import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/sos/sos_shared.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class SosSelectPage extends StatelessWidget {
@@ -20,6 +21,7 @@ class SosSelectPage extends StatelessWidget {
       'sos_countdown',
       arguments: {
         'locationLabel': locationLabel,
+        // Keep English title for API; UI cards already use titleKey.tr().
         'sosType': option.title,
         'tripId': tripId,
         'pickupAddress': locationLabel,
@@ -61,12 +63,12 @@ class SosSelectPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Emergency SOS',
+                            'emergencySos'.tr(),
                             style: kStyle(kSemiBold, kSize26, color: kWhite),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Select the type of emergency',
+                            'selectEmergencyType'.tr(),
                             style: kStyle(kRegular, kSize15, color: kWhite),
                           ),
                         ],
@@ -75,7 +77,7 @@ class SosSelectPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 18),
-                SosLocationPill(text: locationLabel),
+                SosLocationPill(text: localizeSosLocationLabel(locationLabel)),
               ],
             ),
           ),
@@ -86,7 +88,7 @@ class SosSelectPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'SELECT EMERGENCY TYPE',
+                    'selectEmergencyTypeCaps'.tr(),
                     style: kStyle(
                       kSemiBold,
                       kSize12,
@@ -127,7 +129,7 @@ class SosSelectPage extends StatelessWidget {
                           const Icon(Icons.phone, color: kWhite, size: 22),
                           const SizedBox(width: 10),
                           Text(
-                            'Call 112 - Emergency Services',
+                            'call112EmergencyServices'.tr(),
                             style: kStyle(kSemiBold, kSize16, color: kWhite),
                           ),
                         ],
@@ -137,7 +139,7 @@ class SosSelectPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Your location is automatically shared with call',
+                  'locationSharedWithCall'.tr(),
                   textAlign: TextAlign.center,
                   style: kStyle(kRegular, kSize12, color: kMutedText),
                 ),

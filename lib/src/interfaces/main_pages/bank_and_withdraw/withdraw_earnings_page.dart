@@ -9,6 +9,7 @@ import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/ava
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdrawal_list_tile.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -58,7 +59,7 @@ class _WithdrawEarningsPageState extends ConsumerState<WithdrawEarningsPage> {
     final hasBank = flow.hasBankAccount;
 
     return WithdrawScaffold(
-      title: 'Withdraw Earnings',
+      title: 'withdrawEarnings'.tr(),
       showHelp: true,
       body: ListView(
         padding: EdgeInsets.fromLTRB(
@@ -85,7 +86,9 @@ class _WithdrawEarningsPageState extends ConsumerState<WithdrawEarningsPage> {
           context.rs(16),
         ),
         child: primaryButton(
-          label: hasBank ? 'Withdraw Earnings' : 'Add bank Account',
+          label: hasBank
+              ? 'withdrawEarnings'.tr()
+              : 'addBankAccountButton'.tr(),
           buttonColor: kBrandBlue,
           icon: hasBank
               ? null
@@ -133,7 +136,7 @@ class _WithdrawalsSection extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Withdrawals',
+                    'withdrawals'.tr(),
                     style: kEarningsSectionTitleSB,
                   ),
                 ),
@@ -150,7 +153,7 @@ class _WithdrawalsSection extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'This week',
+                        'thisWeek'.tr(),
                         style: kCaption13R.copyWith(color: kTextColor),
                       ),
                       const SizedBox(width: 4),

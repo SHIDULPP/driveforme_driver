@@ -9,6 +9,7 @@ import 'package:DriveFormeDriver/src/data/services/razorpay_checkout_service.dar
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_amount_field.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -40,9 +41,9 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   double? _selectedAmount;
 
   _RechargeStep _step = _RechargeStep.amount;
-  String _processingLabel = 'Processing Payment';
+  late String _processingLabel = 'processingPayment'.tr();
   double _confirmedAmount = 0;
-  String _failureMessage = 'Something went wrong with your payment.';
+  late String _failureMessage = 'paymentSomethingWrong'.tr();
 
   @override
   void dispose() {
@@ -61,13 +62,13 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
   Future<void> _submitRecharge() async {
     final amount = _rechargeAmount;
     if (amount == null || amount <= 0) {
-      _showMessage('Enter a valid recharge amount.');
+      _showMessage('enterValidRechargeAmount'.tr());
       return;
     }
 
     setState(() {
       _confirmedAmount = amount;
-      _processingLabel = 'Processing Payment';
+      _processingLabel = 'processingPayment'.tr();
       _step = _RechargeStep.processing;
     });
     ref.read(loadingProvider.notifier).startLoading();
@@ -89,7 +90,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     if (!mounted) return;
 
     if (!response.success) {
-      _goToFailed(response.message ?? 'Recharge failed.');
+      _goToFailed(response.message ?? 'rechargeFailed'.tr());
       return;
     }
 
@@ -106,7 +107,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     if (!mounted) return;
 
     if (!orderResponse.success || orderResponse.data == null) {
-      _goToFailed(orderResponse.message ?? 'Failed to start payment.');
+      _goToFailed(orderResponse.message ?? 'failedToStartPayment'.tr());
       return;
     }
 
@@ -143,7 +144,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     required double amount,
   }) async {
     if (!mounted) return;
-    setState(() => _processingLabel = 'Verifying Payment');
+    setState(() => _processingLabel = 'verifyingPayment'.tr());
     ref.read(loadingProvider.notifier).startLoading();
 
     final verifyResponse = await ref
@@ -159,7 +160,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     if (!mounted) return;
 
     if (!verifyResponse.success) {
-      _goToFailed(verifyResponse.message ?? 'Payment verification failed.');
+      _goToFailed(verifyResponse.message ?? 'paymentVerificationFailed'.tr());
       return;
     }
 
@@ -173,7 +174,7 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
     final message = response.message?.trim();
     _goToFailed(
       message == null || message.isEmpty
-          ? 'Payment cancelled or failed.'
+          ? 'paymentCancelledOrFailed'.tr()
           : message,
     );
   }
@@ -252,17 +253,17 @@ class _WalletRechargeSheetState extends ConsumerState<WalletRechargeSheet> {
                 _RechargeStep.success => _ResultStep(
                   key: const ValueKey('success'),
                   isSuccess: true,
-                  title: '${formatRupee(_confirmedAmount)} Added!',
-                  message: 'Your wallet balance has been updated.',
-                  primaryLabel: 'Done',
+                  title: 'amountAdded'.tr(args: [formatRupee(_confirmedAmount)]),
+                  message: 'walletBalanceUpdated'.tr(),
+                  primaryLabel: 'done'.tr(),
                   onPrimary: () => Navigator.of(context).pop(),
                 ),
                 _RechargeStep.failed => _ResultStep(
                   key: const ValueKey('failed'),
                   isSuccess: false,
-                  title: 'Payment Failed',
+                  title: 'paymentFailed'.tr(),
                   message: _failureMessage,
-                  primaryLabel: 'Try Again',
+                  primaryLabel: 'tryAgain'.tr(),
                   onPrimary: _retry,
                   onCancel: () => Navigator.of(context).pop(),
                 ),
@@ -302,18 +303,18 @@ class _AmountStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Add Balance',
+          'addBalance'.tr(),
           style: kStyle(kSemiBold, kSize20, color: kTextColor),
         ),
         SizedBox(height: context.rs(6)),
         Text(
           usesRazorpay
-              ? 'Add money securely via UPI, cards, netbanking & more.'
-              : 'Razorpay is not configured. This recharge credits your wallet instantly.',
+              ? 'addMoneySecurely'.tr()
+              : 'razorpayNotConfigured'.tr(),
           style: kCaption13R.copyWith(color: kMutedText, height: 1.35),
         ),
         SizedBox(height: context.rs(20)),
-        Text('Enter Amount', style: kEarningsSectionTitleSB),
+        Text('enterAmount'.tr(), style: kEarningsSectionTitleSB),
         SizedBox(height: context.rs(10)),
         WithdrawAmountField(
           controller: amountController,
@@ -354,7 +355,7 @@ class _AmountStep extends StatelessWidget {
                 SizedBox(width: context.rs(10)),
                 Expanded(
                   child: Text(
-                    'Secured by Razorpay — UPI, cards, netbanking & more',
+                    'securedByRazorpay'.tr(),
                     style: kCaption12R.copyWith(
                       color: kSecondaryTextColor,
                       height: 1.3,
@@ -367,7 +368,7 @@ class _AmountStep extends StatelessWidget {
           SizedBox(height: context.rs(18)),
         ],
         primaryButton(
-          label: usesRazorpay ? 'Add Money' : 'Recharge Wallet',
+          label: usesRazorpay ? 'addMoney'.tr() : 'rechargeWallet'.tr(),
           buttonColor: kBrandBlue,
           icon: const Icon(
             Icons.account_balance_wallet_outlined,
@@ -409,7 +410,7 @@ class _ProcessingStep extends StatelessWidget {
           ),
           SizedBox(height: context.rs(6)),
           Text(
-            'Please wait, do not close this screen',
+            'pleaseWaitDoNotClose'.tr(),
             style: kCaption13R.copyWith(color: kMutedText),
           ),
         ],
@@ -481,7 +482,7 @@ class _ResultStep extends StatelessWidget {
           TextButton(
             onPressed: onCancel,
             child: Text(
-              'Cancel',
+              'cancel'.tr(),
               style: kStyle(kMedium, kSize15, color: kMutedText),
             ),
           ),

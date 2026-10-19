@@ -10,10 +10,10 @@ import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/dropdown.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/input_field.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 
 const _kLicenseCategories = [
   'LMV (Light Motor Vehicle)',
@@ -24,6 +24,38 @@ const _kLicenseCategories = [
 ];
 
 const _kTransmissionTypes = ['Manual', 'Automatic', 'Both'];
+
+
+String _licenseCategoryLabel(String category) {
+  switch (category) {
+    case 'LMV (Light Motor Vehicle)':
+      return 'licenseCatLmv'.tr();
+    case 'MCWG (Motorcycle with Gear)':
+      return 'licenseCatMcwg'.tr();
+    case 'MCWOG (Motorcycle without Gear)':
+      return 'licenseCatMcwog'.tr();
+    case 'HMV (Heavy Motor Vehicle)':
+      return 'licenseCatHmv'.tr();
+    case 'Transport Vehicle':
+      return 'licenseCatTransport'.tr();
+    default:
+      return category;
+  }
+}
+
+String _transmissionLabel(String value) {
+  switch (value) {
+    case 'Manual':
+      return 'transmissionManual'.tr();
+    case 'Automatic':
+      return 'transmissionAutomatic'.tr();
+    case 'Both':
+      return 'transmissionBoth'.tr();
+    default:
+      return value;
+  }
+}
+
 
 class DrivingLicenseUploadPage extends ConsumerStatefulWidget {
   final DocumentUploadResult? initialData;
@@ -187,7 +219,7 @@ class _DrivingLicenseUploadPageState
                     const AppBackButton(),
                     const SizedBox(height: 28),
                     Text(
-                      'Upload License',
+                      'uploadLicense'.tr(),
                       style: kStyle(
                         kMedium,
                         kSize30,
@@ -197,7 +229,7 @@ class _DrivingLicenseUploadPageState
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Make sure all details are clearly visible',
+                      'makeSureDetailsVisible'.tr(),
                       style: kCaption14R.copyWith(
                         color: kSecondaryTextColor,
                         height: 1.4,
@@ -219,50 +251,50 @@ class _DrivingLicenseUploadPageState
                             onTapUploadArea: () => _pickAndUpload(),
                           ),
                     const SizedBox(height: 24),
-                    const _RequiredFieldLabel(label: 'License Number'),
+                    _RequiredFieldLabel(label: 'licenseNumber'.tr()),
                     const SizedBox(height: 8),
                     InputField(
                       type: CustomFieldType.text,
-                      hint: 'eg: KL0720110001234',
+                      hint: 'licenseNumberHint'.tr(),
                       controller: _licenseNumberController,
                       maxLength: 16,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'License number is required';
+                          return 'licenseNumberRequired'.tr();
                         }
                         final clean = v.replaceAll(RegExp(r'\s+'), '');
                         if (clean.length > 16) {
-                          return 'License number cannot exceed 16 characters';
+                          return 'licenseNumberMaxLength'.tr();
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 20),
-                    const _RequiredFieldLabel(label: 'License Category'),
+                    _RequiredFieldLabel(label: 'licenseCategory'.tr()),
                     const SizedBox(height: 8),
                     _CategorySelectorField(
                       value: _licenseCategory,
                       onTap: _openLicenseCategorySheet,
                     ),
                     const SizedBox(height: 20),
-                    const _RequiredFieldLabel(label: 'Expiry Date'),
+                    _RequiredFieldLabel(label: 'expiryDate'.tr()),
                     const SizedBox(height: 8),
                     InputField(
                       type: CustomFieldType.date,
-                      hint: 'DD/MM/YY',
+                      hint: 'expiryDateHint'.tr(),
                       controller: _expiryDateController,
                       firstDate: DateTime.now(),
                       lastDate: DateTime(2040, 12, 31),
                       onDateSelected: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 20),
-                    const _RequiredFieldLabel(label: 'Transmission Type'),
+                    _RequiredFieldLabel(label: 'transmissionType'.tr()),
                     const SizedBox(height: 8),
                     AnimatedDropdown<String>(
-                      hint: 'Select',
+                      hint: 'select'.tr(),
                       value: _transmissionType,
                       items: _kTransmissionTypes,
-                      itemLabel: (value) => value,
+                      itemLabel: _transmissionLabel,
                       onChanged: (value) {
                         setState(() => _transmissionType = value);
                       },
@@ -275,7 +307,7 @@ class _DrivingLicenseUploadPageState
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               child: primaryButton(
-                label: 'Add License',
+                label: 'addLicense'.tr(),
                 buttonHeight: 56,
                 fontSize: kSize16,
                 buttonColor: _canSubmit ? kBrandBlue : kTripCloseBtnBg,
@@ -329,7 +361,7 @@ class _CategorySelectorField extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                value ?? 'Select',
+                value != null ? _licenseCategoryLabel(value!) : 'select'.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: kStyle(
@@ -393,7 +425,7 @@ class _LicenseCategoryBottomSheetState
         children: [
           Row(
             children: [
-              Expanded(child: Text('Category', style: kTripSectionTitleSB)),
+              Expanded(child: Text('category'.tr(), style: kTripSectionTitleSB)),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
@@ -430,7 +462,7 @@ class _LicenseCategoryBottomSheetState
                     ),
                   ),
                   child: Text(
-                    category,
+                    _licenseCategoryLabel(category),
                     style: kCaption14M.copyWith(
                       color: kTextColor,
                       fontWeight: isSelected ? kSemiBold : kMedium,
@@ -442,7 +474,7 @@ class _LicenseCategoryBottomSheetState
           }),
           const SizedBox(height: 10),
           primaryButton(
-            label: 'Confirm Category',
+            label: 'confirmCategory'.tr(),
             buttonHeight: 56,
             fontSize: kSize16,
             buttonColor: kBrandBlue,
@@ -526,14 +558,14 @@ class _LicenseUploadCard extends StatelessWidget {
                   const SizedBox(height: 14),
                   Text(
                     isUploading
-                        ? 'Uploading image...'
-                        : 'Tap to upload your image',
+                        ? 'uploadingImage'.tr()
+                        : 'tapToUploadYourImage'.tr(),
                     textAlign: TextAlign.center,
                     style: kCaption14B,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Supported formats JPEG, PNG, upto 50MB',
+                    'supportedFormatsUpload'.tr(),
                     textAlign: TextAlign.center,
                     style: kCaption12R.copyWith(color: kMutedText),
                   ),
@@ -546,7 +578,7 @@ class _LicenseUploadCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Take Photo',
+                  label: 'takePhoto'.tr(),
                   isPrimary: true,
                   onTap: isUploading ? null : onTakePhoto,
                 ),
@@ -554,7 +586,7 @@ class _LicenseUploadCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Upload from Gallery',
+                  label: 'uploadFromGallery'.tr(),
                   isPrimary: false,
                   onTap: isUploading ? null : onUploadFromGallery,
                 ),
@@ -609,7 +641,7 @@ class _LicensePreviewCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Retake Photo',
+                  label: 'retakePhoto'.tr(),
                   isPrimary: false,
                   onTap: onRetake,
                 ),
@@ -617,7 +649,7 @@ class _LicensePreviewCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Replace',
+                  label: 'replace'.tr(),
                   isPrimary: false,
                   onTap: onReplace,
                 ),

@@ -6,6 +6,7 @@ import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/data/models/bank_account_ui_model.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/bank_account_card.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class BankAddedSuccessPage extends StatelessWidget {
@@ -16,7 +17,7 @@ class BankAddedSuccessPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WithdrawScaffold(
-      title: 'Bank Account Added',
+      title: 'bankAccountAdded'.tr(),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
           context.horizontalPadding,
@@ -43,13 +44,13 @@ class BankAddedSuccessPage extends StatelessWidget {
           ),
           SizedBox(height: context.rs(18)),
           Text(
-            'Bank Account Added Successfully!',
+            'bankAccountAddedSuccessfully'.tr(),
             style: kStyle(kSemiBold, kSize20, color: kTextColor, height: 1.25),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: context.rs(8)),
           Text(
-            'Your bank account has been verified and is ready to receive your earnings.',
+            'bankVerifiedReady'.tr(),
             style: kCaption14R.copyWith(
               color: kSecondaryTextColor,
               height: 1.4,
@@ -75,7 +76,7 @@ class BankAddedSuccessPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             primaryButton(
-              label: 'Withdraw Earnings',
+              label: 'withdrawEarnings'.tr(),
               buttonColor: kBrandBlue,
               onPressed: () {
                 Navigator.of(context).popUntil(
@@ -95,7 +96,7 @@ class BankAddedSuccessPage extends StatelessWidget {
                 );
               },
               child: Text(
-                'Go Back',
+                'goBack'.tr(),
                 style: kStyle(kMedium, kSize15, color: kBrandBlue),
               ),
             ),

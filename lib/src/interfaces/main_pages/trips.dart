@@ -8,6 +8,7 @@ import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_navigation.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/trip_card.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,7 +114,7 @@ class _TripsPageState extends ConsumerState<TripsPage> {
                         TextButton(
                           onPressed: () =>
                               ref.invalidate(tripHistoryProvider(_selectedTab)),
-                          child: const Text('Retry'),
+                          child: Text('retry'.tr()),
                         ),
                       ],
                     ),
@@ -123,7 +124,7 @@ class _TripsPageState extends ConsumerState<TripsPage> {
                   if (trips.isEmpty) {
                     return Center(
                       child: Text(
-                        'No ${_labelFor(_selectedTab).toLowerCase()} trips',
+                        'noTripsEmpty'.tr(args: [_labelFor(_selectedTab)]),
                         style: kCaption14R.copyWith(color: kMutedText),
                       ),
                     );
@@ -187,13 +188,13 @@ class _TripsPageState extends ConsumerState<TripsPage> {
   String _labelFor(TripHistoryTab tab) {
     switch (tab) {
       case TripHistoryTab.ongoing:
-        return 'Ongoing';
+        return 'tripsTabOngoing'.tr();
       case TripHistoryTab.upcoming:
-        return 'Upcoming';
+        return 'tripsTabUpcoming'.tr();
       case TripHistoryTab.completed:
-        return 'Completed';
+        return 'tripsTabCompleted'.tr();
       case TripHistoryTab.cancelled:
-        return 'Cancelled';
+        return 'tripsTabCancelled'.tr();
     }
   }
 }
@@ -257,13 +258,13 @@ class _TripsTabBar extends StatelessWidget {
   String _labelFor(TripHistoryTab tab) {
     switch (tab) {
       case TripHistoryTab.ongoing:
-        return 'Ongoing';
+        return 'tripsTabOngoing'.tr();
       case TripHistoryTab.upcoming:
-        return 'Upcoming';
+        return 'tripsTabUpcoming'.tr();
       case TripHistoryTab.completed:
-        return 'Completed';
+        return 'tripsTabCompleted'.tr();
       case TripHistoryTab.cancelled:
-        return 'Cancelled';
+        return 'tripsTabCancelled'.tr();
     }
   }
 }

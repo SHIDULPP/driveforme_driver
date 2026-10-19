@@ -14,6 +14,7 @@ import 'package:DriveFormeDriver/src/interfaces/animations/animated_widget_wrapp
     as anim;
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,7 +71,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                 animationType: anim.AppAnimationType.fadeSlideInFromLeft,
                 duration: anim.AnimationDuration.normal,
                 child: Text(
-                  'Verify Your Number',
+                  'verifyYourNumber'.tr(),
                   style: kHeadTitleR,
                 ),
               ),
@@ -143,13 +144,13 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                                 }
                                 final number = value?.trim() ?? '';
                                 if (number.isEmpty) {
-                                  return 'Mobile number is required';
+                                  return 'mobileNumberRequired'.tr();
                                 }
                                 if (!RegExp(r'^[0-9]+$').hasMatch(number)) {
-                                  return 'Mobile number must contain only digits';
+                                  return 'mobileNumberDigitsOnly'.tr();
                                 }
                                 if (number.length != 10) {
-                                  return 'Mobile number must be exactly 10 digits';
+                                  return 'mobileNumberMustBe10Digits'.tr();
                                 }
                                 return null;
                               },
@@ -159,7 +160,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
-                                hintText: 'Mobile Number',
+                                hintText: 'mobileNumber'.tr(),
                                 hintStyle: kLoginPhoneFieldR,
                                 enabledBorder: const UnderlineInputBorder(
                                   borderSide: BorderSide(
@@ -200,7 +201,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
                     duration: anim.AnimationDuration.normal,
                     delayMilliseconds: 400,
                     child: primaryButton(
-                      label: 'Get OTP',
+                      label: 'getOtp'.tr(),
                       onPressed:
                           (isLoading ||
                               _mobileController.text.trim().length != 10)
@@ -223,12 +224,12 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
 
     final digits = _mobileController.text.trim();
     if (digits.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(digits)) {
-      _showMessage('Please enter a valid mobile number');
+      _showMessage('pleaseEnterValidMobile'.tr());
       return;
     }
 
     if (digits.length != 10) {
-      _showMessage('Mobile number must be exactly 10 digits');
+      _showMessage('mobileNumberMustBe10Digits'.tr());
       return;
     }
 
@@ -242,7 +243,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showMessage(response.message ?? 'Failed to send OTP');
+        _showMessage(response.message ?? 'failedToSendOtp'.tr());
         return;
       }
 
@@ -354,7 +355,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                       animationType: anim.AppAnimationType.fadeSlideInFromLeft,
                       duration: anim.AnimationDuration.normal,
                       child: Text(
-                        'Enter OTP',
+                        'enterOtp'.tr(),
                         style: kHeadTitleR,
                       ),
                     ),
@@ -368,15 +369,15 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                         text: TextSpan(
                           style: kLoginSubtitleR,
                           children: [
-                            const TextSpan(
-                              text: 'We have sent a 6 digit OTP to ',
+                            TextSpan(
+                              text: 'weSentOtpTo'.tr(),
                             ),
                             TextSpan(
                               text: _maskedPhone(),
                               style: kLoginSubtitleAccentSB,
                             ),
-                            const TextSpan(
-                              text: ' number and you can use to login',
+                            TextSpan(
+                              text: 'otpLoginSuffix'.tr(),
                             ),
                           ],
                         ),
@@ -454,7 +455,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: Text(
-                              "Didn't get SMS?",
+                              'didntGetSms'.tr(),
                               textAlign: TextAlign.center,
                               style: kLoginResendPromptM,
                             ),
@@ -465,7 +466,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                               text: TextSpan(
                                 style: kLoginResendPromptM,
                                 children: [
-                                  const TextSpan(text: 'Get a new OTP in '),
+                                  TextSpan(text: 'getNewOtpIn'.tr()),
                                   TextSpan(
                                     text:
                                         '00:${_start.toString().padLeft(2, '0')}',
@@ -478,7 +479,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                             GestureDetector(
                               onTap: _resendOtp,
                               child: Text(
-                                'Resend OTP',
+                                'resendOtp'.tr(),
                                 style: kLoginResendActionSB.copyWith(
                                   decoration: TextDecoration.underline,
                                 ),
@@ -499,7 +500,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 400,
                 child: primaryButton(
-                  label: 'Verify OTP',
+                  label: 'verifyOtp'.tr(),
                   onPressed:
                       (!isLoading && _otpController.text.trim().length == 6)
                       ? _verifyOtp
@@ -525,11 +526,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showMessage(response.message ?? 'Failed to resend OTP');
+        _showMessage(response.message ?? 'failedToResendOtp'.tr());
         return;
       }
 
-      _showMessage(response.message ?? 'OTP sent to your phone');
+      _showMessage(response.message ?? 'otpSentToPhone'.tr());
     } finally {
       ref.read(loadingProvider.notifier).stopLoading();
     }
@@ -538,7 +539,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   Future<void> _verifyOtp() async {
     final otp = _otpController.text.trim();
     if (otp.length != 6) {
-      _showMessage('Please enter the 6-digit OTP');
+      _showMessage('pleaseEnter6DigitOtp'.tr());
       return;
     }
 
@@ -551,7 +552,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showMessage(response.message ?? 'Invalid OTP');
+        _showMessage(response.message ?? 'invalidOtp'.tr());
         return;
       }
 
@@ -560,12 +561,12 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       final token = data?['token'] as String?;
 
       if (userId == null || userId.isEmpty) {
-        _showMessage('Invalid response from server');
+        _showMessage('invalidServerResponse'.tr());
         return;
       }
 
       if (token == null || token.isEmpty) {
-        _showMessage('Invalid response from server');
+        _showMessage('invalidServerResponse'.tr());
         return;
       }
 

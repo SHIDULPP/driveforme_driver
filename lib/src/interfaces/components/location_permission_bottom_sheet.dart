@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 const _kBodyGray = Color(0xFF666666);
@@ -52,7 +53,7 @@ class LocationPermissionBottomSheet extends StatelessWidget {
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
-      barrierLabel: 'Location permission',
+      barrierLabel: 'locationPermissionBarrier'.tr(),
       barrierColor: Colors.black.withValues(alpha: 0.45),
       transitionDuration: const Duration(milliseconds: 280),
       pageBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -141,8 +142,7 @@ class LocationPermissionBottomSheet extends StatelessWidget {
                   const _SheetTitle(),
                   SizedBox(height: _SheetMetrics.titleBodyGap(context)),
                   Text(
-                    'We use your location to share your position with '
-                    'passengers and receive nearby trip requests.',
+                    'locationPermissionBody'.tr(),
                     textAlign: TextAlign.center,
                     style: kStyle(
                       kRegular,
@@ -153,7 +153,7 @@ class LocationPermissionBottomSheet extends StatelessWidget {
                   ),
                   SizedBox(height: _SheetMetrics.bodyButtonGap(context)),
                   primaryButton(
-                    label: 'Enable Location',
+                    label: 'enableLocation'.tr(),
                     buttonHeight: _SheetMetrics.buttonHeight(context),
                     buttonColor: kBrandBlue,
                     labelColor: kWhite,
@@ -172,7 +172,7 @@ class LocationPermissionBottomSheet extends StatelessWidget {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        'Not Now',
+                        'notNow'.tr(),
                         style: kStyle(
                           kMedium,
                           kSize15,
@@ -234,8 +234,8 @@ class _SheetTitle extends StatelessWidget {
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text('Enable ', style: blackStyle, textAlign: TextAlign.center),
-        Text('Location Access', style: blueStyle, textAlign: TextAlign.center),
+        Text('enablePrefix'.tr(), style: blackStyle, textAlign: TextAlign.center),
+        Text('locationAccess'.tr(), style: blueStyle, textAlign: TextAlign.center),
       ],
     );
   }

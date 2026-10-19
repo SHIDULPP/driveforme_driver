@@ -10,6 +10,7 @@ import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/trip_card.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,13 +29,10 @@ class TripTicketInfo {
   final String title;
   final String description;
 
-  static const dummy = TripTicketInfo(
-    title: 'Passenger not reachable at pickup',
-    description:
-        'I reached the pickup location but the passenger was not responding '
-        'to calls or messages. I waited for more than 10 minutes. Please '
-        'advise if this should be marked as a no-show.',
-  );
+  static TripTicketInfo get dummy => TripTicketInfo(
+        title: 'noShowTicketSubject'.tr(),
+        description: 'noShowTicketBody'.tr(),
+      );
 }
 
 class TripDetailsPage extends ConsumerStatefulWidget {
@@ -106,7 +104,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Could not open navigation.')));
+    ).showSnackBar(SnackBar(content: Text('couldNotOpenNavigation'.tr())));
   }
 
   Future<void> _goToPickupFlow() async {
@@ -193,7 +191,7 @@ class _TripDetailsHeader extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              'Trip Details',
+              'tripDetails'.tr(),
               textAlign: TextAlign.center,
               style: kStyle(kSemiBold, kSize18, color: kTextColor, height: 1.2),
             ),
@@ -313,7 +311,7 @@ class _TripDetailsCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'you earn',
+                      'youEarn'.tr(),
                       style: kCaption12R.copyWith(color: kMutedText),
                     ),
                   ],
@@ -340,7 +338,7 @@ class _TripDetailsCard extends StatelessWidget {
           if (_showCountdown) ...[
             const SizedBox(height: 12),
             _CountdownRow(
-              prefix: trip.countdownPrefix ?? 'Starts in ',
+              prefix: trip.countdownPrefix ?? 'startsIn'.tr(),
               value: startsInLabel ?? trip.countdownValue ?? '',
             ),
           ],
@@ -356,7 +354,7 @@ class _TripDetailsCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Pickup time reached — you can head to pickup',
+                  'pickupTimeReached'.tr(),
                   style: kCaption13R.copyWith(
                     color: kActiveGreen,
                     fontWeight: kMedium,
@@ -371,7 +369,7 @@ class _TripDetailsCard extends StatelessWidget {
             const SizedBox(height: 14),
             Row(
               children: [
-                Text('Total Earned', style: kCaption14B),
+                Text('totalEarned'.tr(), style: kCaption14B),
                 const Spacer(),
                 Text(
                   trip.totalEarned!,
@@ -388,7 +386,7 @@ class _TripDetailsCard extends StatelessWidget {
           if (_showNavigateButton) ...[
             const SizedBox(height: 16),
             primaryButton(
-              label: 'Navigate to pickup',
+              label: 'navigateToPickup'.tr(),
               buttonHeight: 52,
               fontSize: kSize16,
               buttonColor: _kNavigateBlue,
@@ -404,7 +402,7 @@ class _TripDetailsCard extends StatelessWidget {
           if (_showGoToPickupButton) ...[
             const SizedBox(height: 10),
             primaryButton(
-              label: 'Go to pickup',
+              label: 'goToPickup'.tr(),
               buttonHeight: 52,
               fontSize: kSize16,
               buttonColor: kTripCtaBlue,
@@ -415,7 +413,7 @@ class _TripDetailsCard extends StatelessWidget {
           if (_showCancelButton) ...[
             const SizedBox(height: 10),
             primaryButton(
-              label: 'Cancel trip',
+              label: 'cancelTrip'.tr(),
               buttonHeight: 52,
               fontSize: kSize16,
               buttonColor: kWhite,
@@ -439,29 +437,29 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case TripCardStatus.upcoming:
-        return const _DotStatusBadge(
-          label: 'SCHEDULED',
+        return _DotStatusBadge(
+          label: 'badgeScheduled'.tr(),
           backgroundColor: kStatusScheduledBg,
           dotColor: kStatusScheduledText,
           textColor: kStatusScheduledText,
         );
       case TripCardStatus.completed:
-        return const _DotStatusBadge(
-          label: 'COMPLETED',
+        return _DotStatusBadge(
+          label: 'badgeCompleted'.tr(),
           backgroundColor: kStatusCompletedBg,
           dotColor: kStatusCompletedText,
           textColor: kStatusCompletedText,
         );
       case TripCardStatus.cancelled:
-        return const _DotStatusBadge(
-          label: 'CANCELLED',
+        return _DotStatusBadge(
+          label: 'badgeCancelled'.tr(),
           backgroundColor: kStatusCancelledBg,
           dotColor: kStatusCancelledText,
           textColor: kStatusCancelledText,
         );
       case TripCardStatus.ongoing:
-        return const _DotStatusBadge(
-          label: 'NOW',
+        return _DotStatusBadge(
+          label: 'badgeNow'.tr(),
           backgroundColor: kActiveGreenBg,
           dotColor: kActiveGreen,
           textColor: kActiveGreen,
@@ -766,7 +764,7 @@ class _CustomerProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayName = customerName.isNotEmpty
         ? customerName
-        : 'Vehicle owner';
+        : 'vehicleOwner'.tr();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -893,7 +891,7 @@ class _TripDetailsBottomActions extends StatelessWidget {
         children: [
           Expanded(
             child: primaryButton(
-              label: 'Invoice',
+              label: 'invoice'.tr(),
               buttonHeight: 52,
               fontSize: kSize16,
               buttonColor: _kInvoiceButtonBg,
@@ -904,7 +902,7 @@ class _TripDetailsBottomActions extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: primaryButton(
-              label: 'Raise a ticket',
+              label: 'raiseATicket'.tr(),
               buttonHeight: 52,
               fontSize: kSize16,
               buttonColor: _kNavigateBlue,
@@ -947,7 +945,7 @@ class _TripTicketCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'TICKET',
+            'ticketBadge'.tr(),
             style: kStyle(
               kMedium,
               kSize11,

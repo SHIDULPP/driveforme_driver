@@ -31,6 +31,7 @@ import 'package:DriveFormeDriver/src/interfaces/onboarding/application_rejected.
 import 'package:DriveFormeDriver/src/interfaces/onboarding/application_under_review.dart';
 import 'package:DriveFormeDriver/src/interfaces/onboarding/documents_upload.dart';
 import 'package:DriveFormeDriver/src/interfaces/onboarding/get_started.dart';
+import 'package:DriveFormeDriver/src/interfaces/onboarding/language_selection_page.dart';
 import 'package:DriveFormeDriver/src/interfaces/onboarding/login.dart';
 import 'package:DriveFormeDriver/src/interfaces/onboarding/registration.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/profile_pages/documents_page.dart';
@@ -147,6 +148,11 @@ Route<dynamic> generateRoute(RouteSettings? settings) {
   switch (settings?.name) {
     case 'Splash':
       page = const SplashScreen();
+      transitionToUse = TransitionType.fade;
+      transitionDuration = const Duration(milliseconds: 500);
+      break;
+    case 'languageSelection':
+      page = const LanguageSelectionPage();
       transitionToUse = TransitionType.fade;
       transitionDuration = const Duration(milliseconds: 500);
       break;

@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/earning.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -32,7 +33,7 @@ class WithdrawalSuccessPage extends StatelessWidget {
                 ),
                 SizedBox(height: context.rs(28)),
                 Text(
-                  'Amount',
+                  'amount'.tr(),
                   style: kCaption14R.copyWith(color: kMutedText, height: 1.2),
                 ),
                 SizedBox(height: context.rs(6)),
@@ -42,7 +43,7 @@ class WithdrawalSuccessPage extends StatelessWidget {
                 ),
                 SizedBox(height: context.rs(10)),
                 Text(
-                  'Withdrawal Success!',
+                  'withdrawalSuccess'.tr(),
                   style: kStyle(kSemiBold, kSize20, color: kTextColor, height: 1.2),
                 ),
                 const Spacer(),

@@ -4,9 +4,9 @@ import 'package:DriveFormeDriver/src/data/apis/chat_api.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/models/chat_message_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 const _chipBg = kFigmaNeutral;
 const _inputBorder = kTripBorder;
@@ -31,11 +31,11 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  static const _quickReplies = [
-    "I've Arrived",
-    "I'm on my way !",
-    "Where are you ?",
-  ];
+  List<String> get _quickReplies => [
+        'quickReplyArrived'.tr(),
+        'quickReplyOnMyWay'.tr(),
+        'quickReplyWhereAreYou'.tr(),
+      ];
 
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocus = FocusNode();
@@ -47,8 +47,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? _error;
   Timer? _pollTimer;
 
-  String get _displayName =>
-      widget.receiverName.isNotEmpty ? widget.receiverName : widget.participantName;
+  String get _displayName {
+    final name = widget.receiverName.isNotEmpty
+        ? widget.receiverName
+        : widget.participantName;
+    return name == 'Customer' ? 'customer'.tr() : name;
+  }
 
   @override
   void initState() {
@@ -71,7 +75,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = 'Chat recipient is missing.';
+          _error = 'chatRecipientMissing'.tr();
         });
       }
       return;
@@ -82,7 +86,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = 'Trip chat is only available during an active trip.';
+          _error = 'tripChatOnlyActive'.tr();
         });
       }
       return;
@@ -105,7 +109,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!response.success) {
       setState(() {
         _isLoading = false;
-        _error = response.message ?? 'Failed to load messages.';
+        _error = response.message ?? 'failedToLoadMessages'.tr();
       });
       return;
     }
@@ -151,7 +155,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     if (!response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message ?? 'Failed to send message.')),
+        SnackBar(content: Text(response.message ?? 'failedToSendMessage'.tr())),
       );
       return;
     }
@@ -207,7 +211,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onSubmitted: (_) => _sendMessage(),
                     style: kStyle(kRegular, kSize15, color: kTextColor),
                     decoration: InputDecoration(
-                      hintText: 'Type your message',
+                      hintText: 'typeYourMessage'.tr(),
                       hintStyle:
                           kStyle(kRegular, kSize15, color: kTripMutedLabel),
                       contentPadding: const EdgeInsets.symmetric(
@@ -271,7 +275,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 style: kStyle(kRegular, kSize15, color: kMutedText),
               ),
               const SizedBox(height: 12),
-              TextButton(onPressed: _loadMessages, child: const Text('Retry')),
+              TextButton(onPressed: _loadMessages, child: Text('retry'.tr())),
             ],
           ),
         ),
@@ -281,7 +285,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (_messages.isEmpty) {
       return Center(
         child: Text(
-          'No messages yet.\nSay hello to the vehicle owner.',
+          'noMessagesYet'.tr(),
           textAlign: TextAlign.center,
           style: kStyle(kRegular, kSize15, color: kTripMutedLabel, height: 1.4),
         ),

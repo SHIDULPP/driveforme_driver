@@ -3,6 +3,7 @@ import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +47,7 @@ class CashCollectedScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '$collectedAmount Collected!',
+                  'amountCollected'.tr(args: [collectedAmount]),
                   textAlign: TextAlign.center,
                   style: kStyle(
                     kSemiBold,
@@ -57,7 +58,7 @@ class CashCollectedScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Payment received Successfully',
+                  'paymentReceivedSuccessfully'.tr(),
                   textAlign: TextAlign.center,
                   style: kCaption14R.copyWith(
                     color: kWhite.withValues(alpha: 0.95),
@@ -66,7 +67,7 @@ class CashCollectedScreen extends ConsumerWidget {
                 ),
                 const Spacer(flex: 4),
                 primaryButton(
-                  label: 'Go Online for next trip',
+                  label: 'goOnlineForNextTrip'.tr(),
                   buttonHeight: 52,
                   fontSize: kSize16,
                   buttonColor: kWhite,

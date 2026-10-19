@@ -3,6 +3,7 @@ import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/verified_badge.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/earning.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class AvailableEarningsCard extends StatelessWidget {
@@ -31,7 +32,7 @@ class AvailableEarningsCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Available Earnings',
+                  'availableEarnings'.tr(),
                   style: kEarningsSectionTitleSB,
                 ),
               ),
@@ -75,7 +76,7 @@ class AvailableEarningsCard extends StatelessWidget {
                         SizedBox(width: context.rs(8)),
                         Expanded(
                           child: Text(
-                            'This amount is ready to be withdrawn to your bank account.',
+                            'availableReadyToWithdraw'.tr(),
                             style: kCaption12R.copyWith(
                               color: kSecondaryTextColor,
                               height: 1.35,

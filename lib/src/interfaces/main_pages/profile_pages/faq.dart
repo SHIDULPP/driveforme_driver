@@ -1,58 +1,25 @@
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const _kDividerColor = Color(0xFFEEEEEE);
 
 class _FaqItem {
-  const _FaqItem({required this.question, required this.answer});
+  const _FaqItem({required this.questionKey, required this.answerKey});
 
-  final String question;
-  final String answer;
+  final String questionKey;
+  final String answerKey;
 }
 
 const _kFaqItems = [
-  _FaqItem(
-    question: 'How do I go online to receive trip requests?',
-    answer:
-        'Open the Home tab and toggle "You are Offline" to online. You will '
-        'start receiving trip requests based on your selected trip '
-        'preference and location.',
-  ),
-  _FaqItem(
-    question: 'How is my fare calculated?',
-    answer:
-        'Fares are calculated based on trip distance, duration, and the '
-        'trip type (short or long trip) you accept. The estimated fare is '
-        'shown before you accept a request.',
-  ),
-  _FaqItem(
-    question: 'When do I get paid for completed trips?',
-    answer:
-        'Earnings from completed trips are added to your wallet '
-        'automatically. You can view your balance and withdraw to your '
-        'linked bank account from the Earnings tab.',
-  ),
-  _FaqItem(
-    question: 'What documents do I need to keep updated?',
-    answer:
-        'Keep your Aadhaar card, driving license, and live photo up to '
-        'date under Documents. Verified documents help you get more trip '
-        'requests.',
-  ),
-  _FaqItem(
-    question: 'Can I change my trip preference later?',
-    answer:
-        'Yes. You can switch between Short Trip and Long Trip anytime from '
-        'the Trip Preference card on your Home screen.',
-  ),
-  _FaqItem(
-    question: 'How do I contact support during a trip?',
-    answer:
-        'Use the SOS button during an active trip for emergencies, or '
-        'reach out from Help & Support for general assistance.',
-  ),
+  _FaqItem(questionKey: 'faqQGoOnline', answerKey: 'faqAGoOnline'),
+  _FaqItem(questionKey: 'faqQFare', answerKey: 'faqAFare'),
+  _FaqItem(questionKey: 'faqQPaid', answerKey: 'faqAPaid'),
+  _FaqItem(questionKey: 'faqQDocuments', answerKey: 'faqADocuments'),
+  _FaqItem(questionKey: 'faqQPreference', answerKey: 'faqAPreference'),
+  _FaqItem(questionKey: 'faqQSupport', answerKey: 'faqASupport'),
 ];
 
 class FaqPage extends StatefulWidget {
@@ -132,7 +99,7 @@ class _FaqPageHeader extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           Text(
-            'FAQ',
+            'faq'.tr(),
             style: kStyle(kMedium, kSize18, color: kTextColor, height: 1.2),
           ),
         ],
@@ -167,7 +134,7 @@ class _FaqTile extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      item.question,
+                      item.questionKey.tr(),
                       style: kStyle(
                         kMedium,
                         kSize15,
@@ -196,7 +163,7 @@ class _FaqTile extends StatelessWidget {
                 firstChild: Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
-                    item.answer,
+                    item.answerKey.tr(),
                     style: kCaption13R.copyWith(
                       color: kTripBodyMuted,
                       height: 1.45,

@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/models/user_model.dart';
 import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,19 +41,19 @@ class DocumentsPage extends ConsumerWidget {
                   error: (_, _) => Center(
                     child: TextButton(
                       onPressed: () => ref.invalidate(userProvider),
-                      child: const Text('Retry'),
+                      child: Text('retry'.tr()),
                     ),
                   ),
                   data: (user) {
                     if (user == null) {
-                      return const Center(child: Text('No profile data.'));
+                      return Center(child: Text('noProfileData'.tr()));
                     }
 
                     final docs = _documentsFor(user);
                     if (docs.isEmpty) {
                       return Center(
                         child: Text(
-                          'No documents uploaded yet.',
+                          'noDocumentsUploadedYet'.tr(),
                           style: kCaption14R.copyWith(color: kMutedText),
                         ),
                       );
@@ -92,21 +93,21 @@ class DocumentsPage extends ConsumerWidget {
     return [
       if (verification.aadhaarImageUrl.isNotEmpty)
         _DocumentItem(
-          title: 'Aadhaar Card',
+          title: 'aadhaarCard'.tr(),
           url: verification.aadhaarImageUrl,
           isVerified: isApproved,
           isPending: !isApproved && !isRejected,
         ),
       if (verification.drivingLicenseImageUrl.isNotEmpty)
         _DocumentItem(
-          title: 'Driving License',
+          title: 'drivingLicense'.tr(),
           url: verification.drivingLicenseImageUrl,
           isVerified: isApproved,
           isPending: !isApproved && !isRejected,
         ),
       if (verification.livePhotoUrl.isNotEmpty)
         _DocumentItem(
-          title: 'Live Photo',
+          title: 'livePhoto'.tr(),
           url: verification.livePhotoUrl,
           isVerified: isApproved,
           isPending: !isApproved && !isRejected,
@@ -121,7 +122,7 @@ class DocumentsPage extends ConsumerWidget {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open document.')),
+        SnackBar(content: Text('couldNotOpenDocument'.tr())),
       );
     }
   }
@@ -162,7 +163,7 @@ class _DocumentsHeader extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           Text(
-            'Documents',
+            'documents'.tr(),
             style: kStyle(kMedium, kSize18, color: kTextColor, height: 1.2),
           ),
         ],
@@ -251,7 +252,7 @@ class _VerifiedBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Verified',
+            'verified'.tr(),
             style: kStyle(kMedium, kSize11, color: kActiveGreen, height: 1.1),
           ),
           const SizedBox(width: 4),
@@ -282,7 +283,7 @@ class _PendingBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        'Under review',
+        'underReview'.tr(),
         style: kStyle(kMedium, kSize11, color: _kPendingBadgeText, height: 1.1),
       ),
     );

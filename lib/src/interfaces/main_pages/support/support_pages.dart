@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
 import 'package:DriveFormeDriver/src/data/apis/support_api.dart';
 import 'package:DriveFormeDriver/src/data/models/support_models.dart';
@@ -77,11 +78,11 @@ class _SupportTicketsPageState extends ConsumerState<SupportTicketsPage>
       if (next.hasValue) _load();
     });
     return Scaffold(
-      appBar: AppBar(title: const Text('My support tickets')),
+      appBar: AppBar(title: Text('mySupportTickets'.tr())),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
         icon: const Icon(Icons.add),
-        label: const Text('New ticket'),
+        label: Text('newTicket'.tr()),
       ),
       body: Column(
         children: [
@@ -98,10 +99,10 @@ class _SupportTicketsPageState extends ConsumerState<SupportTicketsPage>
                       padding: const EdgeInsets.only(bottom: 96),
                       children: [
                         if (_tickets!.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(32),
+                          Padding(
+                            padding: const EdgeInsets.all(32),
                             child: Text(
-                              'No support tickets yet. Create a ticket to contact our team.',
+                              'noSupportTicketsYet'.tr(),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -305,7 +306,7 @@ class _SupportChatPageState extends ConsumerState<SupportChatPage>
     final content = _draft.text.trim();
     if (_sending || _ticket?.isOpen != true || content.isEmpty) return;
     if (content.length > 2000) {
-      _showError('Messages can contain up to 2,000 characters.');
+      _showError('messagesMaxChars'.tr());
       return;
     }
     setState(() => _sending = true);
@@ -351,11 +352,11 @@ class _SupportChatPageState extends ConsumerState<SupportChatPage>
       });
     return Scaffold(
       appBar: AppBar(
-        title: Text(ticket?.code ?? 'Support conversation'),
+        title: Text(ticket?.code ?? 'supportConversation'.tr()),
         actions: [
           IconButton(
             onPressed: _refresh,
-            tooltip: 'Refresh conversation',
+            tooltip: 'refreshConversation'.tr(),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -370,7 +371,7 @@ class _SupportChatPageState extends ConsumerState<SupportChatPage>
                 child: Center(
                   child: _error == null
                       ? const CircularProgressIndicator()
-                      : const Text('Unable to open this ticket.'),
+                      : Text('unableToOpenTicket'.tr()),
                 ),
               )
             else ...[
@@ -400,8 +401,8 @@ class _SupportChatPageState extends ConsumerState<SupportChatPage>
                                 onPressed: _olderLoading ? null : _loadOlder,
                                 child: Text(
                                   _olderLoading
-                                      ? 'Loading…'
-                                      : 'Load older messages',
+                                      ? 'loadingEllipsis'.tr()
+                                      : 'loadOlderMessages'.tr(),
                                 ),
                               ),
                             )
@@ -412,10 +413,10 @@ class _SupportChatPageState extends ConsumerState<SupportChatPage>
                 ),
               ),
               if (!ticket.isOpen)
-                const Padding(
-                  padding: EdgeInsets.all(16),
+                Padding(
+                  padding: const EdgeInsets.all(16),
                   child: Text(
-                    'This ticket is closed. You can still read the conversation.',
+                    'ticketClosedReadOnly'.tr(),
                   ),
                 )
               else
@@ -432,16 +433,16 @@ class _SupportChatPageState extends ConsumerState<SupportChatPage>
                           maxLines: 5,
                           maxLength: 2000,
                           textCapitalization: TextCapitalization.sentences,
-                          decoration: const InputDecoration(
-                            hintText: 'Message support…',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            hintText: 'messageSupportHint'.tr(),
+                            border: const OutlineInputBorder(),
                           ),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 24),
                         child: IconButton(
-                          tooltip: 'Send message',
+                          tooltip: 'sendMessage'.tr(),
                           onPressed: _sending ? null : _send,
                           icon: _sending
                               ? const SizedBox(
@@ -506,7 +507,7 @@ class _MessageBubble extends StatelessWidget {
             SelectableText(message.content),
             const SizedBox(height: 4),
             Text(
-              '${message.createdAt == null ? '' : DateFormat('d MMM, h:mm a').format(message.createdAt!.toLocal())}${message.isUser ? (message.isRead ? ' · Read' : ' · Sent') : ''}',
+              '${message.createdAt == null ? '' : DateFormat('d MMM, h:mm a').format(message.createdAt!.toLocal())}${message.isUser ? (message.isRead ? 'messageReadSuffix'.tr() : 'messageSentSuffix'.tr()) : ''}',
               style: Theme.of(context).textTheme.labelSmall,
             ),
           ],
@@ -523,6 +524,6 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialBanner(
     content: Text(message),
-    actions: [TextButton(onPressed: onRetry, child: const Text('Retry'))],
+    actions: [TextButton(onPressed: onRetry, child: Text('retry'.tr()))],
   );
 }

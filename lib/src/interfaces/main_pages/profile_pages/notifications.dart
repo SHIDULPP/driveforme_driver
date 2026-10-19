@@ -7,6 +7,7 @@ import 'package:DriveFormeDriver/src/data/models/notification_model.dart';
 import 'package:DriveFormeDriver/src/data/providers/notification_provider.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_navigation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,7 +60,7 @@ class NotificationsPage extends ConsumerWidget {
                           TextButton(
                             onPressed: () =>
                                 ref.invalidate(notificationsProvider),
-                            child: const Text('Retry'),
+                            child: Text('retry'.tr()),
                           ),
                         ],
                       ),
@@ -78,7 +79,7 @@ class NotificationsPage extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'No notifications yet.',
+                              'noNotificationsYet'.tr(),
                               style: kCaption14R.copyWith(color: kMutedText),
                             ),
                           ],
@@ -141,7 +142,7 @@ class NotificationsPage extends ConsumerWidget {
       if (!response.success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response.message ?? 'Failed to mark as read.'),
+            content: Text(response.message ?? 'failedToMarkAsRead'.tr()),
           ),
         );
       }
@@ -182,7 +183,7 @@ class NotificationsPage extends ConsumerWidget {
     if (!tripResponse.success || tripResponse.data == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tripResponse.message ?? 'Could not load trip details.'),
+          content: Text(tripResponse.message ?? 'couldNotLoadTripDetails'.tr()),
         ),
       );
       return;
@@ -211,7 +212,7 @@ class NotificationsPage extends ConsumerWidget {
 
     if (!response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message ?? 'Failed to delete.')),
+        SnackBar(content: Text(response.message ?? 'failedToDelete'.tr())),
       );
       return;
     }
@@ -272,7 +273,7 @@ class _NotificationsHeader extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              'Notifications',
+              'notifications'.tr(),
               textAlign: TextAlign.center,
               style: kStyle(kSemiBold, kSize18, color: kTextColor, height: 1.2),
             ),

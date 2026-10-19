@@ -11,9 +11,9 @@ import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/dropdown.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/input_field.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 class RegistrationPage extends ConsumerStatefulWidget {
   const RegistrationPage({super.key});
@@ -97,12 +97,12 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     if (selectedGender == null || selectedGender!.isEmpty) {
-      _showMessage('Please select your gender');
+      _showMessage('pleaseSelectGender'.tr());
       return;
     }
 
     if (selectedLocation == null || selectedLocation!.isEmpty) {
-      _showMessage('Please select your location');
+      _showMessage('pleaseSelectLocation'.tr());
       return;
     }
 
@@ -122,14 +122,14 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showMessage(response.message ?? 'Failed to save profile');
+        _showMessage(response.message ?? 'failedToSaveProfile'.tr());
         return;
       }
 
       ref.invalidate(userProvider);
       NavigationService().pushNamedAndRemoveUntil('documentsUpload');
     } on FormatException {
-      _showMessage('Please enter date of birth as DD/MM/YYYY');
+      _showMessage('pleaseEnterDob'.tr());
     } finally {
       ref.read(loadingProvider.notifier).stopLoading();
     }
@@ -178,7 +178,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                             anim.AppAnimationType.fadeSlideInFromLeft,
                         duration: anim.AnimationDuration.normal,
                         child: Text(
-                          'Personal Details',
+                          'personalDetails'.tr(),
                           style: kHeadTitleR,
                         ),
                       ),
@@ -189,14 +189,14 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         duration: anim.AnimationDuration.normal,
                         delayMilliseconds: 80,
                         child: Text(
-                          "Let's get you started",
+                          'letsGetYouStarted'.tr(),
                           style: kStyle(kLight, kSize16, color: kMutedText),
                         ),
                       ),
                       const SizedBox(height: 32),
 
                       // ── Full Name ──────────────────────────────────────
-                      const _FieldLabel(label: 'Full Name'),
+                      _FieldLabel(label: 'fullName'.tr()),
                       const SizedBox(height: 8),
                       anim.AnimatedWidgetWrapper(
                         animationType:
@@ -205,21 +205,21 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         delayMilliseconds: 150,
                         child: InputField(
                           type: CustomFieldType.text,
-                          hint: 'Enter your full name',
+                          hint: 'enterFullName'.tr(),
                           controller: _nameController,
                           focusNode: _nameFocus,
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) =>
                               FocusScope.of(context).requestFocus(_emailFocus),
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Full name is required'
+                              ? 'fullNameRequired'.tr()
                               : null,
                         ),
                       ),
                       const SizedBox(height: 20),
 
                       // ── Email ──────────────────────────────────────────
-                      const _FieldLabel(label: 'Email'),
+                      _FieldLabel(label: 'email'.tr()),
                       const SizedBox(height: 8),
                       anim.AnimatedWidgetWrapper(
                         animationType:
@@ -228,27 +228,27 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         delayMilliseconds: 200,
                         child: InputField(
                           type: CustomFieldType.text,
-                          hint: 'Enter your email',
+                          hint: 'enterEmail'.tr(),
                           controller: _emailController,
                           focusNode: _emailFocus,
                           textInputAction: TextInputAction.next,
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) {
-                              return 'Email is required';
+                              return 'emailRequired'.tr();
                             }
                             final emailRegex = RegExp(
                               r'^[\w\.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$',
                             );
                             return emailRegex.hasMatch(v.trim())
                                 ? null
-                                : 'Enter a valid email';
+                                : 'enterValidEmail'.tr();
                           },
                         ),
                       ),
                       const SizedBox(height: 20),
 
                       // ── Date of Birth ──────────────────────────────────
-                      const _FieldLabel(label: 'Date of Birth'),
+                      _FieldLabel(label: 'dateOfBirth'.tr()),
                       const SizedBox(height: 8),
                       anim.AnimatedWidgetWrapper(
                         animationType:
@@ -257,7 +257,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                         delayMilliseconds: 250,
                         child: InputField(
                           type: CustomFieldType.date,
-                          hint: 'DD/MM/YYYY',
+                          hint: 'dobHint'.tr(),
                           controller: _dobController,
                           validator: validateDriverDob,
                         ),
@@ -265,7 +265,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       const SizedBox(height: 20),
 
                       // ── Gender ─────────────────────────────────────────
-                      const _FieldLabel(label: 'Gender'),
+                      _FieldLabel(label: 'gender'.tr()),
                       const SizedBox(height: 8),
                       anim.AnimatedWidgetWrapper(
                         animationType:
@@ -277,17 +277,28 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           initialValue: selectedGender,
                           validator: (value) =>
                               selectedGender == null || selectedGender!.isEmpty
-                              ? 'Gender is required'
+                              ? 'genderRequired'.tr()
                               : null,
                           builder: (FormFieldState<String> state) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AnimatedDropdown<String>(
-                                  hint: "Select Gender",
+                                  hint: 'selectGender'.tr(),
                                   value: selectedGender,
                                   items: const ['Male', 'Female', 'Other'],
-                                  itemLabel: (value) => value,
+                                  itemLabel: (value) {
+                                    switch (value) {
+                                      case 'Male':
+                                        return 'male'.tr();
+                                      case 'Female':
+                                        return 'female'.tr();
+                                      case 'Other':
+                                        return 'other'.tr();
+                                      default:
+                                        return value;
+                                    }
+                                  },
                                   borderColor: state.hasError
                                       ? Colors.red
                                       : null,
@@ -321,7 +332,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                       const SizedBox(height: 20),
 
                       // ── Location ─────────────────────────────────────────
-                      const _FieldLabel(label: 'Location'),
+                      _FieldLabel(label: 'location'.tr()),
                       const SizedBox(height: 8),
                       anim.AnimatedWidgetWrapper(
                         animationType:
@@ -334,21 +345,32 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                           validator: (value) =>
                               selectedLocation == null ||
                                   selectedLocation!.isEmpty
-                              ? 'Location is required'
+                              ? 'locationRequired'.tr()
                               : null,
                           builder: (FormFieldState<String> state) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AnimatedDropdown<String>(
-                                  hint: "Select Location",
+                                  hint: 'selectLocation'.tr(),
                                   value: selectedLocation,
                                   items: const [
                                     'Kochi',
                                     'Kozhikode',
                                     'Trivandrum',
                                   ],
-                                  itemLabel: (value) => value,
+                                  itemLabel: (value) {
+                                    switch (value) {
+                                      case 'Kochi':
+                                        return 'locationKochi'.tr();
+                                      case 'Kozhikode':
+                                        return 'locationKozhikode'.tr();
+                                      case 'Trivandrum':
+                                        return 'locationTrivandrum'.tr();
+                                      default:
+                                        return value;
+                                    }
+                                  },
                                   borderColor: state.hasError
                                       ? Colors.red
                                       : null,
@@ -393,7 +415,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                 duration: anim.AnimationDuration.normal,
                 delayMilliseconds: 350,
                 child: primaryButton(
-                  label: 'Continue',
+                  label: 'continueText'.tr(),
                   buttonHeight: 56,
                   fontSize: 16,
                   onPressed: isLoading ? null : _handleSubmit,

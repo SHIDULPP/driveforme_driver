@@ -6,6 +6,7 @@ import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/data/models/bank_account_ui_model.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/verified_badge.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -75,7 +76,7 @@ class _SelectBankSheetState extends ConsumerState<SelectBankSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    'Select Bank account',
+                    'selectBankAccount'.tr(),
                     style: kStyle(kSemiBold, kSize18, color: kTextColor),
                   ),
                 ),
@@ -123,7 +124,7 @@ class _SelectBankSheetState extends ConsumerState<SelectBankSheet> {
             ),
             SizedBox(height: context.rs(14)),
             primaryButton(
-              label: 'Confirm Selection',
+              label: 'confirmSelection'.tr(),
               buttonColor: kBrandBlue,
               onPressed: _selectedId == null
                   ? null
@@ -224,7 +225,7 @@ class _AddBankDashedButton extends StatelessWidget {
               Icon(Icons.add_rounded, color: kBrandBlue, size: context.rs(18)),
               SizedBox(width: context.rs(6)),
               Text(
-                'Add New Bank Account',
+                'addNewBankAccount'.tr(),
                 style: kStyle(kMedium, kSize14, color: kBrandBlue),
               ),
             ],

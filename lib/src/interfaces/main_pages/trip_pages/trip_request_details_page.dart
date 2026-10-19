@@ -13,6 +13,7 @@ import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/trip_map_view.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,7 +65,7 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
     if (!_trip.canBeOfferedAt(DateTime.now())) {
       ref.read(availableTripsProvider.notifier).removeTrip(_trip.id);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This trip request has expired.')),
+        SnackBar(content: Text('tripRequestExpired'.tr())),
       );
       return;
     }
@@ -76,7 +77,7 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
 
     if (!response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message ?? 'Failed to accept trip.')),
+        SnackBar(content: Text(response.message ?? 'failedToAcceptTrip'.tr())),
       );
       return;
     }
@@ -89,11 +90,11 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
       ref.invalidate(tripHistoryProvider(TripHistoryTab.upcoming));
       final dateStr = acceptedTrip.pickupAt != null
           ? acceptedTrip.formatDateTime(acceptedTrip.pickupAt)
-          : 'scheduled time';
+          : 'scheduledTime'.tr();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Scheduled trip accepted for $dateStr. The vehicle owner has been informed of your details.',
+            'scheduledTripAccepted'.tr(args: [dateStr]),
           ),
           duration: const Duration(seconds: 4),
         ),
@@ -228,8 +229,10 @@ class _RequestSheet extends StatelessWidget {
             ),
             child: Text(
               isScheduled
-                  ? 'Scheduled Trip • ${trip.formatDateTime(trip.pickupAt)}'
-                  : 'New Request ${trip.countdownLabel} min',
+                  ? 'scheduledTripBullet'.tr(
+                      args: [trip.formatDateTime(trip.pickupAt)],
+                    )
+                  : 'newRequestMinutes'.tr(args: [trip.countdownLabel]),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -256,7 +259,9 @@ class _RequestSheet extends StatelessWidget {
                           Text(trip.customerDisplayName, style: kCaption14B),
                           const SizedBox(height: 2),
                           Text(
-                            '${trip.distanceLabel} away • ${trip.durationLabel}',
+                            'distanceAwayDuration'.tr(
+                              args: [trip.distanceLabel, trip.durationLabel],
+                            ),
                             style: kCaption12R.copyWith(color: kMutedText),
                           ),
                           if (trip.vehicleNumber.isNotEmpty) ...[
@@ -309,7 +314,11 @@ class _RequestSheet extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          isScheduled ? 'SCHEDULED' : trip.tripTypeBadgeLabel,
+                          isScheduled
+                              ? 'badgeScheduled'.tr()
+                              : (trip.isLongTrip
+                                  ? 'longTripBadge'.tr()
+                                  : 'shortTripBadge'.tr()),
                           style: kCaption12R.copyWith(
                             color: isScheduled
                                 ? kStatusScheduledText
@@ -343,7 +352,7 @@ class _RequestSheet extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'you earn',
+                                'youEarn'.tr(),
                                 style: kCaption12R.copyWith(color: kMutedText),
                               ),
                             ],
@@ -355,19 +364,19 @@ class _RequestSheet extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _DetailStat(
-                              label: 'Distance',
+                              label: 'distance'.tr(),
                               value: trip.distanceLabel,
                             ),
                           ),
                           Expanded(
                             child: _DetailStat(
-                              label: 'Duration',
+                              label: 'duration'.tr(),
                               value: trip.durationLabel,
                             ),
                           ),
                           Expanded(
                             child: _DetailStat(
-                              label: 'Vehicle Type',
+                              label: 'vehicleType'.tr(),
                               value: trip.vehicleTypeLabel,
                             ),
                           ),
@@ -378,7 +387,7 @@ class _RequestSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Auto expire if no action in ${trip.countdownLabel} min',
+                  'autoExpireNoAction'.tr(args: [trip.countdownLabel]),
                   textAlign: TextAlign.center,
                   style: kCaption12R.copyWith(color: _kDeclineRed),
                 ),
@@ -397,7 +406,7 @@ class _RequestSheet extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'Reject',
+                          'reject'.tr(),
                           style: kStyle(kSemiBold, kSize15, color: _kDeclineRed),
                         ),
                       ),
@@ -416,7 +425,7 @@ class _RequestSheet extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'Accept',
+                          'accept'.tr(),
                           style: kStyle(kSemiBold, kSize15, color: kWhite),
                         ),
                       ),

@@ -3,6 +3,7 @@ import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/data/models/withdrawal_ui_model.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/earning.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -63,7 +64,9 @@ class WithdrawalListTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                withdrawal.isFailed ? 'Failed' : 'Completed',
+                withdrawal.isFailed
+                    ? 'statusFailed'.tr()
+                    : 'statusCompleted'.tr(),
                 style: kStyle(
                   kSemiBold,
                   kSize13,
@@ -104,7 +107,7 @@ class WithdrawalsEmptyState extends StatelessWidget {
           ),
           SizedBox(height: context.rs(12)),
           Text(
-            'No Withdrawals yet',
+            'noWithdrawalsYetTitle'.tr(),
             style: kCaption14B.copyWith(height: 1.2),
           ),
         ],
@@ -130,13 +133,13 @@ class NoBankEmptyState extends StatelessWidget {
           ),
           SizedBox(height: context.rs(16)),
           Text(
-            'No Bank Account Added',
+            'noBankAccountAdded'.tr(),
             style: kStyle(kSemiBold, kSize18, color: kTextColor, height: 1.2),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: context.rs(8)),
           Text(
-            'Add your bank account details to withdraw your earnings directly to your account.',
+            'addBankDetailsToWithdraw'.tr(),
             style: kCaption14R.copyWith(
               color: kSecondaryTextColor,
               height: 1.4,

@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/models/wallet_model.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -49,7 +50,7 @@ class WithdrawAmountField extends StatelessWidget {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               style: kStyle(kMedium, kSize16, color: kTextColor, height: 1.2),
               decoration: InputDecoration(
-                hintText: 'Enter Amount',
+                hintText: 'enterAmount'.tr(),
                 hintStyle: kCaption14R.copyWith(color: kMutedText),
                 border: InputBorder.none,
                 isDense: true,

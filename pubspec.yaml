@@ -43,6 +43,7 @@ dependencies:
   loading_indicator: ^3.1.1
   pin_code_fields: 8.0.1
   intl: ^0.20.2
+  easy_localization: ^3.0.8
   flutter_svg: ^2.3.0
   flutter_dotenv: ^5.2.1
   http: ^1.2.0
@@ -96,6 +97,7 @@ flutter:
     - assets/pngs/
     - assets/svgs/
     - assets/gifs/
+    - assets/translations/
     - assets/svgs/home_icon.svg
     - assets/svgs/trips_icon.svg
     - assets/svgs/wallet_icon.svg

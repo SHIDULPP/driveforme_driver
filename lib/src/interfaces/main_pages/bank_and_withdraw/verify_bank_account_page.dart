@@ -7,6 +7,7 @@ import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/data/models/bank_account_ui_model.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,7 +87,7 @@ class _VerifyBankAccountPageState extends ConsumerState<VerifyBankAccountPage> {
     final percent = (_progress * 100).round();
 
     return WithdrawScaffold(
-      title: 'Verifying Account',
+      title: 'verifyingAccount'.tr(),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: context.horizontalPadding),
         child: Column(
@@ -99,13 +100,13 @@ class _VerifyBankAccountPageState extends ConsumerState<VerifyBankAccountPage> {
             ),
             SizedBox(height: context.rs(20)),
             Text(
-              'Verifying Your Account',
+              'verifyingYourAccount'.tr(),
               style: kStyle(kSemiBold, kSize20, color: kTextColor, height: 1.2),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: context.rs(8)),
             Text(
-              'Please wait while we verify your account details',
+              'pleaseWaitVerifyAccount'.tr(),
               style: kCaption14R.copyWith(
                 color: kSecondaryTextColor,
                 height: 1.4,
@@ -141,7 +142,7 @@ class _VerifyBankAccountPageState extends ConsumerState<VerifyBankAccountPage> {
                       ),
                       SizedBox(height: context.rs(4)),
                       Text(
-                        'Verifying....',
+                        'verifyingDots'.tr(),
                         style: kCaption13R.copyWith(color: kMutedText),
                       ),
                     ],

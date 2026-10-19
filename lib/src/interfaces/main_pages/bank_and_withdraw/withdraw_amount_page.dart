@@ -11,6 +11,7 @@ import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/sel
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_amount_field.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_flow_provider.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,15 +49,15 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
     final bank = flow.selectedBank;
 
     if (amount == null || amount <= 0) {
-      _showMessage('Enter a valid withdrawal amount.');
+      _showMessage('enterValidWithdrawalAmount'.tr());
       return;
     }
     if (amount > flow.availableBalance) {
-      _showMessage('Amount exceeds available balance.');
+      _showMessage('amountExceedsBalance'.tr());
       return;
     }
     if (bank == null) {
-      _showMessage('Please select a bank account.');
+      _showMessage('pleaseSelectBankAccount'.tr());
       return;
     }
     if (flow.isSubmitting) return;
@@ -92,7 +93,7 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
     final bank = flow.selectedBank;
 
     return WithdrawScaffold(
-      title: 'Withdraw Earnings',
+      title: 'withdrawEarnings'.tr(),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
           context.horizontalPadding,
@@ -101,7 +102,7 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
           context.rs(24),
         ),
         children: [
-          Text('Enter Amount', style: kEarningsSectionTitleSB),
+          Text('enterAmount'.tr(), style: kEarningsSectionTitleSB),
           SizedBox(height: context.rs(10)),
           WithdrawAmountField(
             controller: _amountController,
@@ -119,7 +120,7 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
             },
           ),
           SizedBox(height: context.rs(22)),
-          Text('Transfer to', style: kEarningsSectionTitleSB),
+          Text('transferTo'.tr(), style: kEarningsSectionTitleSB),
           SizedBox(height: context.rs(10)),
           if (bank != null)
             BankAccountCard(
@@ -139,7 +140,7 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
                 border: Border.all(color: kCardBorder),
               ),
               child: Text(
-                'No bank account selected',
+                'noBankAccountSelected'.tr(),
                 style: kCaption14R.copyWith(color: kMutedText),
               ),
             ),
@@ -153,7 +154,7 @@ class _WithdrawAmountPageState extends ConsumerState<WithdrawAmountPage> {
           context.rs(16),
         ),
         child: primaryButton(
-          label: flow.isSubmitting ? 'Processing...' : 'Withdraw Now',
+          label: flow.isSubmitting ? 'processing'.tr() : 'withdrawNow'.tr(),
           buttonColor: kBrandBlue,
           onPressed: flow.isSubmitting ? null : _withdrawNow,
         ),

@@ -6,6 +6,7 @@ import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
 import 'package:DriveFormeDriver/src/data/services/auth_logout_service.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,16 +65,16 @@ class _ApplicationUnderReviewPageState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log out?'),
-        content: const Text('You will need to sign in again to use the app.'),
+        title: Text('logOutTitle'.tr()),
+        content: Text('logOutMessage'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Log out'),
+            child: Text('logOut'.tr()),
           ),
         ],
       ),
@@ -116,7 +117,7 @@ class _ApplicationUnderReviewPageState
                       ),
                     ),
                     child: Text(
-                      'Log out',
+                      'logOut'.tr(),
                       style: kStyle(kSemiBold, kSize14, color: kWhite),
                     ),
                   ),
@@ -134,13 +135,13 @@ class _ApplicationUnderReviewPageState
                 ),
                 SizedBox(height: size.height * 0.075),
                 Text(
-                  'Application Under Review',
+                  'applicationUnderReview'.tr(),
                   textAlign: TextAlign.center,
                   style: kStyle(kSemiBold, kSize24, color: kWhite, height: 1.2),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  "We're verifying your details to get\nyou started",
+                  'verifyingDetails'.tr(),
                   textAlign: TextAlign.center,
                   style: kStyle(kRegular, kSize16, color: kWhite, height: 1.45),
                 ),

@@ -6,6 +6,7 @@ import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/data/models/bank_account_ui_model.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/bank_and_withdraw/withdraw_scaffold.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +48,7 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
         _confirmAccountController.text.trim().isEmpty ||
         _ifscController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields.')),
+        SnackBar(content: Text('pleaseFillAllRequiredFields'.tr())),
       );
       return;
     }
@@ -55,7 +56,7 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
     if (_accountController.text.trim() !=
         _confirmAccountController.text.trim()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account numbers do not match.')),
+        SnackBar(content: Text('accountNumbersDoNotMatch'.tr())),
       );
       return;
     }
@@ -92,7 +93,7 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(res.message ?? 'Failed to load banks.')),
+            SnackBar(content: Text(res.message ?? 'failedToLoadBanks'.tr())),
           );
         }
         return;
@@ -105,8 +106,8 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SearchableSelectorDialog<String>(
-        title: 'Select Bank Name',
-        hintText: 'Search bank...',
+        title: 'selectBankName'.tr(),
+        hintText: 'searchBank'.tr(),
         initialItems: _cachedBanks,
         itemLabel: (item) => item,
       ),
@@ -125,7 +126,7 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
     final selectedBank = _bankController.text;
     if (selectedBank.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select your bank first.')),
+        SnackBar(content: Text('pleaseSelectBankFirst'.tr())),
       );
       return;
     }
@@ -135,8 +136,8 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SearchableSelectorDialog<Map<String, dynamic>>(
-        title: 'Select Branch Name',
-        hintText: 'Search branch by name or location...',
+        title: 'selectBranchName'.tr(),
+        hintText: 'searchBranch'.tr(),
         itemLabel: (item) => item['branchName']?.toString() ?? '',
         onSearch: (query) async {
           final res = await ref
@@ -159,7 +160,7 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
   @override
   Widget build(BuildContext context) {
     return WithdrawScaffold(
-      title: 'Add Bank Account',
+      title: 'addBankAccount'.tr(),
       showHelp: true,
       body: ListView(
         padding: EdgeInsets.fromLTRB(
@@ -176,13 +177,13 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
           ),
           SizedBox(height: context.rs(12)),
           Text(
-            'Add your bank account securely',
+            'addBankAccountSecurely'.tr(),
             style: kStyle(kSemiBold, kSize18, color: kTextColor, height: 1.2),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: context.rs(6)),
           Text(
-            'Your earnings will be transferred to this account',
+            'earningsTransferredHere'.tr(),
             style: kCaption14R.copyWith(
               color: kSecondaryTextColor,
               height: 1.35,
@@ -191,30 +192,30 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
           ),
           SizedBox(height: context.rs(20)),
           _BankFormField(
-            label: 'Account Holder Name',
+            label: 'accountHolderName'.tr(),
             controller: _holderController,
-            hint: 'Enter account holder name',
+            hint: 'enterAccountHolderName'.tr(),
           ),
           _BankFormField(
-            label: 'Bank Name',
+            label: 'bankName'.tr(),
             controller: _bankController,
-            hint: 'Select your bank',
+            hint: 'selectYourBank'.tr(),
             readOnly: true,
             suffix: const Icon(Icons.keyboard_arrow_down_rounded),
             onTap: _selectBank,
           ),
           _BankFormField(
-            label: 'Branch Name',
+            label: 'branchName'.tr(),
             controller: _branchController,
-            hint: 'Select your branch',
+            hint: 'selectYourBranch'.tr(),
             readOnly: true,
             suffix: const Icon(Icons.keyboard_arrow_down_rounded),
             onTap: _selectBranch,
           ),
           _BankFormField(
-            label: 'Account Number',
+            label: 'accountNumber'.tr(),
             controller: _accountController,
-            hint: 'Enter Account Number',
+            hint: 'enterAccountNumber'.tr(),
             obscure: _obscureAccount,
             suffix: IconButton(
               onPressed: () =>
@@ -228,9 +229,9 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
             ),
           ),
           _BankFormField(
-            label: 'Confirm Account Number',
+            label: 'confirmAccountNumber'.tr(),
             controller: _confirmAccountController,
-            hint: 'Re-enter account number',
+            hint: 'reenterAccountNumber'.tr(),
             obscure: _obscureConfirm,
             suffix: IconButton(
               onPressed: () =>
@@ -244,9 +245,9 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
             ),
           ),
           _BankFormField(
-            label: 'IFSC Code',
+            label: 'ifscCode'.tr(),
             controller: _ifscController,
-            hint: 'Enter IFSC Code',
+            hint: 'enterIfscCode'.tr(),
           ),
         ],
       ),
@@ -258,7 +259,7 @@ class _AddBankAccountPageState extends ConsumerState<AddBankAccountPage> {
           context.rs(16),
         ),
         child: primaryButton(
-          label: 'Verify Account',
+          label: 'verifyAccount'.tr(),
           buttonColor: kBrandBlue,
           icon: const Icon(
             Icons.verified_user_outlined,
@@ -417,7 +418,7 @@ class _SearchableSelectorDialogState<T>
                 : _filteredItems.isEmpty
                 ? Center(
                     child: Text(
-                      'No items found',
+                      'noItemsFound'.tr(),
                       style: kCaption14R.copyWith(color: kMutedText),
                     ),
                   )

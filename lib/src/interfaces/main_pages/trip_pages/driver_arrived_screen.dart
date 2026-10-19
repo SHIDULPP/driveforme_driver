@@ -15,6 +15,7 @@ import 'package:DriveFormeDriver/src/interfaces/components/driver_navigation_she
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/trip_map_view.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -117,7 +118,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
     if (!response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response.message ?? 'Could not notify arrival.'),
+          content: Text(response.message ?? 'couldNotNotifyArrival'.tr()),
         ),
       );
       // Still allow OTP flow so a network blip does not block the trip.
@@ -203,14 +204,14 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: DriverNavigationSheet(
-                        title: 'Navigate to pickup',
+                        title: 'navigateToPickup'.tr(),
                         subtitle: trip.pickupAddress,
                         distanceLabel: _distanceLabel,
                         etaLabel: _etaLabel,
                         footer: Column(
                           children: [
                             primaryButton(
-                              label: 'I have arrived',
+                              label: 'iHaveArrived'.tr(),
                               buttonHeight: 52,
                               fontSize: kSize16,
                               buttonColor: kTripCtaBlue,
@@ -222,8 +223,8 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                             const SizedBox(height: 8),
                             Text(
                               _canArrive
-                                  ? 'Tap when you reached the pickup location'
-                                  : 'Approach pickup to unlock',
+                                  ? 'tapWhenReachedPickup'.tr()
+                                  : 'approachPickupToUnlock'.tr(),
                               textAlign: TextAlign.center,
                               style: kCaption12R.copyWith(
                                 color: kTripBodyMuted,
@@ -233,7 +234,7 @@ class _DriverArrivedScreenState extends ConsumerState<DriverArrivedScreen>
                             TextButton(
                               onPressed: _handleCancel,
                               child: Text(
-                                'Cancel trip',
+                                'cancelTrip'.tr(),
                                 style: kCaption14M.copyWith(color: kRed),
                               ),
                             ),

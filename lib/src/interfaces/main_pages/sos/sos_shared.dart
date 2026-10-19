@@ -1,15 +1,20 @@
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class SosEmergencyOption {
   final String title;
   final String subtitle;
+  final String titleKey;
+  final String subtitleKey;
   final IconData icon;
 
   const SosEmergencyOption({
     required this.title,
     required this.subtitle,
+    required this.titleKey,
+    required this.subtitleKey,
     required this.icon,
   });
 }
@@ -18,24 +23,46 @@ const kDefaultSosOptions = [
   SosEmergencyOption(
     title: 'Accident / Road Emergency',
     subtitle: 'Vehicle accident, road hazard, injury',
+    titleKey: 'sosAccidentTitle',
+    subtitleKey: 'sosAccidentSubtitle',
     icon: Icons.campaign_rounded,
   ),
   SosEmergencyOption(
     title: 'Medical Emergency',
     subtitle: 'Driver or passenger needs medical help',
+    titleKey: 'sosMedicalTitle',
+    subtitleKey: 'sosMedicalSubtitle',
     icon: Icons.medical_services_rounded,
   ),
   SosEmergencyOption(
     title: 'Unsafe passenger behavior',
     subtitle: 'Threatening or aggressive vehicle owner',
+    titleKey: 'sosUnsafeTitle',
+    subtitleKey: 'sosUnsafeSubtitle',
     icon: Icons.local_police_rounded,
   ),
   SosEmergencyOption(
     title: 'Other Emergency',
     subtitle: 'Any other situation requiring help',
+    titleKey: 'sosOtherTitle',
+    subtitleKey: 'sosOtherSubtitle',
     icon: Icons.report_rounded,
   ),
 ];
+
+/// Translates known SOS location-status defaults; leaves addresses unchanged.
+String localizeSosLocationLabel(String label) {
+  switch (label) {
+    case 'Live location shared':
+    case 'liveLocationShared':
+      return 'liveLocationShared'.tr();
+    case 'Location sharing active':
+    case 'locationSharingActive':
+      return 'locationSharingActive'.tr();
+    default:
+      return label;
+  }
+}
 
 class SosBackButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -140,12 +167,12 @@ class SosEmergencyTypeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      option.title,
+                      option.titleKey.tr(),
                       style: kStyle(kSemiBold, kSize15, color: kSosRedDark),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      option.subtitle,
+                      option.subtitleKey.tr(),
                       style: kStyle(kRegular, kSize13, color: kSosRedDark),
                     ),
                   ],

@@ -4,6 +4,7 @@ import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,7 +26,7 @@ class ApplicationRejectedPage extends ConsumerWidget {
         body: Center(
           child: TextButton(
             onPressed: () => ref.invalidate(userProvider),
-            child: const Text('Retry'),
+            child: Text('retry'.tr()),
           ),
         ),
       ),
@@ -35,7 +36,7 @@ class ApplicationRejectedPage extends ConsumerWidget {
             ? user!.adminReview.notes.trim()
             : verification?.aiVerificationNotes.trim().isNotEmpty == true
             ? verification!.aiVerificationNotes.trim()
-            : 'We could not verify your documents. Please upload clearer copies.';
+            : 'weCouldNotVerifyDocuments'.tr();
         final licenseReason =
             verification?.drivingLicenseCheck.rejectionReason(fallbackReason) ??
             fallbackReason;
@@ -80,14 +81,13 @@ class ApplicationRejectedPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Application Rejected!',
+                        'applicationRejected'.tr(),
                         textAlign: TextAlign.center,
                         style: kWaitingDriverStatusBlackSB,
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "We couldn't verify some of your details. Please review "
-                        'the reason below and upload again.',
+                        'reviewAndUploadAgain'.tr(),
                         textAlign: TextAlign.center,
                         style: kCaption14R.copyWith(
                           color: kSecondaryTextColor,
@@ -113,24 +113,24 @@ class ApplicationRejectedPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Verification Summary',
+                            'verificationSummary'.tr(),
                             style: kTripSectionTitleSB,
                           ),
                           const SizedBox(height: 16),
                           _RejectedDocumentCard(
                             imagePath: 'assets/pngs/drivin_license_image.png',
-                            title: 'Driving License',
+                            title: 'drivingLicense'.tr(),
                             reason: licenseReason,
                           ),
                           const SizedBox(height: 12),
                           _RejectedDocumentCard(
                             imagePath: 'assets/pngs/aadhar_image.png',
-                            title: 'Aadhaar',
+                            title: 'aadhaar'.tr(),
                             reason: aadhaarReason,
                           ),
                           const SizedBox(height: 24),
                           primaryButton(
-                            label: 'Upload Again',
+                            label: 'uploadAgain'.tr(),
                             buttonHeight: 56,
                             fontSize: kSize16,
                             buttonColor: kBrandBlue,
@@ -156,7 +156,7 @@ class ApplicationRejectedPage extends ConsumerWidget {
                                 ),
                               ),
                               child: Text(
-                                'Contact Support',
+                                'contactSupport'.tr(),
                                 style: kEditProfileM.copyWith(
                                   fontSize: kSize16,
                                 ),
@@ -228,7 +228,7 @@ class _RejectedDocumentCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Rejected',
+                      'rejected'.tr(),
                       style: kCaption12R.copyWith(
                         color: kSosRedDark,
                         fontWeight: kMedium,

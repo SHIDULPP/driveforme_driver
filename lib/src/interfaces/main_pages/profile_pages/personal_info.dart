@@ -4,6 +4,7 @@ import 'package:DriveFormeDriver/src/data/models/user_model.dart';
 import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/profile_pages/edit_profile_sheet.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,13 +44,13 @@ class PersonalInfoPage extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Could not load personal details',
+                          'couldNotLoadPersonalDetails'.tr(),
                           style: kCaption14B,
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: () => ref.invalidate(userProvider),
-                          child: const Text('Retry'),
+                          child: Text('retry'.tr()),
                         ),
                       ],
                     ),
@@ -71,23 +72,23 @@ class _PersonalInfoContent extends StatelessWidget {
 
   List<_PersonalInfoField> get _fields => [
         _PersonalInfoField(
-          label: 'Name',
+          label: 'name'.tr(),
           value: displayFullName(user),
         ),
         _PersonalInfoField(
-          label: 'Mobile Number',
+          label: 'mobileNumber'.tr(),
           value: displayPhone(user),
         ),
         _PersonalInfoField(
-          label: 'Email',
+          label: 'email'.tr(),
           value: displayEmail(user),
         ),
         _PersonalInfoField(
-          label: 'Date of Birth',
+          label: 'dateOfBirth'.tr(),
           value: displayDateOfBirth(user),
         ),
         _PersonalInfoField(
-          label: 'Gender',
+          label: 'gender'.tr(),
           value: displayGender(user),
         ),
       ];
@@ -169,7 +170,7 @@ class _PersonalInfoHeader extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           Text(
-            'Personal Details',
+            'personalDetails'.tr(),
             style: kStyle(
               kMedium,
               kSize18,

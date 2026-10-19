@@ -4,6 +4,7 @@ import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,9 +24,9 @@ class TripCompletedScreen extends ConsumerStatefulWidget {
     this.routeSummary = '',
     this.elapsedDuration = '',
     this.totalEarned = '—',
-    this.baseFareLabel = 'Base fare',
+    this.baseFareLabel = '',
     this.baseFareAmount = '—',
-    this.extraTimeLabel = 'Extra Time',
+    this.extraTimeLabel = '',
     this.extraTimeAmount = '—',
     this.totalAmount = '—',
     this.paymentMethod = 'cash',
@@ -61,7 +62,7 @@ class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
     if (tripId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trip id missing. Please try again.')),
+        SnackBar(content: Text('tripIdMissing'.tr())),
       );
       return;
     }
@@ -77,7 +78,7 @@ class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            response.message ?? 'Failed to confirm cash collection.',
+            response.message ?? 'failedToConfirmCash'.tr(),
           ),
         ),
       );
@@ -129,7 +130,7 @@ class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Trip Completed!',
+                      'tripCompleted'.tr(),
                       textAlign: TextAlign.center,
                       style: kStyle(
                         kSemiBold,
@@ -181,9 +182,13 @@ class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _PaymentSummaryCard(
-                        baseFareLabel: widget.baseFareLabel,
+                        baseFareLabel: widget.baseFareLabel.isEmpty
+                            ? 'baseFare'.tr()
+                            : widget.baseFareLabel,
                         baseFareAmount: widget.baseFareAmount,
-                        extraTimeLabel: widget.extraTimeLabel,
+                        extraTimeLabel: widget.extraTimeLabel.isEmpty
+                            ? 'extraTime'.tr()
+                            : widget.extraTimeLabel,
                         extraTimeAmount: widget.extraTimeAmount,
                         totalAmount: widget.totalAmount,
                         showExtra: showExtra,
@@ -192,8 +197,8 @@ class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
                       if (_isCashPayment)
                         primaryButton(
                           label: _confirmingCash
-                              ? 'Confirming...'
-                              : 'Mark as Collected',
+                              ? 'confirming'.tr()
+                              : 'markAsCollected'.tr(),
                           buttonHeight: 52,
                           fontSize: kSize16,
                           buttonColor: kTripCtaBlue,
@@ -202,7 +207,7 @@ class _TripCompletedScreenState extends ConsumerState<TripCompletedScreen> {
                         )
                       else
                         primaryButton(
-                          label: 'Done',
+                          label: 'done'.tr(),
                           buttonHeight: 52,
                           fontSize: kSize16,
                           buttonColor: kTripCtaBlue,
@@ -248,7 +253,7 @@ class _TotalEarnedBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'TOTAL EARNED',
+            'totalEarnedCaps'.tr(),
             style: kCaption11R.copyWith(
               color: kWhite.withValues(alpha: 0.92),
               letterSpacing: 1,
@@ -302,7 +307,7 @@ class _PaymentSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Payment Summary',
+                  'paymentSummary'.tr(),
                   style: kCaption14M.copyWith(color: kTripBodyMuted),
                 ),
                 const SizedBox(height: 16),
@@ -324,7 +329,7 @@ class _PaymentSummaryCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             child: _PaymentRow(
-              label: 'Total Amount',
+              label: 'totalAmount'.tr(),
               amount: totalAmount,
               isTotal: true,
             ),

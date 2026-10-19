@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:DriveFormeDriver/src/data/apis/wallet_api.dart';
 import 'package:DriveFormeDriver/src/data/models/bank_account_ui_model.dart';
 import 'package:DriveFormeDriver/src/data/services/secure_storage_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class WithdrawFlowState {
@@ -107,7 +108,7 @@ class WithdrawFlowNotifier extends Notifier<WithdrawFlowState> {
       );
 
       if (!response.success || response.data == null) {
-        return response.message ?? 'Failed to save bank account.';
+        return response.message ?? 'failedToSaveBankAccount'.tr();
       }
 
       final account = response.data!.copyWith(
@@ -130,7 +131,7 @@ class WithdrawFlowNotifier extends Notifier<WithdrawFlowState> {
     try {
       final response = await _walletApi.withdrawFunds(amount: amount);
       if (!response.success || response.data == null) {
-        return response.message ?? 'Withdrawal failed.';
+        return response.message ?? 'withdrawalFailed'.tr();
       }
 
       state = state.copyWith(

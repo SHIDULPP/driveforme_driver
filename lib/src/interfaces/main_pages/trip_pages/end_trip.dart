@@ -19,6 +19,7 @@ import 'package:DriveFormeDriver/src/data/utils/trip_screen_helpers.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/driver_navigation_sheet.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/trip_map_view.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,10 +125,8 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
     if (widget.tripMongoId.isEmpty) return;
     if (!_canEndTrip) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'You can end the trip only within 500 m of the destination.',
-          ),
+        SnackBar(
+          content: Text('endTripWithin500m'.tr()),
         ),
       );
       return;
@@ -142,7 +141,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
 
     if (!response.success || response.data == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message ?? 'Failed to complete trip.')),
+        SnackBar(content: Text(response.message ?? 'failedToCompleteTrip'.tr())),
       );
       return;
     }
@@ -256,7 +255,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
                     ),
                   ),
                   DriverNavigationSheet(
-                    title: 'Heading to destination',
+                    title: 'headingToDestination'.tr(),
                     subtitle: headingTo,
                     distanceLabel: _distanceLabel,
                     etaLabel: _etaLabel,
@@ -266,7 +265,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
                         _SheetNavigateButton(target: navigationTarget),
                         const SizedBox(height: 12),
                         primaryButton(
-                          label: 'End Trip',
+                          label: 'endTrip'.tr(),
                           buttonHeight: 52,
                           fontSize: kSize16,
                           buttonColor: kTripCtaBlue,
@@ -276,8 +275,8 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
                         const SizedBox(height: 8),
                         Text(
                           _canEndTrip
-                              ? 'Tap when you reached the destination'
-                              : 'Approach destination (within 500 m) to unlock',
+                              ? 'tapWhenReachedDestination'.tr()
+                              : 'approachDestinationToUnlock'.tr(),
                           textAlign: TextAlign.center,
                           style: kCaption12R.copyWith(
                             color: kTripBodyMuted,
@@ -287,7 +286,7 @@ class _EndTripScreenState extends ConsumerState<EndTripScreen>
                         TextButton(
                           onPressed: _handleCancel,
                           child: Text(
-                            'Cancel trip',
+                            'cancelTrip'.tr(),
                             style: kCaption14M.copyWith(color: kRed),
                           ),
                         ),
@@ -356,7 +355,7 @@ class _TripStatusCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'TRIP IN PROGRESS',
+            'tripInProgressBadge'.tr(),
             style: kCaption11R.copyWith(
               color: _kEarningsOrange,
               letterSpacing: 0.6,
@@ -402,7 +401,7 @@ class _EarningsCard extends StatelessWidget {
           Text(price, style: kDriverFoundPriceSB.copyWith(fontSize: kSize20)),
           const SizedBox(height: 2),
           Text(
-            'earned so far',
+            'earnedSoFar'.tr(),
             style: kCaption11R.copyWith(
               color: _kEarningsOrange,
               fontWeight: kMedium,
@@ -424,7 +423,7 @@ class _SheetNavigateButton extends StatelessWidget {
     final enabled = target != null && target!.hasCoordinates;
 
     return sizedSheetAction(
-      label: 'Navigate',
+      label: 'navigate'.tr(),
       icon: Icons.navigation_rounded,
       foreground: kTripCtaBlue,
       background: kWhite,
@@ -456,7 +455,7 @@ class _SosTextButton extends StatelessWidget {
         );
       },
       child: Text(
-        'SOS · Emergency',
+        'sosEmergency'.tr(),
         style: kCaption14M.copyWith(
           color: kSosRed,
           fontWeight: kSemiBold,

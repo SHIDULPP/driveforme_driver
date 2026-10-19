@@ -12,9 +12,9 @@ import 'package:DriveFormeDriver/src/data/utils/document_upload_helper.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/input_field.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 class EditProfileSheet extends ConsumerStatefulWidget {
   const EditProfileSheet({super.key, required this.user});
@@ -87,7 +87,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       });
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Failed to upload photo. Please try again.');
+      _showMessage('failedToUploadPhoto'.tr());
     } finally {
       if (mounted) {
         setState(() => _isUploadingPhoto = false);
@@ -119,7 +119,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showMessage(response.message ?? 'Failed to update profile');
+        _showMessage(response.message ?? 'failedToUpdateProfile'.tr());
         return;
       }
 
@@ -146,7 +146,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
 
         if (!identityResponse.success) {
           _showMessage(
-            identityResponse.message ?? 'Profile saved but photo update failed',
+            identityResponse.message ?? 'profileSavedPhotoFailed'.tr(),
           );
           ref.invalidate(userProvider);
           Navigator.of(context).pop();
@@ -157,9 +157,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
       ref.invalidate(userProvider);
       if (!mounted) return;
       Navigator.of(context).pop();
-      _showMessage('Profile updated successfully');
+      _showMessage('profileUpdatedSuccessfully'.tr());
     } on FormatException {
-      _showMessage('Please enter date of birth as DD/MM/YYYY');
+      _showMessage('pleaseEnterDob'.tr());
     } finally {
       ref.read(loadingProvider.notifier).stopLoading();
     }
@@ -198,7 +198,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 Row(
                   children: [
                     Text(
-                      'Edit profile',
+                      'editProfile'.tr(),
                       style: kStyle(kMedium, kSize18, color: kTextColor),
                     ),
                     const Spacer(),
@@ -231,59 +231,59 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 Center(child: _buildAvatar(isLoading)),
                 const SizedBox(height: 24),
                 _EditField(
-                  label: 'Name',
+                  label: 'name'.tr(),
                   child: InputField(
                     type: CustomFieldType.text,
-                    hint: 'Enter your name',
+                    hint: 'enterYourName'.tr(),
                     controller: _nameController,
                     validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Name is required'
+                        ? 'nameIsRequired'.tr()
                         : null,
                   ),
                 ),
                 const SizedBox(height: 16),
                 _EditField(
-                  label: 'Mobile Number',
+                  label: 'mobileNumber'.tr(),
                   child: InputField(
                     type: CustomFieldType.text,
-                    hint: 'Mobile number',
+                    hint: 'mobileNumberHint'.tr(),
                     controller: _phoneController,
                     readOnly: true,
                   ),
                 ),
                 const SizedBox(height: 16),
                 _EditField(
-                  label: 'Email',
+                  label: 'email'.tr(),
                   child: InputField(
                     type: CustomFieldType.text,
-                    hint: 'Add Email ID',
+                    hint: 'addEmailId'.tr(),
                     controller: _emailController,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Email is required';
+                        return 'emailRequired'.tr();
                       }
                       final emailRegex = RegExp(
                         r'^[\w\.\+\-]+@[\w\-]+\.[a-zA-Z]{2,}$',
                       );
                       return emailRegex.hasMatch(value.trim())
                           ? null
-                          : 'Enter a valid email';
+                          : 'enterValidEmail'.tr();
                     },
                   ),
                 ),
                 const SizedBox(height: 16),
                 _EditField(
-                  label: 'Date of Birth',
+                  label: 'dateOfBirth'.tr(),
                   child: InputField(
                     type: CustomFieldType.date,
-                    hint: 'Add DOB',
+                    hint: 'addDob'.tr(),
                     controller: _dobController,
                     validator: validateDriverDob,
                   ),
                 ),
                 const SizedBox(height: 24),
                 primaryButton(
-                  label: 'save',
+                  label: 'save'.tr(),
                   onPressed: isLoading || _isUploadingPhoto
                       ? null
                       : _saveProfile,

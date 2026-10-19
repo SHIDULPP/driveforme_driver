@@ -5,6 +5,7 @@ import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/profile_avatar.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/trip_pages/trip_route_preview.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class NewTripRequestCard extends StatelessWidget {
@@ -54,7 +55,7 @@ class NewTripRequestCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      isScheduled ? 'Scheduled Trip Request' : 'New Trip request',
+                      isScheduled ? 'scheduledTripRequest'.tr() : 'newTripRequest'.tr(),
                       style: kTripSubSectionSB,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -71,7 +72,9 @@ class NewTripRequestCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(context.rs(20)),
                     ),
                     child: Text(
-                      isScheduled ? 'Scheduled' : trip.tripTypeChipLabel,
+                      isScheduled
+                          ? 'scheduled'.tr()
+                          : (trip.isLongTrip ? 'longTrip'.tr() : 'shortTrip'.tr()),
                       style: kTripChipR.copyWith(
                         color: isScheduled
                             ? kStatusScheduledText
@@ -136,7 +139,7 @@ class NewTripRequestCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Decline ride',
+                        'declineRide'.tr(),
                         style: kStyle(kMedium, kSize14, color: kSosRed),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -158,7 +161,7 @@ class NewTripRequestCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Accept Ride',
+                        'acceptRide'.tr(),
                         style: kStyle(kSemiBold, kSize14, color: kWhite),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -201,7 +204,7 @@ class _ScheduledPickupRow extends StatelessWidget {
           SizedBox(width: context.rs(6)),
           Expanded(
             child: Text(
-              'Pickup: $label',
+              'pickupColon'.tr(args: [label]),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: kTripChipR.copyWith(
@@ -261,21 +264,21 @@ class _TripStatsBar extends StatelessWidget {
           children: [
             Expanded(
               child: _StatColumn(
-                label: 'Distance',
+                label: 'distance'.tr(),
                 value: trip.distanceLabel,
               ),
             ),
             _StatDivider(),
             Expanded(
               child: _StatColumn(
-                label: 'Duration',
+                label: 'duration'.tr(),
                 value: trip.durationLabel,
               ),
             ),
             _StatDivider(),
             Expanded(
               child: _StatColumn(
-                label: 'you earn',
+                label: 'youEarn'.tr(),
                 value: trip.displayEarnings,
               ),
             ),

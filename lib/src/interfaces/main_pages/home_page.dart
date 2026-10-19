@@ -13,6 +13,7 @@ import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/trip_pages/new_trip_request_card.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,7 +79,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (!trip.canBeOfferedAt(DateTime.now())) {
       ref.read(availableTripsProvider.notifier).removeTrip(trip.id);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This trip request has expired.')),
+        SnackBar(content: Text('tripRequestExpired'.tr())),
       );
       return;
     }
@@ -90,7 +91,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     if (!response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message ?? 'Failed to accept trip.')),
+        SnackBar(
+          content: Text(response.message ?? 'failedToAcceptTrip'.tr()),
+        ),
       );
       return;
     }
@@ -102,11 +105,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       ref.invalidate(tripHistoryProvider(TripHistoryTab.upcoming));
       final dateStr = acceptedTrip.pickupAt != null
           ? acceptedTrip.formatDateTime(acceptedTrip.pickupAt)
-          : 'scheduled time';
+          : 'scheduledTime'.tr();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Scheduled trip accepted for $dateStr. The vehicle owner has been informed of your details.',
+            'scheduledTripAccepted'.tr(args: [dateStr]),
           ),
           duration: const Duration(seconds: 4),
         ),
@@ -252,16 +255,17 @@ class _HomeHeaderBackground extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
     final greeting = userAsync.when(
-      data: (user) => 'Hii ${greetingFirstName(user)}!',
-      loading: () => 'Hii there!',
-      error: (_, _) => 'Hii there!',
+      data: (user) => 'hiName'.tr(args: [greetingFirstName(user)]),
+      loading: () => 'hiThere'.tr(),
+      error: (_, _) => 'hiThere'.tr(),
     );
     final location = ref
         .watch(currentLocationProvider)
         .when(
-          data: (current) => current?.displayLabel ?? 'Location unavailable',
-          loading: () => 'Getting location...',
-          error: (_, _) => 'Location unavailable',
+          data: (current) =>
+              current?.displayLabel ?? 'locationUnavailable'.tr(),
+          loading: () => 'gettingLocation'.tr(),
+          error: (_, _) => 'locationUnavailable'.tr(),
         );
 
     final topPadding = MediaQuery.paddingOf(context).top;
@@ -511,7 +515,7 @@ class _OnlineStatusCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isOnline ? 'You are Online' : 'You are Offline',
+                  isOnline ? 'youAreOnline'.tr() : 'youAreOffline'.tr(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -524,8 +528,8 @@ class _OnlineStatusCard extends ConsumerWidget {
                 ),
                 Text(
                   isOnline
-                      ? 'Ready to accept requests'
-                      : 'You will not receive requests',
+                      ? 'readyToAcceptRequests'.tr()
+                      : 'youWillNotReceiveRequests'.tr(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -675,9 +679,9 @@ class _TodaysEarningsCard extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Today's Earnings",
-                          style: TextStyle(
+                        Text(
+                          'todaysEarnings'.tr(),
+                          style: const TextStyle(
                             fontFamily: 'ClashGrotesk',
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
@@ -792,7 +796,7 @@ class _EarningsBonusRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          'Bonus',
+          'bonus'.tr(),
           style: TextStyle(
             fontFamily: 'ClashGrotesk',
             fontWeight: FontWeight.w400,
@@ -905,9 +909,9 @@ class _TripPreferenceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Trip Preference',
-            style: TextStyle(
+          Text(
+            'tripPreference'.tr(),
+            style: const TextStyle(
               fontFamily: 'ClashGrotesk',
               fontWeight: FontWeight.w500,
               fontSize: 14,
@@ -927,8 +931,8 @@ class _TripPreferenceCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _TripOptionTile(
-                    title: 'Short Trip',
-                    subtitle: 'Within City',
+                    title: 'shortTrip'.tr(),
+                    subtitle: 'withinCity'.tr(),
                     imagePath: 'assets/pngs/short_trip.png',
                     isSelected: isShortTrip,
                     selectedBackground: _kSelectedTripBg,
@@ -937,8 +941,8 @@ class _TripPreferenceCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: _TripOptionTile(
-                    title: 'Long Trip',
-                    subtitle: 'Outstation',
+                    title: 'longTrip'.tr(),
+                    subtitle: 'outstation'.tr(),
                     imagePath: 'assets/pngs/long_trip.png',
                     isSelected: !isShortTrip,
                     selectedBackground: _kSelectedTripBg,
@@ -949,15 +953,15 @@ class _TripPreferenceCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 11),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.verified, size: 12, color: kActiveGreen),
-              SizedBox(width: 4),
+              const Icon(Icons.verified, size: 12, color: kActiveGreen),
+              const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  'You will receive requests based on your preferences',
-                  style: TextStyle(
+                  'youWillReceiveRequests'.tr(),
+                  style: const TextStyle(
                     fontFamily: 'ClashGrotesk',
                     fontWeight: FontWeight.w400,
                     fontSize: 12,
@@ -1091,11 +1095,11 @@ class _PromoBannerCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Drive More. Earn More!',
+                    Text(
+                      'driveMoreEarnMore'.tr(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'ClashGrotesk',
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
@@ -1105,7 +1109,7 @@ class _PromoBannerCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Complete 20 trips this week and get 1,000 extra',
+                      'complete20TripsBonus'.tr(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1149,9 +1153,9 @@ class _PromoLearnMoreLink extends StatelessWidget {
     return GestureDetector(
       onTap: () => _PromoBannerCard._openLearnMore(context),
       behavior: HitTestBehavior.opaque,
-      child: const Text(
-        'Learn more',
-        style: TextStyle(
+      child: Text(
+        'learnMore'.tr(),
+        style: const TextStyle(
           fontFamily: 'ClashGrotesk',
           fontWeight: FontWeight.w500,
           fontSize: 12,
@@ -1202,13 +1206,12 @@ class _PromoLearnMoreSheet extends StatelessWidget {
           ),
           SizedBox(height: context.rs(18)),
           Text(
-            'Drive More. Earn More!',
+            'driveMoreEarnMore'.tr(),
             style: kStyle(kSemiBold, kSize20, color: kTextColor, height: 1.2),
           ),
           SizedBox(height: context.rs(10)),
           Text(
-            'Complete 20 trips this week and earn an extra ₹1,000 bonus '
-            'credited to your wallet.',
+            'complete20TripsBonusDetail'.tr(),
             style: kCaption14R.copyWith(
               color: kSecondaryTextColor,
               height: 1.45,
@@ -1217,26 +1220,20 @@ class _PromoLearnMoreSheet extends StatelessWidget {
           SizedBox(height: context.rs(16)),
           _PromoDetailRow(
             icon: Icons.route_outlined,
-            title: 'How it works',
-            body:
-                'Stay online, accept trip requests, and complete 20 trips '
-                'within the current week (Monday–Sunday).',
+            title: 'howItWorks'.tr(),
+            body: 'promoHowItWorksBody'.tr(),
           ),
           SizedBox(height: context.rs(12)),
           _PromoDetailRow(
             icon: Icons.account_balance_wallet_outlined,
-            title: 'Bonus payout',
-            body:
-                'Once you hit the target, ₹1,000 is added to your wallet '
-                'automatically. You can withdraw it to your bank account.',
+            title: 'bonusPayout'.tr(),
+            body: 'promoBonusPayoutBody'.tr(),
           ),
           SizedBox(height: context.rs(12)),
           _PromoDetailRow(
             icon: Icons.info_outline_rounded,
-            title: 'Note',
-            body:
-                'Cancelled trips do not count. Only completed trips in your '
-                'selected trip preference are eligible.',
+            title: 'note'.tr(),
+            body: 'promoNoteBody'.tr(),
           ),
           SizedBox(height: context.rs(22)),
           SizedBox(
@@ -1253,7 +1250,7 @@ class _PromoLearnMoreSheet extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Got it',
+                'gotIt'.tr(),
                 style: kStyle(kSemiBold, kSize16, color: kWhite),
               ),
             ),

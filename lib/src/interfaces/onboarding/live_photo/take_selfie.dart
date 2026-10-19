@@ -5,6 +5,7 @@ import 'package:DriveFormeDriver/src/data/providers/loading_provider.dart';
 import 'package:DriveFormeDriver/src/data/services/upload_service.dart';
 import 'package:DriveFormeDriver/src/data/models/document_upload_result.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +59,7 @@ class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage>
     final status = await Permission.camera.request();
     if (!status.isGranted) {
       if (mounted) {
-        setState(() => _cameraError = 'Camera permission is required.');
+        setState(() => _cameraError = 'cameraPermissionRequired'.tr());
       }
       return;
     }
@@ -66,7 +67,7 @@ class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage>
     final cameras = await availableCameras();
     if (cameras.isEmpty) {
       if (mounted) {
-        setState(() => _cameraError = 'No camera found on this device.');
+        setState(() => _cameraError = 'noCameraFound'.tr());
       }
       return;
     }
@@ -98,7 +99,7 @@ class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage>
     } catch (e) {
       controller.dispose();
       if (mounted) {
-        setState(() => _cameraError = 'Failed to initialize camera: $e');
+        setState(() => _cameraError = 'failedToInitializeCamera'.tr(args: ['$e']));
       }
     }
   }
@@ -231,7 +232,7 @@ class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Align your face in the middle',
+                              'alignFaceInMiddle'.tr(),
                               textAlign: TextAlign.center,
                               style: kStyle(
                                 kSemiBold,
@@ -243,8 +244,8 @@ class _TakeSelfiePageState extends ConsumerState<TakeSelfiePage>
                             const SizedBox(height: 10),
                             Text(
                               _isUploading
-                                  ? 'Uploading your live photo...'
-                                  : 'Make sure your face is inside the frame and capture a photo.',
+                                  ? 'uploadingLivePhoto'.tr()
+                                  : 'faceInsideFrameCapture'.tr(),
                               textAlign: TextAlign.center,
                               style: kCaption14R.copyWith(
                                 color: kWhite.withValues(alpha: 0.92),

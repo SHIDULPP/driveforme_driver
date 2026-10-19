@@ -16,6 +16,7 @@ import 'package:DriveFormeDriver/src/interfaces/main_pages/home_page.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/earning.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/profile_page.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/trips.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -36,11 +37,17 @@ class _NavBarState extends ConsumerState<NavBar> {
   late int _currentIndex;
   bool _checkedActiveTrip = false;
 
-  static const _items = <_NavBarItemData>[
-    _NavBarItemData(label: 'Home', iconPath: 'assets/svgs/home_icon.svg'),
-    _NavBarItemData(label: 'Trips', iconPath: 'assets/svgs/trips_icon.svg'),
-    _NavBarItemData(label: 'Earnings', iconPath: 'assets/svgs/wallet_icon.svg'),
-    _NavBarItemData(label: 'Profile', iconPath: 'assets/svgs/profie_icon.svg'),
+  List<_NavBarItemData> get _items => [
+    _NavBarItemData(label: 'navHome'.tr(), iconPath: 'assets/svgs/home_icon.svg'),
+    _NavBarItemData(label: 'navTrips'.tr(), iconPath: 'assets/svgs/trips_icon.svg'),
+    _NavBarItemData(
+      label: 'navEarnings'.tr(),
+      iconPath: 'assets/svgs/wallet_icon.svg',
+    ),
+    _NavBarItemData(
+      label: 'navProfile'.tr(),
+      iconPath: 'assets/svgs/profie_icon.svg',
+    ),
   ];
 
   @override

@@ -22,12 +22,20 @@ class AuthSessionService {
         token == null ||
         token.isEmpty) {
       await _storage.clearSession();
+      final preferredLanguage = await _storage.getPreferredLanguage();
+      if (preferredLanguage == null || preferredLanguage.isEmpty) {
+        return 'languageSelection';
+      }
       return 'Phone';
     }
 
     final response = await _onboardingApi.getMe();
     if (!response.success || response.data == null) {
       await _storage.clearSession();
+      final preferredLanguage = await _storage.getPreferredLanguage();
+      if (preferredLanguage == null || preferredLanguage.isEmpty) {
+        return 'languageSelection';
+      }
       return 'Phone';
     }
 

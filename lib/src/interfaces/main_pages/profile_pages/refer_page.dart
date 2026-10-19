@@ -4,6 +4,7 @@ import 'package:DriveFormeDriver/src/data/providers/user_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/wallet_provider.dart';
 import 'package:DriveFormeDriver/src/data/utils/responsive.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -79,7 +80,7 @@ class ReferPage extends ConsumerWidget {
                   context.rs(16),
                 ),
                 child: primaryButton(
-                  label: 'Invite',
+                  label: 'invite'.tr(),
                   onPressed: code.isEmpty
                       ? null
                       : () => _shareInvite(context, code),
@@ -95,16 +96,15 @@ class ReferPage extends ConsumerWidget {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Referral code copied.')),
+      SnackBar(content: Text('referralCodeCopied'.tr())),
     );
   }
 
   void _shareInvite(BuildContext context, String code) {
-    final message =
-        'Join Drive For Me as a driver and earn! Use my referral code: $code';
+    final message = 'referralInviteMessage'.tr(args: [code]);
     Clipboard.setData(ClipboardData(text: message));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Invite message copied. Share it with friends!')),
+      SnackBar(content: Text('inviteMessageCopied'.tr())),
     );
   }
 }
@@ -137,7 +137,7 @@ class _ReferPageHeader extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           Text(
-            'Refer & Earn',
+            'referAndEarnAmp'.tr(),
             style: kStyle(
               kMedium,
               kSize18,
@@ -209,18 +209,18 @@ class _InviteEarnBanner extends StatelessWidget {
                         color: kTextColor,
                         height: 1.15,
                       ),
-                      children: const [
-                        TextSpan(text: 'Invite & '),
+                      children: [
+                        TextSpan(text: 'inviteAnd'.tr()),
                         TextSpan(
-                          text: 'Earn',
-                          style: TextStyle(color: kBrandBlue),
+                          text: 'earn'.tr(),
+                          style: const TextStyle(color: kBrandBlue),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(height: context.rs(10)),
                   Text(
-                    'Earn ₹100 for every successful Driver referral',
+                    'earnPerDriverReferral'.tr(),
                     style: kCaption13R.copyWith(
                       color: kTripBodyMuted,
                       height: 1.45,
@@ -282,7 +282,7 @@ class _ReferralCodeCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Referral Code',
+            'referralCode'.tr(),
             style: kCaption12R.copyWith(color: kMutedText),
           ),
           SizedBox(height: context.rs(12)),

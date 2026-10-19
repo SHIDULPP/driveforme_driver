@@ -11,6 +11,7 @@ import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_navigation.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_screen_helpers.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/trip_map_view.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,7 +125,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
         SnackBar(
           content: Text(
             response.message ??
-                'Could not start trip. Check your wallet balance and OTP.',
+                'couldNotStartTripWalletOtp'.tr(),
           ),
         ),
       );
@@ -170,7 +171,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     final trip = _trip;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final otp = _otpController.text;
-    final customerName = trip?.customerDisplayName ?? 'Vehicle owner';
+    final customerName = trip?.customerDisplayName ?? 'vehicleOwner'.tr();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -240,13 +241,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                               child: Column(
                                 children: [
                                   Text(
-                                    'Enter OTP to Start your trip',
+                                    'enterOtpToStartTrip'.tr(),
                                     textAlign: TextAlign.center,
                                     style: kDriverFoundOtpTitleSB,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Ask $customerName for the 4-digit code',
+                                    'askFor4DigitCode'.tr(args: [customerName]),
                                     textAlign: TextAlign.center,
                                     style: kDriverFoundOtpHintR,
                                   ),
@@ -323,7 +324,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                                     )
                                   else
                                     Text(
-                                      'Trip starts automatically after OTP verification',
+                                      'tripStartsAfterOtp'.tr(),
                                       textAlign: TextAlign.center,
                                       style: kDriverFoundOtpHintR,
                                     ),
@@ -334,7 +335,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                             TextButton(
                               onPressed: _handleCancel,
                               child: Text(
-                                'Cancel trip',
+                                'cancelTrip'.tr(),
                                 style: kCaption14M.copyWith(color: kRed),
                               ),
                             ),

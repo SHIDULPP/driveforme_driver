@@ -2,6 +2,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/data/utils/trip_lifecycle.dart';
 import 'package:DriveFormeDriver/src/interfaces/main_pages/sos/sos_shared.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class SosHelpOnWayPage extends StatelessWidget {
@@ -51,8 +52,8 @@ class SosHelpOnWayPage extends StatelessWidget {
                     Expanded(
                       child: _BottomActionButton(
                         backgroundColor: kSosRed,
-                        title: 'Call 112',
-                        subtitle: 'Emergency Services',
+                        title: 'call112'.tr(),
+                        subtitle: 'emergencyServices'.tr(),
                         titleColor: kWhite,
                         subtitleColor: kWhite,
                         borderColor: kSosRed,
@@ -63,8 +64,8 @@ class SosHelpOnWayPage extends StatelessWidget {
                     Expanded(
                       child: _BottomActionButton(
                         backgroundColor: kWhite,
-                        title: 'I am safe',
-                        subtitle: 'Cancel SOS alert',
+                        title: 'iAmSafe'.tr(),
+                        subtitle: 'cancelSosAlert'.tr(),
                         titleColor: kTextColor,
                         subtitleColor: kMutedText,
                         borderColor: kCardBorder,
@@ -79,7 +80,7 @@ class SosHelpOnWayPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
-                    'Trip has been paused. Your data has been saved. Support team will contact you shortly',
+                    'tripPausedSupportContact'.tr(),
                     textAlign: TextAlign.center,
                     style: kStyle(
                       kRegular,
@@ -143,7 +144,7 @@ class _HelpOnWayHeader extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Help is on the way',
+                'helpIsOnTheWay'.tr(),
                 textAlign: TextAlign.center,
                 style: kStyle(kSemiBold, kSize24, color: kWhite, height: 1.15),
               ),
@@ -159,13 +160,13 @@ class _HelpOnWayHeader extends StatelessWidget {
                       color: kWhite,
                       height: 1.35,
                     ),
-                    children: const [
-                      TextSpan(text: 'Emergency services notified . '),
-                      TextSpan(
+                    children: [
+                      TextSpan(text: 'emergencyServicesNotified'.tr()),
+                      const TextSpan(
                         text: 'Drive4me',
                         style: TextStyle(fontWeight: kMedium),
                       ),
-                      TextSpan(text: ' support alerted'),
+                      TextSpan(text: 'supportAlerted'.tr()),
                     ],
                   ),
                 ),
@@ -196,7 +197,7 @@ class _ReferenceCard extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'SOS REFERENCE NUMBER',
+            'sosReferenceNumber'.tr(),
             style: kStyle(
               kSemiBold,
               kSize11,
@@ -212,7 +213,7 @@ class _ReferenceCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Quote this when speaking to emergency services',
+            'quoteWhenSpeakingEmergency'.tr(),
             textAlign: TextAlign.center,
             style: kStyle(kRegular, kSize12, color: kSosRed, height: 1.3),
           ),
@@ -242,7 +243,7 @@ class _LocationCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'YOUR SHARED LOCATION',
+            'yourSharedLocation'.tr(),
             style: kStyle(
               kSemiBold,
               kSize11,
@@ -273,7 +274,7 @@ class _LocationCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Live location being shared',
+                'liveLocationBeingShared'.tr(),
                 style: kStyle(kMedium, kSize13, color: kActiveGreen),
               ),
             ],
@@ -321,12 +322,12 @@ class _SupportCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Drive4me Support',
+                  'drive4meSupport'.tr(),
                   style: kStyle(kSemiBold, kSize15, color: kTextColor),
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '24/7 emergency line . $phone',
+                  'emergencyLine24x7'.tr(args: [phone]),
                   style: kStyle(
                     kRegular,
                     kSize12,
@@ -350,7 +351,7 @@ class _SupportCard extends StatelessWidget {
                   vertical: 11,
                 ),
                 child: Text(
-                  'Call Now',
+                  'callNow'.tr(),
                   style: kStyle(kSemiBold, kSize13, color: kWhite),
                 ),
               ),

@@ -9,6 +9,7 @@ import 'package:DriveFormeDriver/src/data/utils/document_upload_helper.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/input_field.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -117,7 +118,7 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
                     const AppBackButton(),
                     const SizedBox(height: 28),
                     Text(
-                      'Upload Aadhaar card',
+                      'uploadAadhaarCard'.tr(),
                       style: kStyle(
                         kMedium,
                         kSize30,
@@ -127,7 +128,7 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Make sure all details are clearly visible',
+                      'makeSureDetailsVisible'.tr(),
                       style: kCaption14R.copyWith(
                         color: kSecondaryTextColor,
                         height: 1.4,
@@ -149,20 +150,20 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
                             onTapUploadArea: () => _pickAndUpload(),
                           ),
                     const SizedBox(height: 24),
-                    Text('Aadhaar Number', style: kTripSubSectionSB),
+                    Text('aadhaarNumber'.tr(), style: kTripSubSectionSB),
                     const SizedBox(height: 8),
                     InputField(
                       type: CustomFieldType.number,
-                      hint: '12-digit Aadhaar number',
+                      hint: 'aadhaarNumberHint'.tr(),
                       controller: _aadhaarController,
                       maxLength: 12,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Aadhaar number is required';
+                          return 'aadhaarNumberRequired'.tr();
                         }
                         final digits = v.replaceAll(RegExp(r'\D'), '');
                         if (digits.length != 12) {
-                          return 'Aadhaar number must be exactly 12 digits';
+                          return 'aadhaarNumberMustBe12Digits'.tr();
                         }
                         return null;
                       },
@@ -175,7 +176,7 @@ class _AadhaarUploadPageState extends ConsumerState<AadhaarUploadPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               child: primaryButton(
-                label: 'Add Aadhaar',
+                label: 'addAadhaar'.tr(),
                 buttonHeight: 56,
                 fontSize: kSize16,
                 buttonColor: _canSubmit ? kBrandBlue : kTripCloseBtnBg,
@@ -251,14 +252,14 @@ class _AadhaarUploadCard extends StatelessWidget {
                   const SizedBox(height: 14),
                   Text(
                     isUploading
-                        ? 'Uploading image...'
-                        : 'Tap to upload your image',
+                        ? 'uploadingImage'.tr()
+                        : 'tapToUploadYourImage'.tr(),
                     textAlign: TextAlign.center,
                     style: kCaption14B,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Supported formats JPEG, PNG, upto 50MB',
+                    'supportedFormatsUpload'.tr(),
                     textAlign: TextAlign.center,
                     style: kCaption12R.copyWith(color: kMutedText),
                   ),
@@ -271,7 +272,7 @@ class _AadhaarUploadCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Take Photo',
+                  label: 'takePhoto'.tr(),
                   isPrimary: true,
                   onTap: isUploading ? null : onTakePhoto,
                 ),
@@ -279,7 +280,7 @@ class _AadhaarUploadCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Upload from Gallery',
+                  label: 'uploadFromGallery'.tr(),
                   isPrimary: false,
                   onTap: isUploading ? null : onUploadFromGallery,
                 ),
@@ -334,7 +335,7 @@ class _AadhaarPreviewCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Retake Photo',
+                  label: 'retakePhoto'.tr(),
                   isPrimary: false,
                   onTap: onRetake,
                 ),
@@ -342,7 +343,7 @@ class _AadhaarPreviewCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _UploadActionButton(
-                  label: 'Replace',
+                  label: 'replace'.tr(),
                   isPrimary: false,
                   onTap: onReplace,
                 ),

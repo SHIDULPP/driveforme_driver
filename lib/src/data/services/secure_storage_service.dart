@@ -9,6 +9,7 @@ class SecureStorageService {
   static const _driverOnlineKey = 'driver_online';
   static const _bankAccountKey = 'bank_account';
   static const _tripPreferenceKey = 'trip_preference';
+  static const _preferredLanguageKey = 'preferred_language';
 
   final FlutterSecureStorage _storage;
 
@@ -65,6 +66,12 @@ class SecureStorageService {
   Future<String?> getBankAccountJson() => _storage.read(key: _bankAccountKey);
 
   Future<void> clearBankAccount() => _storage.delete(key: _bankAccountKey);
+
+  Future<void> setPreferredLanguage(String languageCode) =>
+      _storage.write(key: _preferredLanguageKey, value: languageCode);
+
+  Future<String?> getPreferredLanguage() =>
+      _storage.read(key: _preferredLanguageKey);
 
   Future<void> clearSession() async {
     await _storage.delete(key: _userIdKey);

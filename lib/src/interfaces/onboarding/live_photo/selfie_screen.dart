@@ -3,6 +3,7 @@ import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/appbackbutton.dart';
 import 'package:DriveFormeDriver/src/interfaces/components/primarybutton.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -34,7 +35,7 @@ class SelfieScreen extends StatelessWidget {
                     const AppBackButton(),
                     const SizedBox(height: 28),
                     Text(
-                      'Take a Selfie!',
+                      'takeASelfie'.tr(),
                       style: kStyle(
                         kMedium,
                         kSize30,
@@ -44,7 +45,7 @@ class SelfieScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Capture a real-time photo for identity verification',
+                      'captureRealtimePhotoIdentity'.tr(),
                       style: kCaption14R.copyWith(
                         color: kSecondaryTextColor,
                         height: 1.4,
@@ -53,34 +54,30 @@ class SelfieScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     const _ExamplePhotoGallery(),
                     const SizedBox(height: 28),
-                    Text('Instructions', style: kTripSectionTitleSB),
+                    Text('instructions'.tr(), style: kTripSectionTitleSB),
                     const SizedBox(height: 16),
-                    const _InstructionItem(
+                    _InstructionItem(
                       iconPath: 'assets/svgs/facevisible.svg',
-                      title: 'Face Clearly Visible',
-                      description:
-                          'Make sure your entire face is visible within the frame.',
+                      title: 'faceClearlyVisible'.tr(),
+                      description: 'faceClearlyVisibleBody'.tr(),
                     ),
                     const SizedBox(height: 16),
-                    const _InstructionItem(
+                    _InstructionItem(
                       iconPath: 'assets/svgs/goodlighting.svg',
-                      title: 'Good Lighting',
-                      description:
-                          'Use proper lighting and avoid dark or backlit areas.',
+                      title: 'goodLighting'.tr(),
+                      description: 'goodLightingBody'.tr(),
                     ),
                     const SizedBox(height: 16),
-                    const _InstructionItem(
+                    _InstructionItem(
                       iconPath: 'assets/svgs/removeaccessories.svg',
-                      title: 'Remove Accessories',
-                      description:
-                          'Please remove sunglasses, hats, and marks',
+                      title: 'removeAccessories'.tr(),
+                      description: 'removeAccessoriesBody'.tr(),
                     ),
                     const SizedBox(height: 16),
-                    const _InstructionItem(
+                    _InstructionItem(
                       iconPath: 'assets/svgs/holdsteady.svg',
-                      title: 'Hold Steady',
-                      description:
-                          'Hold your phone steady and looks straight at the camera.',
+                      title: 'holdSteady'.tr(),
+                      description: 'holdSteadyBody'.tr(),
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -90,7 +87,7 @@ class SelfieScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               child: primaryButton(
-                label: 'Continue',
+                label: 'continueText'.tr(),
                 buttonHeight: 56,
                 fontSize: kSize16,
                 buttonColor: kBrandBlue,

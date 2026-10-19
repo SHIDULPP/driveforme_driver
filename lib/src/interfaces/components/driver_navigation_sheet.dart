@@ -1,5 +1,6 @@
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/constants/style_constans.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 const _kPanelBg = Color(0xFFF5F6F8);
@@ -118,7 +119,7 @@ class _NavigationStatsRow extends StatelessWidget {
           Expanded(
             child: _NavStatItem(
               icon: Icons.route_rounded,
-              label: 'Distance',
+              label: 'distance'.tr(),
               value: distanceLabel,
             ),
           ),
@@ -126,7 +127,7 @@ class _NavigationStatsRow extends StatelessWidget {
           Expanded(
             child: _NavStatItem(
               icon: Icons.access_time_rounded,
-              label: 'ETA',
+              label: 'eta'.tr(),
               value: etaLabel,
             ),
           ),
