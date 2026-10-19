@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:DriveFormeDriver/src/data/apis/onboarding_api.dart';
 import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
 import 'package:DriveFormeDriver/src/data/models/trip_model.dart';
@@ -18,13 +20,20 @@ final dismissedTripIdsProvider = StateProvider<Set<String>>((ref) => {});
 /// Fetches once when the driver goes online or changes trip preference.
 final availableTripsProvider =
     NotifierProvider<AvailableTripsNotifier, List<TripModel>>(
-  AvailableTripsNotifier.new,
-);
+      AvailableTripsNotifier.new,
+    );
 
 class AvailableTripsNotifier extends Notifier<List<TripModel>> {
   @override
   List<TripModel> build() {
     final socket = ref.watch(tripSocketServiceProvider);
+    // Remove requests that expire while the home screen remains open.
+    final expiryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now();
+      final valid = state.where((trip) => trip.canBeOfferedAt(now)).toList();
+      if (valid.length != state.length) state = valid;
+    });
+    ref.onDispose(expiryTimer.cancel);
 
     ref.listen(driverOnlineProvider, (previous, next) {
       if (next) {
@@ -72,9 +81,9 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
     if (!ref.read(driverOnlineProvider)) return;
 
     final tripType = ref.read(tripPreferenceProvider);
-    final response = await ref.read(tripApiProvider).listAvailableTrips(
-          tripType: tripType,
-        );
+    final response = await ref
+        .read(tripApiProvider)
+        .listAvailableTrips(tripType: tripType);
 
     if (!response.success) return;
 
@@ -90,13 +99,15 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
 
     final trip = TripModel.fromJson(data);
     if (trip.id.isEmpty) return;
+    if (!trip.canBeOfferedAt(DateTime.now())) {
+      removeTrip(trip.id);
+      return;
+    }
     if (!_matchesPreference(trip)) return;
     if (ref.read(dismissedTripIdsProvider).contains(trip.id)) return;
 
-    final updated = [
-      trip,
-      ...state.where((existing) => existing.id != trip.id),
-    ]..sort(
+    final updated = [trip, ...state.where((existing) => existing.id != trip.id)]
+      ..sort(
         (a, b) => (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
             .compareTo(a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)),
       );
@@ -104,6 +115,7 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
   }
 
   bool _matchesPreference(TripModel trip) {
+    if (!trip.canBeOfferedAt(DateTime.now())) return false;
     final preferred = ref.read(tripPreferenceProvider);
     final type = trip.tripType.trim();
     if (type.isEmpty) return true;
@@ -120,9 +132,7 @@ class AvailableTripsNotifier extends Notifier<List<TripModel>> {
 }
 
 void dismissTripRequest(WidgetRef ref, String tripId) {
-  ref.read(dismissedTripIdsProvider.notifier).update(
-        (ids) => {...ids, tripId},
-      );
+  ref.read(dismissedTripIdsProvider.notifier).update((ids) => {...ids, tripId});
   ref.read(availableTripsProvider.notifier).removeTrip(tripId);
 }
 
@@ -132,8 +142,9 @@ void setDriverOnline(WidgetRef ref, bool isOnline) {
 }
 
 Future<void> loadDriverOnlinePreference(WidgetRef ref) async {
-  final isOnline =
-      await ref.read(secureStorageServiceProvider).getDriverOnline();
+  final isOnline = await ref
+      .read(secureStorageServiceProvider)
+      .getDriverOnline();
   ref.read(driverOnlineProvider.notifier).state = isOnline;
 }
 
@@ -163,8 +174,9 @@ Future<void> setTripPreference(WidgetRef ref, bool isShortTrip) async {
 
   // Sync to backend so dispatch only targets matching drivers.
   try {
-    final response =
-        await ref.read(onboardingApiProvider).updateTripPreference(preference);
+    final response = await ref
+        .read(onboardingApiProvider)
+        .updateTripPreference(preference);
     if (!response.success) {
       // Keep local preference; backend will catch up on next successful sync.
     }

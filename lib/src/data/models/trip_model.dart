@@ -207,6 +207,15 @@ class TripModel {
 
   bool get isScheduled => status == 'scheduled' || rideTime == 'scheduled';
 
+  /// Only future scheduled bookings may be offered as new requests.
+  /// Missing pickup dates cannot establish that a scheduled offer is valid.
+  bool canBeOfferedAt(DateTime now) =>
+      !isCancelled &&
+      !isCompleted &&
+      !isInProgress &&
+      !isDriverAssigned &&
+      (!isScheduled || (pickupAt != null && pickupAt!.isAfter(now)));
+
   bool get isInProgress => status == 'in_progress';
 
   bool get isCompleted => status == 'completed';

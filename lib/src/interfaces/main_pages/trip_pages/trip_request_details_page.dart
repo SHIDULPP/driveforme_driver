@@ -61,6 +61,13 @@ class _TripRequestDetailsPageState extends ConsumerState<TripRequestDetailsPage>
   }
 
   Future<void> _handleAccept() async {
+    if (!_trip.canBeOfferedAt(DateTime.now())) {
+      ref.read(availableTripsProvider.notifier).removeTrip(_trip.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This trip request has expired.')),
+      );
+      return;
+    }
     ref.read(loadingProvider.notifier).startLoading();
     final response = await ref.read(tripApiProvider).acceptTrip(_trip.id);
     ref.read(loadingProvider.notifier).stopLoading();
