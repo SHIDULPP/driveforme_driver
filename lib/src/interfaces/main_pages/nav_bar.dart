@@ -1,3 +1,4 @@
+import 'package:DriveFormeDriver/src/data/services/notification_token_service.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
 import 'package:DriveFormeDriver/src/data/providers/active_trip_provider.dart';
 import 'package:DriveFormeDriver/src/data/providers/nav_provider.dart';
@@ -36,27 +37,25 @@ class _NavBarState extends ConsumerState<NavBar> {
   bool _checkedActiveTrip = false;
 
   static const _items = <_NavBarItemData>[
-    _NavBarItemData(
-      label: 'Home',
-      iconPath: 'assets/svgs/home_icon.svg',
-    ),
-    _NavBarItemData(
-      label: 'Trips',
-      iconPath: 'assets/svgs/trips_icon.svg',
-    ),
-    _NavBarItemData(
-      label: 'Earnings',
-      iconPath: 'assets/svgs/wallet_icon.svg',
-    ),
-    _NavBarItemData(
-      label: 'Profile',
-      iconPath: 'assets/svgs/profie_icon.svg',
-    ),
+    _NavBarItemData(label: 'Home', iconPath: 'assets/svgs/home_icon.svg'),
+    _NavBarItemData(label: 'Trips', iconPath: 'assets/svgs/trips_icon.svg'),
+    _NavBarItemData(label: 'Earnings', iconPath: 'assets/svgs/wallet_icon.svg'),
+    _NavBarItemData(label: 'Profile', iconPath: 'assets/svgs/profie_icon.svg'),
   ];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final push = ref.read(pushNotificationServiceProvider);
+      try {
+        await push.initialize();
+        if (mounted) await push.openPendingSupportChat();
+      } catch (_) {
+        // Support remains available in-app if push services are unavailable.
+      }
+    });
     _currentIndex = widget.initialIndex.clamp(0, _items.length - 1);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(navBarIndexProvider.notifier).state = _currentIndex;
@@ -168,10 +167,7 @@ class _NavBarMetrics {
 }
 
 class _NavBarItemData {
-  const _NavBarItemData({
-    required this.label,
-    required this.iconPath,
-  });
+  const _NavBarItemData({required this.label, required this.iconPath});
 
   final String label;
   final String iconPath;

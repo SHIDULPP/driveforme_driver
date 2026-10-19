@@ -1,3 +1,4 @@
+import 'package:DriveFormeDriver/src/interfaces/main_pages/support/support_pages.dart';
 import 'package:DriveFormeDriver/src/data/apis/notification_api.dart';
 import 'package:DriveFormeDriver/src/data/apis/trip_api.dart';
 import 'package:DriveFormeDriver/src/data/constants/color_constants.dart';
@@ -134,8 +135,9 @@ class NotificationsPage extends ConsumerWidget {
     NotificationModel item,
   ) async {
     if (!item.isRead) {
-      final response =
-          await ref.read(notificationApiProvider).markAsRead(item.id);
+      final response = await ref
+          .read(notificationApiProvider)
+          .markAsRead(item.id);
       if (!response.success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -144,6 +146,20 @@ class NotificationsPage extends ConsumerWidget {
         );
       }
       ref.invalidate(notificationsProvider);
+    }
+
+    if (!context.mounted) return;
+    if (item.type == 'support' ||
+        item.payload['action'] == 'open_support_chat') {
+      final ticketId = item.payload['ticketId']?.toString();
+      if (ticketId != null && RegExp(r'^[a-fA-F0-9]{24}$').hasMatch(ticketId)) {
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => SupportChatPage(ticketId: ticketId),
+          ),
+        );
+      }
+      return;
     }
 
     if (item.type != 'trip_accepted' &&
@@ -180,10 +196,7 @@ class NotificationsPage extends ConsumerWidget {
     final target = tripNavigationTarget(trip);
     if (target == null) return;
 
-    NavigationService().pushNamed(
-      target.route,
-      arguments: target.arguments,
-    );
+    NavigationService().pushNamed(target.route, arguments: target.arguments);
   }
 
   Future<void> _deleteNotification(
@@ -191,8 +204,9 @@ class NotificationsPage extends ConsumerWidget {
     WidgetRef ref,
     NotificationModel item,
   ) async {
-    final response =
-        await ref.read(notificationApiProvider).deleteNotification(item.id);
+    final response = await ref
+        .read(notificationApiProvider)
+        .deleteNotification(item.id);
     if (!context.mounted) return;
 
     if (!response.success) {
@@ -221,10 +235,8 @@ class NotificationsPage extends ConsumerWidget {
 
     return map.entries
         .map(
-          (entry) => _NotificationSection(
-            dateLabel: entry.key,
-            items: entry.value,
-          ),
+          (entry) =>
+              _NotificationSection(dateLabel: entry.key, items: entry.value),
         )
         .toList();
   }
@@ -234,10 +246,7 @@ class _NotificationSection {
   final String dateLabel;
   final List<NotificationModel> items;
 
-  const _NotificationSection({
-    required this.dateLabel,
-    required this.items,
-  });
+  const _NotificationSection({required this.dateLabel, required this.items});
 }
 
 class _NotificationsHeader extends StatelessWidget {
@@ -265,12 +274,7 @@ class _NotificationsHeader extends StatelessWidget {
             child: Text(
               'Notifications',
               textAlign: TextAlign.center,
-              style: kStyle(
-                kSemiBold,
-                kSize18,
-                color: kTextColor,
-                height: 1.2,
-              ),
+              style: kStyle(kSemiBold, kSize18, color: kTextColor, height: 1.2),
             ),
           ),
           IconButton(
@@ -296,12 +300,7 @@ class _DateSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Text(
         label,
-        style: kStyle(
-          kMedium,
-          kSize14,
-          color: kTripBodyMuted,
-          height: 1.2,
-        ),
+        style: kStyle(kMedium, kSize14, color: kTripBodyMuted, height: 1.2),
       ),
     );
   }
@@ -375,7 +374,11 @@ class _NotificationRow extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.close, size: 18, color: kMutedText),
+                      icon: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: kMutedText,
+                      ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
                         minWidth: 32,

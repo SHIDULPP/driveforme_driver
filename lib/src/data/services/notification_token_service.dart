@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:DriveFormeDriver/src/data/services/navigation_services.dart';
+import 'package:DriveFormeDriver/src/data/services/secure_storage_service.dart';
+import 'package:DriveFormeDriver/src/interfaces/main_pages/support/support_pages.dart';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -21,7 +25,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 class PushNotificationService {
-  PushNotificationService(this._notificationApi);
+  PushNotificationService(this._notificationApi, this._storage);
+
+  final SecureStorageService _storage;
+  String? _pendingSupportTicket;
+  String? _openSupportTicket;
 
   final NotificationApi _notificationApi;
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -30,20 +38,56 @@ class PushNotificationService {
 
   bool _initialized = false;
 
+  void _captureSupportNotification(Map<String, dynamic> data) {
+    if (data['action'] != 'open_support_chat') return;
+    final id = data['ticketId']?.toString() ?? '';
+    if (RegExp(r'^[a-fA-F0-9]{24}$').hasMatch(id)) _pendingSupportTicket = id;
+  }
+
+  Future<void> openPendingSupportChat() async {
+    final token = await _storage.getAuthToken();
+    final navigator = NavigationService.navigatorKey.currentState;
+    final id = _pendingSupportTicket;
+    if (token == null || token.isEmpty || navigator == null || id == null) {
+      return;
+    }
+    _pendingSupportTicket = null;
+    if (_openSupportTicket == id) return;
+    _openSupportTicket = id;
+    try {
+      await navigator.push(
+        MaterialPageRoute<void>(builder: (_) => SupportChatPage(ticketId: id)),
+      );
+    } finally {
+      _openSupportTicket = null;
+    }
+  }
+
+  void _onNotificationPayload(String? payload) {
+    if (payload == null) return;
+    try {
+      final data = jsonDecode(payload);
+      if (data is Map) {
+        _captureSupportNotification(Map<String, dynamic>.from(data));
+        openPendingSupportChat();
+      }
+    } on FormatException {
+      // Ignore notifications created by an older app with a different payload.
+    }
+  }
+
   Future<void> initialize() async {
     if (_initialized) return;
     _initialized = true;
 
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
     await _local.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
+      onDidReceiveNotificationResponse: (response) =>
+          _onNotificationPayload(response.payload),
     );
 
     const androidChannel = AndroidNotificationChannel(
@@ -54,7 +98,8 @@ class PushNotificationService {
     );
     await _local
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(androidChannel);
 
     await _messaging.setForegroundNotificationPresentationOptions(
@@ -64,6 +109,26 @@ class PushNotificationService {
     );
 
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _captureSupportNotification(message.data);
+      openPendingSupportChat();
+    });
+    final initial = await _messaging.getInitialMessage();
+    if (initial != null) _captureSupportNotification(initial.data);
+    final localLaunch = await _local.getNotificationAppLaunchDetails();
+    if (localLaunch?.didNotificationLaunchApp == true) {
+      final payload = localLaunch?.notificationResponse?.payload;
+      if (payload != null) {
+        try {
+          final data = jsonDecode(payload);
+          if (data is Map) {
+            _captureSupportNotification(Map<String, dynamic>.from(data));
+          }
+        } on FormatException {
+          /* Ignore legacy payloads. */
+        }
+      }
+    }
   }
 
   Future<void> _showForegroundNotification(RemoteMessage message) async {
@@ -139,10 +204,14 @@ class NotificationTokenService {
 final pushNotificationServiceProvider = Provider<PushNotificationService>((
   ref,
 ) {
-  return PushNotificationService(ref.watch(notificationApiProvider));
+  return PushNotificationService(
+    ref.watch(notificationApiProvider),
+    ref.watch(secureStorageServiceProvider),
+  );
 });
 
-final notificationTokenServiceProvider =
-    Provider<NotificationTokenService>((ref) {
+final notificationTokenServiceProvider = Provider<NotificationTokenService>((
+  ref,
+) {
   return NotificationTokenService(ref.watch(pushNotificationServiceProvider));
 });
